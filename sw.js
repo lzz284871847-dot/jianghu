@@ -1,5 +1,5 @@
 // 发布时同步版本；只缓存本游戏的静态壳，不上传或缓存玩家存档。
-const VERSION='1.0.23';
+const VERSION='1.0.24';
 const BASE=new URL('./',self.registration.scope);
 const PREFIX=`jianghu-wanxiang-offline:${BASE.pathname}:`;
 const CACHE=PREFIX+VERSION;
@@ -7,7 +7,7 @@ const FILES=['index.html','manifest.webmanifest',
  'src/rebuild/app.js','src/rebuild/engine.js','src/rebuild/content.js',
  'src/rebuild/commands.js','src/rebuild/progression.js','src/rebuild/world.js',
  'src/rebuild/equipment.js','src/rebuild/discoveries.js','src/rebuild/condition.js',
- 'src/rebuild/resources.js','src/rebuild/planner.js','src/rebuild/crafting.js','src/rebuild/offline.js','src/rebuild/contracts.js','src/rebuild/combat.js','src/rebuild/routes.js','src/rebuild/farming.js','src/rebuild/collection-view.js','src/rebuild/save-files.js','src/rebuild/contacts-view.js'];
+ 'src/rebuild/resources.js','src/rebuild/planner.js','src/rebuild/crafting.js','src/rebuild/offline.js','src/rebuild/contracts.js','src/rebuild/combat.js','src/rebuild/routes.js','src/rebuild/farming.js','src/rebuild/collection-view.js','src/rebuild/save-files.js','src/rebuild/contacts-view.js','src/rebuild/todos.js'];
 const key=path=>new URL(`${path}?v=${VERSION}`,BASE).href;
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
