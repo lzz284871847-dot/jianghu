@@ -1,5 +1,5 @@
 // 发布时同步版本；只缓存本游戏的静态壳，不上传或缓存玩家存档。
-const VERSION='1.0.19';
+const VERSION='1.0.20';
 const BASE=new URL('./',self.registration.scope);
 const PREFIX=`jianghu-wanxiang-offline:${BASE.pathname}:`;
 const CACHE=PREFIX+VERSION;
