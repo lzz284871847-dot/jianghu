@@ -1,13 +1,14 @@
-import {combatCost,strike} from './combat.js?v=1.0.11';
-import {postedJobs} from './contracts.js?v=1.0.11';
-import {recipeBlockers} from './crafting.js?v=1.0.11';
-import {resources} from './resources.js?v=1.0.11';
-import {injury} from './condition.js?v=1.0.11';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.11';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.11';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.11';
-import {gain,maxXP,progress} from './progression.js?v=1.0.11';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.11';
+import {travelMinutes} from './routes.js?v=1.0.12';
+import {combatCost,strike} from './combat.js?v=1.0.12';
+import {postedJobs} from './contracts.js?v=1.0.12';
+import {recipeBlockers} from './crafting.js?v=1.0.12';
+import {resources} from './resources.js?v=1.0.12';
+import {injury} from './condition.js?v=1.0.12';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.12';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.12';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.12';
+import {gain,maxXP,progress} from './progression.js?v=1.0.12';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.12';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -23,7 +24,7 @@ function settle(s,name,minutes,cost,run,xp={}){
  s.journal=[{day:s.day,text:s.result.join('；')},...s.journal].slice(0,24);encounter(s);return true;
 }
 function signed(n){return (n>=0?'+':'')+n}
-export function travel(s,to){if(!available(s))return false;if(!locations[s.place].routes.includes(to))return fail(s,'这里没有直达的路。');return settle(s,'前往'+locations[to].name,s.weather==='雨'&&['road','hill','bamboo'].includes(to)?60:30,0,()=>{s.place=to})}
+export function travel(s,to){if(!available(s))return false;if(!locations[s.place].routes.includes(to))return fail(s,'这里没有直达的路。');return settle(s,'前往'+locations[to].name,travelMinutes(s,to),0,()=>{s.place=to})}
 export function equip(s,key){if(!available(s))return false;if(!Object.hasOwn(weapons,key))return fail(s,'没有这类兵器。');if(key!=='unarmed'&&!s.bag[key])return fail(s,'背包里没有'+weapons[key].name+'。');if(s.weapon===key)return fail(s,'已经使用这件兵器。');return settle(s,'换用'+weapons[key].name,5,0,()=>{s.weapon=key;s.result.push(`当前兵器：${weapons[key].name}；练习和出招结算${skills[weapons[key].skill]}。`)})}
 export function talk(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');return settle(s,'与'+people[id].name+'交谈',30,1,()=>{s.result.push(people[id].line);if(s.talkDays[id]!==s.day){const old=s.relations[id];s.relations[id]=Math.min(100,old+1);s.talkDays[id]=s.day;s.result.push(`关系：${old}/100 → ${s.relations[id]}/100`)}else s.result.push('今日已经交谈过，不重复增加关系。');if(id==='master'&&!s.learned){s.learned=true;s.result.push('周师傅教你基础吐纳，现在可以自行练习。')}})}
 export function gift(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');if(s.giftDays[id]===s.day)return fail(s,'今日已赠礼，改日再来。');const key=people[id].gift;if(!s.bag[key])return fail(s,`${people[id].name}喜欢${items[key]}，你目前没有。`);return settle(s,'赠礼给'+people[id].name,15,1,()=>{s.bag[key]--;s.giftDays[id]=s.day;const before=s.relations[id];s.relations[id]=Math.min(100,before+2);s.result.push(`关系：${before}/100 → ${s.relations[id]}/100（+${s.relations[id]-before}）`)})}

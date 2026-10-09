@@ -1,5 +1,7 @@
-import {command,parseCommand} from './commands.js?v=1.0.11';
-import {date} from './progression.js?v=1.0.11';
+import {findRoute} from './routes.js?v=1.0.12';
+import {locations} from './content.js?v=1.0.12';
+import {command,parseCommand} from './commands.js?v=1.0.12';
+import {date} from './progression.js?v=1.0.12';
 export const planLimit=8;
 export function splitPlan(input){return String(input).split(/[；;、，,\n]+/).map(x=>x.trim()).filter(Boolean)}
 export function setPlan(s,input){
@@ -26,4 +28,12 @@ export function runPlan(s,onStep=()=>{}){
   if(s.day!==startDay){reason='已进入第二天；请查看世界消息，再决定是否继续剩余安排。';break}
  }
  s.result=[`行动计划：完成${completed}项${s.plan.length?`，剩余${s.plan.length}项`:'，安排已做完'}`, ...lines,...(reason?[reason]:[])];return completed>0;
+}
+
+export function planTravel(s,to){
+ if(s.dead||s.pending||s.combat){s.result=['先处理眼前事件或交手；人生结束后不能再远行。'];return false}
+ const route=findRoute(s,to);if(!route){s.result=['找不到通往此地的路线。'];return false}
+ if(!route.steps.length){s.result=['你已经在这里。'];return false}
+ if(!setPlan(s,route.steps.map(key=>'去'+locations[key].name).join('；')))return false;
+ s.result=[`远行计划：${locations[to].name}`,`路线：${[s.place,...route.steps].map(key=>locations[key].name).join(' → ')}`,`预计${route.minutes}分钟，移动精力0；实际天气与耗时逐段结算。`,'点击“执行计划”出发，途中遇事或跨日暂停。',...s.plan.map((step,i)=>`${i+1}. ${step}`)];return true;
 }
