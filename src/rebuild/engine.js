@@ -1,11 +1,12 @@
-import {recipeBlockers} from './crafting.js?v=1.0.9';
-import {resources} from './resources.js?v=1.0.9';
-import {injury,attackFactor} from './condition.js?v=1.0.9';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.9';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.9';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.9';
-import {gain,maxXP,progress} from './progression.js?v=1.0.9';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.9';
+import {postedJobs} from './contracts.js?v=1.0.10';
+import {recipeBlockers} from './crafting.js?v=1.0.10';
+import {resources} from './resources.js?v=1.0.10';
+import {injury,attackFactor} from './condition.js?v=1.0.10';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.10';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.10';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.10';
+import {gain,maxXP,progress} from './progression.js?v=1.0.10';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.10';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -31,7 +32,7 @@ export function lesson(s){if(!available(s))return false;if(npcPlace(s,'master')!
 export const prices={food:4,herb:4,iron:5,wood:2,rod:6,staff:12,sword:24,tool:20};
 const salePrices={herb:3,fish:5,tool:18};
 export function trade(s,type,key){if(!available(s))return false;if(s.place!=='town'||npcPlace(s,'merchant')!=='town')return fail(s,'请在08:00–20:00到街市买卖。');const price=(type==='buy'?prices:salePrices)[key];if(typeof price!=='number')return fail(s,'这里不经营这件物品。');if(type==='buy'&&s.coins<price)return fail(s,'铜钱不足。');if(type==='sell'&&!s.bag[key])return fail(s,'没有可出售的'+items[key]+'。');return settle(s,(type==='buy'?'购买':'出售')+items[key],15,1,()=>{s.coins+=type==='buy'?-price:price;s.bag[key]+=type==='buy'?1:-1},type==='sell'?{trade:1}:{})}
-export function acceptJob(s,id){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||!['town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');s.job={id,deadline:s.day+2};s.result=[`接下：${jobs[id].name}。三日内完成；也可以放弃，没有强制主线。`];return true}
+export function acceptJob(s,id){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||!['town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(!postedJobs(s).some(([key])=>key===id))return fail(s,'今日未刊出这份采购，去街市看看其他约定。');if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');s.job={id,deadline:s.day+2};s.result=[`接下：${jobs[id].name}。三日内完成；也可以放弃，没有强制主线。`];return true}
 export function abandonJob(s){if(!available(s))return false;s.job=null;s.result=['你放下了这份约定，可以另作打算。'];return true}
 export function act(s,id,rng=()=>random(s)){
  if(!available(s))return false;

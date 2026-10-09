@@ -1,5 +1,5 @@
 // 发布时同步版本；只缓存本游戏的静态壳，不上传或缓存玩家存档。
-const VERSION='1.0.9';
+const VERSION='1.0.10';
 const BASE=new URL('./',self.registration.scope);
 const PREFIX=`jianghu-wanxiang-offline:${BASE.pathname}:`;
 const CACHE=PREFIX+VERSION;
@@ -7,7 +7,7 @@ const FILES=['index.html','manifest.webmanifest',
  'src/rebuild/app.js','src/rebuild/engine.js','src/rebuild/content.js',
  'src/rebuild/commands.js','src/rebuild/progression.js','src/rebuild/world.js',
  'src/rebuild/equipment.js','src/rebuild/discoveries.js','src/rebuild/condition.js',
- 'src/rebuild/resources.js','src/rebuild/planner.js','src/rebuild/crafting.js','src/rebuild/offline.js'];
+ 'src/rebuild/resources.js','src/rebuild/planner.js','src/rebuild/crafting.js','src/rebuild/offline.js','src/rebuild/contracts.js'];
 const key=path=>new URL(`${path}?v=${VERSION}`,BASE).href;
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
@@ -26,7 +26,9 @@ self.addEventListener('fetch',event=>{
  if(!FILES.includes(path))return;
  event.respondWith((async()=>{
   const cache=await caches.open(CACHE),cached=await cache.match(key(path));
-  if(cached)return cached;
+  // 联网优先取新页面；不同版本的模块不能被旧缓存冒充。
+  if(path==='index.html'){try{const fresh=await fetch(request);if(fresh.ok)return fresh}catch{}if(cached)return cached;}
+  else if(!url.searchParams.has('v')||url.searchParams.get('v')===VERSION){if(cached)return cached;}
   try{return await fetch(request)}catch{return new Response('离线文件尚未准备完成。请联网打开游戏一次后再试。',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})}
  })());
 });

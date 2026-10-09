@@ -18,6 +18,9 @@ export const people={
  porter:{gift:'food',name:'阿平',role:'码头脚夫',personality:'随和',interest:'船上的见闻',goal:'攒钱修一修家里的屋顶',line:'码头有活就做，没活的时候，我也会钓两条鱼。'}
 };
 export const jobs={
+ firewood:{name:'村里收柴',place:'village',text:'村民需要木料3份生火，可拾柴整理或买来，三日内送到河湾村。',needs:{wood:3},reward:8,skill:'trade',boardDay:0},
+ freshFish:{name:'船家收鱼',place:'dock',text:'船家需要鲜鱼2条做饭，三日内送到码头。',needs:{fish:2},reward:12,skill:'trade',boardDay:1},
+ oreSupply:{name:'作坊收矿',place:'forge',text:'作坊收铁矿石2份，三日内送来；无需先炼成铁料。',needs:{ore:2},reward:10,skill:'trade',boardDay:2},
  unload:{name:'码头卸货',place:'dock',text:'替船行卸一批货，靠力气赚一笔工钱。',hours:3,energy:24,reward:18,skill:'carry'},
  tools:{name:'一件农具',place:'forge',text:'作坊需要一件铁制工具；自己备料制作，再交货。',needs:{tool:1},reward:22,skill:'trade'},
  herbs:{name:'医者收药',place:'village',text:'给沈医者送两份草药，采来的或买来的都可以。',needs:{herb:2},reward:12,skill:'trade'}
