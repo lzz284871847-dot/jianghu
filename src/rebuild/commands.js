@@ -1,5 +1,5 @@
-import {locations,items,jobs} from './content.js?v=1.0.37';
-import {travel,equip,act,trade,acceptJob,lesson} from './engine.js?v=1.0.37';
+import {locations,items,jobs} from './content.js?v=1.0.38';
+import {travel,equip,act,trade,acceptJob,lesson} from './engine.js?v=1.0.38';
 const aliases={买房:'buyHome',买旧屋:'buyHome',购买镇上旧屋:'buyHome',回屋睡觉:'sleep',考较:'assessment',基础考较:'assessment',参加基础考较:'assessment',等半小时:'wait30',等候半小时:'wait30',等30分钟:'wait30',等待30分钟:'wait30',等一小时:'wait60',等候一小时:'wait60',等1小时:'wait60',等60分钟:'wait60',请教锻造:'forgeLesson',请教基础锻造:'forgeLesson',种菜:'plant',播种:'plant',借地播种:'plant',照料菜地:'tend',浇水:'tend',收菜:'harvest',收获蔬菜:'harvest',做菜饭:'cookVegetables',做菜饭干粮:'cookVegetables',狩猎:'hunt',捕猎:'hunt',布置猎具捕猎:'hunt',制作猎具:'craftTrap',制作简易猎具:'craftTrap',做烤肉干粮:'cookMeat',烤肉:'cookMeat',制药:'brew',调制药膏:'brew',调制普通药膏:'brew',用药膏:'useSalve',使用普通药膏:'useSalve',制作木棍:'craftStaff',打造木棍:'craftStaff',锻造普通铁剑:'craftSword',打造铁剑:'craftSword',锻造铁剑:'craftSword',拾柴:'collectWood',捡柴:'collectWood',整理木料:'collectWood',采矿:'mine',浅层采矿:'mine',炼铁:'smelt',炼制铁料:'smelt',休息:'rest',歇息:'rest',睡觉:'sleep',练拳:'train',练习拳脚:'train',吐纳:'inner',吐纳修炼:'inner',采药:'gather',采集草药:'gather',钓鱼:'fish',打零工:'work',打造工具:'forge',做鱼饭:'cook',吃干粮:'eat',用草药:'heal',治疗:'treat',探索:'explore',切磋:'spar',交货:'deliver',完成约定:'deliver'};
 const placeAliases={街市:'town',小镇:'town',青石镇:'town',客栈:'inn',作坊:'forge',码头:'dock',村庄:'village',河湾村:'village',城外:'road',城外小路:'road',山坡:'hill',南山坡:'hill',竹林:'bamboo'};
 const lessons={请教拳脚:'unarmed',请教棍法:'staff',请教剑术:'sword'};

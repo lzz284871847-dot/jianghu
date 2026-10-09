@@ -1,10 +1,11 @@
-import {items,skills,locations} from './content.js?v=1.0.37';
-import {maxXP} from './progression.js?v=1.0.37';
+import {items,skills,locations,people} from './content.js?v=1.0.38';
+import {maxXP} from './progression.js?v=1.0.38';
 // 只读选择预览：奖励和成长仍由引擎在玩家确认后结算。
 export function choiceDetails(s,c){
  const lines=[];
  if(c.input)lines.push('消耗：'+Object.entries(c.input).map(([k,n])=>`${items[k]}${n}（现有${s.bag[k]}）`).join('、'));
  if(c.output)lines.push('获得：'+Object.entries(c.output).map(([k,n])=>`${items[k]}${n}`).join('、'));
+ if(c.relation){const before=s.relations[c.relation],after=Math.min(100,before+c.change);lines.push(`关系：${people[c.relation].name} ${before} → ${after}（+${after-before}）`);}
  if(c.coins)lines.push(`铜钱：${c.coins>0?'+':''}${c.coins}文`);
  if(c.to&&c.to!==s.place)lines.push('结束地点：'+locations[c.to].name);
  const related=c.skill?[c.skill]:Object.keys(c.xp||{});
