@@ -1,5 +1,5 @@
-import {items,skills} from './content.js?v=1.0.36';
-import {skillLines} from './progression.js?v=1.0.36';
+import {items,skills,homePrice} from './content.js?v=1.0.37';
+import {skillLines} from './progression.js?v=1.0.37';
 // 只整理展示，不修改库存、技能或存档。
 const groups={恢复用品:['food','herb','salve'],兵器:['staff','sword'],工具:['tool','rod','trap'],原料与种子:['iron','wood','fish','ore','meat','seed','vegetable']};
 function node(doc,tag,value,className=''){const el=doc.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
@@ -26,3 +26,5 @@ export function skillsView(s,doc=document){
  if(unpracticed.length){const more=doc.createElement('details');more.append(node(doc,'summary',`尚无经验的技能（${unpracticed.length}项）`),...unpracticed);result.push(more)}
  return result;
 }
+
+export function housingStatus(s){return s.homeDay?`住所：青石镇旧屋（第${s.homeDay}日购得）。可在镇上睡觉，无住宿费。`:`住所：尚无自住房。可在青石镇花${homePrice}文买一间旧屋；也可继续住店或借宿，不强制置业。`}

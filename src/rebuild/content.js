@@ -34,7 +34,7 @@ export const jobs={
  herbs:{name:'医者收药',place:'village',text:'给沈医者送两份草药，采来的或买来的都可以。',needs:{herb:2},reward:12,skill:'trade'}
 };
 export const recipes={cookVegetables:{name:'做菜饭干粮',hours:1,energy:8,input:{vegetable:2,wood:1},output:{food:2},skill:'cook'},craftTrap:{name:'制作简易猎具',hours:2,energy:14,input:{wood:2,iron:1},output:{trap:1},skill:'woodwork'},cookMeat:{name:'做烤肉干粮',hours:1,energy:8,input:{meat:1,wood:1},output:{food:2},skill:'cook'},brew:{name:'调制普通药膏',place:'village',hours:1,energy:10,input:{herb:2,wood:1},output:{salve:2},skill:'medicine',knowledge:'learnedMedicine'},craftStaff:{name:'制作木棍',hours:2,energy:14,input:{wood:2},output:{staff:1},skill:'woodwork'},craftSword:{name:'锻造普通铁剑',hours:4,energy:32,input:{iron:4,wood:1},output:{sword:1},skill:'forge',level:2},smelt:{name:'炼制铁料',hours:2,energy:18,input:{ore:2,wood:2},output:{iron:2},skill:'forge'},forge:{name:'打造工具',hours:3,energy:24,input:{iron:2,wood:1},output:{tool:1},skill:'forge'},cook:{name:'做一份鱼饭',hours:1,energy:8,input:{fish:1,wood:1},output:{food:2},skill:'cook'}};
-export const actionNames={assessment:'基础武艺考较',forgeLesson:'请教基础锻造',plant:'借地播种',tend:'照料菜地',harvest:'收获蔬菜',cookVegetables:'做菜饭干粮',hunt:'布置猎具捕猎',craftTrap:'制作简易猎具',cookMeat:'做烤肉干粮',brew:'调制普通药膏',useSalve:'使用普通药膏',craftStaff:'制作木棍',craftSword:'锻造普通铁剑',collectWood:'拾柴整理木料',mine:'浅层采矿',smelt:'炼制铁料',work:'打零工',browse:'听街谈',train:'练习拳脚',inner:'吐纳修炼',gather:'采药',fish:'钓鱼',forge:'打造工具',cook:'做鱼饭',rest:'歇息片刻',sleep:'睡一觉',eat:'吃干粮',heal:'用草药',treat:'请医者治疗',explore:'沿路探索',spar:'请教切磋',deliver:'完成约定'};
+export const actionNames={buyHome:'购买镇上旧屋',assessment:'基础武艺考较',forgeLesson:'请教基础锻造',plant:'借地播种',tend:'照料菜地',harvest:'收获蔬菜',cookVegetables:'做菜饭干粮',hunt:'布置猎具捕猎',craftTrap:'制作简易猎具',cookMeat:'做烤肉干粮',brew:'调制普通药膏',useSalve:'使用普通药膏',craftStaff:'制作木棍',craftSword:'锻造普通铁剑',collectWood:'拾柴整理木料',mine:'浅层采矿',smelt:'炼制铁料',work:'打零工',browse:'听街谈',train:'练习拳脚',inner:'吐纳修炼',gather:'采药',fish:'钓鱼',forge:'打造工具',cook:'做鱼饭',rest:'歇息片刻',sleep:'睡一觉',eat:'吃干粮',heal:'用草药',treat:'请医者治疗',explore:'沿路探索',spar:'请教切磋',deliver:'完成约定'};
 export const events={
  boatRepair:{title:'小船的舱板开裂',place:'dock',text:'一艘小船停在码头，船工正在找木料补板。货物已搬上岸，不会因你路过就逼你接手。',choices:[{id:'help',label:'提供木料2并帮忙修板',input:{wood:2},hours:1,energy:12,minHp:25,skill:'woodwork',xp:1,coins:4,result:'你帮船工补好舱板，船行付你4文，补好的船留在码头。'},{id:'tell',label:'替他们问问附近工匠',hours:0.5,energy:2,result:'附近木匠接下了修船的活，船工继续搬货。'},{id:'leave',label:'不参与',result:'船工继续找木料和工匠，你按自己的安排走。'}],after:'码头的小船已由船工请木匠补好舱板，重新装货。'},
  marketPrice:{title:'街市有人争价',place:'town',text:'两位摊贩争论同一批杂货该卖多少钱，买主站在一旁比较。只是普通买卖上的分歧。',choices:[{id:'compare',label:'比较几家报价再听双方说法',hours:1,energy:4,skill:'trade',xp:1,result:'你比较了几家的报价，发现品相和数量并不相同。双方各自定价，买主自己挑选，没有强制成交。'},{id:'leave',label:'不掺和',result:'争价还在继续，你没替别人做买卖上的决定。'}],after:'街市争价的摊贩各自标好了价，买主已经自行挑选货物。'},
@@ -50,3 +50,6 @@ export const events={
 
 // 等候只推进游戏时间；与恢复精力的歇息分开。
 export const waitingActions={wait30:{name:"等半小时",minutes:30},wait60:{name:"等一小时",minutes:60}};
+
+// 精简版只提供一间可居住旧屋，不模拟地产经营。
+export const homePrice=200;

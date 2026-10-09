@@ -1,19 +1,19 @@
-import {marketBlocker,marketHours} from './market.js?v=1.0.36';
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.36';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.36';
-import {travelMinutes} from './routes.js?v=1.0.36';
-import {combatCost,strike,assessmentBlocker} from './combat.js?v=1.0.36';
-import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.36';
-import {recipeBlockers} from './crafting.js?v=1.0.36';
-import {resources,resourceChance} from './resources.js?v=1.0.36';
-import {injury} from './condition.js?v=1.0.36';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.36';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.36';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions} from './content.js?v=1.0.36';
-import {gain,maxXP,progress} from './progression.js?v=1.0.36';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.36';
+import {marketBlocker,marketHours} from './market.js?v=1.0.37';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.37';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.37';
+import {travelMinutes} from './routes.js?v=1.0.37';
+import {combatCost,strike,assessmentBlocker} from './combat.js?v=1.0.37';
+import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.37';
+import {recipeBlockers} from './crafting.js?v=1.0.37';
+import {resources,resourceChance} from './resources.js?v=1.0.37';
+import {injury} from './condition.js?v=1.0.37';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.37';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.37';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.37';
+import {gain,maxXP,progress} from './progression.js?v=1.0.37';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.37';
 export const KEY='jianghu-wanxiang-lite-v1';
-export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
+export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,homeDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
 function available(s){if(s.dead)return fail(s,'这段人生已结束。可以导出记录，再创建新角色。');if(s.combat)return fail(s,'先处理当前交手，可以撤离。');if(s.pending)return fail(s,'先决定如何处理眼前的事，也可以不参与。');return true}
 function settle(s,name,minutes,cost,run,xp={}){
@@ -77,7 +77,8 @@ export function act(s,id,rng=()=>random(s)){
  }
  if(Object.hasOwn(waitingActions,id)){const a=waitingActions[id];return settle(s,a.name,a.minutes,0,()=>{s.result.push('你留在原地等候。等候不恢复精力或气血，也不增长技能；周围的人仍照自己的安排活动。')});}
  if(id==='rest')return settle(s,'歇息',120,0,()=>{s.energy=Math.min(100,s.energy+30);s.hp=Math.min(100,s.hp+10)});
- if(id==='sleep'){if(!['inn','village'].includes(s.place))return fail(s,'可去客栈住店，或到河湾村借宿。');const fee=s.place==='inn'?5:0;if(s.coins<fee)return fail(s,'住店需要5文。');return settle(s,'睡一觉',480,0,()=>{s.coins-=fee;s.energy=100;s.hp=Math.min(100,s.hp+20)})}
+ if(id==='buyHome'){if(s.place!=='town')return fail(s,'请到青石镇购买旧屋。');if(s.homeDay)return fail(s,'你已拥有镇上旧屋，不重复购买。');if(s.coins<homePrice)return fail(s,`旧屋需要${homePrice}文，铜钱不足；没有扣钱。`);return settle(s,'购买镇上旧屋',60,0,()=>{s.coins-=homePrice;s.homeDay=s.day;s.result.push('你与房主办理交接，拿到一间普通旧屋的钥匙。以后可在青石镇睡觉，不付住宿费；没有附赠物资或技能加成。')});}
+ if(id==='sleep'){if(!['inn','village'].includes(s.place)&&!(s.place==='town'&&s.homeDay))return fail(s,'可去客栈住店、到河湾村借宿，或在已购的镇上旧屋睡觉。');const fee=s.place==='inn'?5:0;if(s.coins<fee)return fail(s,'住店需要5文。');return settle(s,'睡一觉',480,0,()=>{s.coins-=fee;s.energy=100;s.hp=Math.min(100,s.hp+20)})}
  if(['eat','heal','useSalve'].includes(id)){const key=id==='eat'?'food':id==='heal'?'herb':'salve';if(!s.bag[key])return fail(s,'没有'+items[key]+'。');if(s.hp===100&&(id!=='eat'||s.energy===100))return fail(s,'目前无需恢复，不消耗物品。');return settle(s,actionNames[id],15,0,()=>{s.bag[key]--;s.hp=Math.min(100,s.hp+(id==='eat'?5:id==='heal'?25:35));if(id==='eat')s.energy=Math.min(100,s.energy+12)})}
  if(id==='treat'){if(npcPlace(s,'doctor')!==s.place)return fail(s,'沈医者不在这里。');if(s.hp===100)return fail(s,'气血充足，无需治疗。');const fee=treatmentFee(s);if(s.coins<fee)return fail(s,`诊金需要${fee}文。`);return settle(s,'医者治疗',60,0,()=>{s.coins-=fee;s.hp=Math.min(100,s.hp+50)})}
  if(id==='inner'){if(!s.learned)return fail(s,'先向周师傅学习基础吐纳。');return settle(s,'吐纳修炼',120,8,()=>{s.hp=Math.min(100,s.hp+5)},{inner:2})}
@@ -118,7 +119,7 @@ export function fight(s,id,rng=()=>random(s)){
 }
 
 export function restore(raw){
- const s=JSON.parse(raw);if(s&&typeof s==='object'){if(s.assessments===undefined)s.assessments={};if(s.skills&&s.skills.battle===undefined)s.skills.battle=0;if(s.forgeLessonDay===undefined)s.forgeLessonDay=0;if(s.relations&&s.relations.artisan===undefined)s.relations.artisan=0;if(s.plot===undefined)s.plot=null;if(s.bag){if(s.bag.seed===undefined)s.bag.seed=0;if(s.bag.vegetable===undefined)s.bag.vegetable=0;}if(s.skills&&s.skills.escort===undefined)s.skills.escort=0;if(s.skills&&s.skills.farming===undefined)s.skills.farming=0;if(s.learnedMedicine===undefined)s.learnedMedicine=false;if(s.bag&&s.bag.trap===undefined)s.bag.trap=0;if(s.bag&&s.bag.meat===undefined)s.bag.meat=0;if(s.skills&&s.skills.hunt===undefined)s.skills.hunt=0;if(s.bag&&s.bag.salve===undefined)s.bag.salve=0;if(s.skills&&s.skills.medicine===undefined)s.skills.medicine=0;if(s.plan===undefined)s.plan=[];if(s.giftDays===undefined)s.giftDays={};if(s.lessonDay===undefined)s.lessonDay=0;if(s.discoveryDay===undefined)s.discoveryDay=0;if(s.discoveryResolution===undefined)s.discoveryResolution=null;if(s.bag&&s.bag.ore===undefined)s.bag.ore=0;if(s.bag&&s.bag.sword===undefined)s.bag.sword=0;if(s.skills){if(s.skills.woodwork===undefined)s.skills.woodwork=0;if(s.skills.forage===undefined)s.skills.forage=0;if(s.skills.mining===undefined)s.skills.mining=0;if(s.skills.staff===undefined)s.skills.staff=0;if(s.skills.sword===undefined)s.skills.sword=0;}if(s.weapon===undefined)s.weapon=s.bag?.staff>0?'staff':'unarmed';}if(!s||s.version!==1||typeof s.name!=='string'||!Object.hasOwn(locations,s.place))throw Error('不是新版存档；旧版存档请在旧版入口使用。');
+ const s=JSON.parse(raw);if(s&&typeof s==='object'){if(s.homeDay===undefined)s.homeDay=0;if(s.assessments===undefined)s.assessments={};if(s.skills&&s.skills.battle===undefined)s.skills.battle=0;if(s.forgeLessonDay===undefined)s.forgeLessonDay=0;if(s.relations&&s.relations.artisan===undefined)s.relations.artisan=0;if(s.plot===undefined)s.plot=null;if(s.bag){if(s.bag.seed===undefined)s.bag.seed=0;if(s.bag.vegetable===undefined)s.bag.vegetable=0;}if(s.skills&&s.skills.escort===undefined)s.skills.escort=0;if(s.skills&&s.skills.farming===undefined)s.skills.farming=0;if(s.learnedMedicine===undefined)s.learnedMedicine=false;if(s.bag&&s.bag.trap===undefined)s.bag.trap=0;if(s.bag&&s.bag.meat===undefined)s.bag.meat=0;if(s.skills&&s.skills.hunt===undefined)s.skills.hunt=0;if(s.bag&&s.bag.salve===undefined)s.bag.salve=0;if(s.skills&&s.skills.medicine===undefined)s.skills.medicine=0;if(s.plan===undefined)s.plan=[];if(s.giftDays===undefined)s.giftDays={};if(s.lessonDay===undefined)s.lessonDay=0;if(s.discoveryDay===undefined)s.discoveryDay=0;if(s.discoveryResolution===undefined)s.discoveryResolution=null;if(s.bag&&s.bag.ore===undefined)s.bag.ore=0;if(s.bag&&s.bag.sword===undefined)s.bag.sword=0;if(s.skills){if(s.skills.woodwork===undefined)s.skills.woodwork=0;if(s.skills.forage===undefined)s.skills.forage=0;if(s.skills.mining===undefined)s.skills.mining=0;if(s.skills.staff===undefined)s.skills.staff=0;if(s.skills.sword===undefined)s.skills.sword=0;}if(s.weapon===undefined)s.weapon=s.bag?.staff>0?'staff':'unarmed';}if(!s||s.version!==1||typeof s.name!=='string'||!Object.hasOwn(locations,s.place))throw Error('不是新版存档；旧版存档请在旧版入口使用。');
  if(!Array.isArray(s.plan)||s.plan.length>8||s.plan.some(x=>typeof x!=='string'||!x.trim()||x.length>40))throw Error('行动计划无效');
  const integer=(n,min,max)=>Number.isSafeInteger(n)&&n>=min&&n<=max;
  for(const [k,min,max] of [['age',16,60],['day',1,100000],['minute',0,1439],['hp',0,100],['energy',0,100],['coins',0,10000000],['seed',1,4294967295]])if(!integer(s[k],min,max))throw Error('存档数值无效');
@@ -132,6 +133,7 @@ export function restore(raw){
  if(s.job&&(!Object.hasOwn(jobs,s.job.id)||!integer(s.job.deadline,s.day,s.day+2)))throw Error('委托无效');
  if(s.job&&jobs[s.job.id].route&&!integer(s.job.progress,0,jobs[s.job.id].route.length))throw Error('护送进度无效');
  if(s.combat&&(!['周师傅','拦路人'].includes(s.combat.name)||!integer(s.combat.hp,1,45)||!integer(s.combat.attack,1,8)||s.combat.spar!==(s.combat.name==='周师傅')))throw Error('战斗无效');
+ if(!integer(s.homeDay,0,s.day))throw Error('住所记录无效');
  if(!s.assessments||typeof s.assessments!=='object'||Array.isArray(s.assessments)||Object.entries(s.assessments).some(([key,day])=>!Object.hasOwn(weapons,key)||!integer(day,1,s.day)))throw Error('考较记录无效');
  if(s.combat?.assessment!==undefined&&(!Object.hasOwn(weapons,s.combat.assessment)||s.combat.assessment!==s.weapon||s.combat.name!=='周师傅'||!s.combat.spar||s.combat.attack!==7||s.assessments[s.combat.assessment]))throw Error('考较状态无效');
  if(s.combat?.prepared!==undefined&&typeof s.combat.prepared!=='boolean')throw Error('交手架势无效');
