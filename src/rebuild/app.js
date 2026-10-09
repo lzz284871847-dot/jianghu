@@ -1,11 +1,12 @@
-import {conditionText} from './condition.js?v=1.0.6';
-import {discoveries} from './discoveries.js?v=1.0.6';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.6';
-import {command} from './commands.js?v=1.0.6';
-import {locations,skills,items,people,jobs,events,actionNames} from './content.js?v=1.0.6';
-import {date,skillLines} from './progression.js?v=1.0.6';
-import {nearbyPeople} from './world.js?v=1.0.6';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.6';
+import {splitPlan,setPlan,runPlan,clearPlan,skipStep} from './planner.js?v=1.0.7';
+import {conditionText} from './condition.js?v=1.0.7';
+import {discoveries} from './discoveries.js?v=1.0.7';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.7';
+import {command} from './commands.js?v=1.0.7';
+import {locations,skills,items,people,jobs,events,actionNames} from './content.js?v=1.0.7';
+import {date,skillLines} from './progression.js?v=1.0.7';
+import {nearbyPeople} from './world.js?v=1.0.7';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.7';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -13,8 +14,9 @@ function save(feedback=false){try{localStorage.setItem(KEY,JSON.stringify(state)
 const views=['world','character','bag','messages','system'];
 function syncViews(){for(const name of views)$('view-'+name).hidden=name!==currentView;for(const b of $('bottom-nav').querySelectorAll('button')){if(b.dataset.view===currentView)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')}}
 function switchView(name){if(!views.includes(name)||!state)return;currentView=name;$('feedback').hidden=true;syncViews();window.scrollTo({top:0,behavior:'auto'})}
-function showFeedback(){if(!state)return;$('feedback-title').textContent=state.result[0]||'行动结果';$('feedback-lines').replaceChildren(...state.result.slice(1).map(x=>text('p',x)));$('feedback').hidden=false}
+function showFeedback(){if(!state)return;$('feedback-plan').hidden=!state.plan.length||!!(state.pending||state.combat||state.dead);$('feedback-title').textContent=state.result[0]||'行动结果';$('feedback-lines').replaceChildren(...state.result.slice(1).map(x=>text('p',x)));$('feedback').hidden=false}
 for(const b of $('bottom-nav').querySelectorAll('button'))b.onclick=()=>switchView(b.dataset.view);
+$('feedback-plan').onclick=()=>{runPlan(state,()=>save());save(true)};
 $('feedback-close').onclick=()=>{$('feedback').hidden=true};
 const labels={collectWood:'拾柴整理木料 · 2小时 / 精力12',mine:'浅层采矿 · 2小时 / 精力20 / 需铁制工具',smelt:'炼制铁料 · 2小时 / 精力18 / 铁矿石2＋木料2',work:'打零工 · 3小时 / 精力24',train:'练拳 · 2小时 / 精力18',inner:'吐纳 · 2小时 / 精力8',gather:'采药 · 2小时 / 精力16',fish:'钓鱼 · 2小时 / 精力16',forge:'打造工具 · 3小时 / 精力24',cook:'做鱼饭 · 1小时 / 精力8',explore:'探索 · 1小时 / 精力8',rest:'歇息 · 2小时 / 恢复精力30',sleep:'睡觉 · 8小时',eat:'吃干粮 · 恢复精力12',heal:'用草药 · 恢复气血25',treat:'医者治疗 · 8文',browse:'听街谈 · 半小时 / 精力1'};
 function render(){
@@ -24,6 +26,7 @@ function render(){
  $('result').replaceChildren(...s.result.map(x=>text('p',x)));
  $('map').replaceChildren();for(const [id,loc] of Object.entries(locations)){const b=button(loc.name,()=>travel(s,id),'map-place'+(id===s.place?' current':''));b.disabled=s.dead||!!s.pending||!!s.combat||!locations[s.place].routes.includes(id);b.append(text('small',id===s.place?'你在这里':loc.tag.split(' · ')[0]));$('map').append(b)}
  const blocked=s.dead||s.pending||s.combat;
+ $('plan-card').hidden=!s.plan.length;$('plan-list').replaceChildren(...s.plan.map((step,i)=>text('p',`${i+1}. ${step}`)));$('plan-controls').replaceChildren();if(s.plan.length){const run=button('执行计划',()=>runPlan(s,()=>save()));run.disabled=!!blocked;$('plan-controls').append(run,button('跳过第一项',()=>skipStep(s),'quiet'),button('清空计划',()=>clearPlan(s),'quiet'));}
  $('actions').replaceChildren();if(!blocked){if(s.place==='town'){const shopButton=text('button','逛街市 · 买卖物品');shopButton.type='button';shopButton.onclick=()=>switchView('bag');$('actions').append(shopButton)}const ids=[...locations[s.place].actions,'rest','eat','heal',...(s.learned?['inner']:[]),...(nearbyPeople(s).some(n=>n.id==='master')?['spar']:[]),...(nearbyPeople(s).some(n=>n.id==='doctor')?['treat']:[]),...(s.job?['deliver']:[])];for(const id of [...new Set(ids)])$('actions').append(button(id==='train'?`练习${skills[weapon.skill]} · 2小时 / 精力18`:id==='treat'?`医者治疗 · ${treatmentFee(s)}文`:labels[id]||actionNames[id],()=>act(s,id)));}
  $('scene').replaceChildren();$('scene').hidden=!s.pending&&!s.combat&&!s.dead;
  if(s.dead){$('scene').append(text('h2','这一段人生结束了'),text('p','死亡不会自动回到上一刻。你可以导出人生记录，再创建另一个普通人。'));}
@@ -40,7 +43,7 @@ function render(){
 function start(){currentView='world';$('feedback').hidden=true;state=fresh({name:$('name').value,age:$('age').value,gender:$('gender').value,background:$('background').value,personality:$('personality').value});save()}
 $('start').onclick=start;
 $('save-now').onclick=()=>save();
-$('free-form').onsubmit=e=>{e.preventDefault();command(state,$('free-input').value);$('free-input').blur();save(true)};
+$('free-form').onsubmit=e=>{e.preventDefault();const input=$('free-input').value;if(splitPlan(input).length>1)setPlan(state,input);else command(state,input);$('free-input').blur();save(true)};
 $('reset').onclick=()=>{if(confirm('重新创建角色会替换新版进度，请先导出备份。继续吗？')){state=null;localStorage.removeItem(KEY);$('game').hidden=true;$('setup').hidden=false;$('bottom-nav').hidden=true;$('feedback').hidden=true;currentView='world'}};
 $('export').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='jianghu-wanxiang-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 $('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>150000)throw Error('存档文件过大');const loaded=restore(await f.text());if(state&&!confirm('导入会替换新版当前角色，继续吗？'))return;state=loaded;currentView='world';$('feedback').hidden=true;save()}catch(error){alert('导入失败：'+error.message)}finally{e.target.value=''}};
