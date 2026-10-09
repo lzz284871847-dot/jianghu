@@ -1,10 +1,10 @@
 {
   "name": "jianghu",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/engine.js && node --check src/app.js && node --check src/progression.js && node --check src/world.js && node --check src/simulation.js && node --check src/characters.js && node --check src/trading.js && node --check src/study.js && node --check src/rebuild/content.js && node --check src/rebuild/progression.js && node --check src/rebuild/world.js && node --check src/rebuild/engine.js && node --check src/rebuild/app.js && node --check src/rebuild/commands.js && node --check src/rebuild/equipment.js && node --check src/rebuild/discoveries.js && node --check src/rebuild/condition.js"
+    "check": "node --check src/engine.js && node --check src/app.js && node --check src/progression.js && node --check src/world.js && node --check src/simulation.js && node --check src/characters.js && node --check src/trading.js && node --check src/study.js && node --check src/rebuild/content.js && node --check src/rebuild/progression.js && node --check src/rebuild/world.js && node --check src/rebuild/engine.js && node --check src/rebuild/app.js && node --check src/rebuild/commands.js && node --check src/rebuild/equipment.js && node --check src/rebuild/discoveries.js && node --check src/rebuild/condition.js && node --check src/rebuild/resources.js"
   }
 }

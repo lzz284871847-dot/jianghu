@@ -1,11 +1,11 @@
-import {conditionText} from './condition.js?v=1.0.5';
-import {discoveries} from './discoveries.js?v=1.0.5';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.5';
-import {command} from './commands.js?v=1.0.5';
-import {locations,skills,items,people,jobs,events,actionNames} from './content.js?v=1.0.5';
-import {date,skillLines} from './progression.js?v=1.0.5';
-import {nearbyPeople} from './world.js?v=1.0.5';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.5';
+import {conditionText} from './condition.js?v=1.0.6';
+import {discoveries} from './discoveries.js?v=1.0.6';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.6';
+import {command} from './commands.js?v=1.0.6';
+import {locations,skills,items,people,jobs,events,actionNames} from './content.js?v=1.0.6';
+import {date,skillLines} from './progression.js?v=1.0.6';
+import {nearbyPeople} from './world.js?v=1.0.6';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.6';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -16,7 +16,7 @@ function switchView(name){if(!views.includes(name)||!state)return;currentView=na
 function showFeedback(){if(!state)return;$('feedback-title').textContent=state.result[0]||'行动结果';$('feedback-lines').replaceChildren(...state.result.slice(1).map(x=>text('p',x)));$('feedback').hidden=false}
 for(const b of $('bottom-nav').querySelectorAll('button'))b.onclick=()=>switchView(b.dataset.view);
 $('feedback-close').onclick=()=>{$('feedback').hidden=true};
-const labels={work:'打零工 · 3小时 / 精力24',train:'练拳 · 2小时 / 精力18',inner:'吐纳 · 2小时 / 精力8',gather:'采药 · 2小时 / 精力16',fish:'钓鱼 · 2小时 / 精力16',forge:'打造工具 · 3小时 / 精力24',cook:'做鱼饭 · 1小时 / 精力8',explore:'探索 · 1小时 / 精力8',rest:'歇息 · 2小时 / 恢复精力30',sleep:'睡觉 · 8小时',eat:'吃干粮 · 恢复精力12',heal:'用草药 · 恢复气血25',treat:'医者治疗 · 8文',browse:'听街谈 · 半小时 / 精力1'};
+const labels={collectWood:'拾柴整理木料 · 2小时 / 精力12',mine:'浅层采矿 · 2小时 / 精力20 / 需铁制工具',smelt:'炼制铁料 · 2小时 / 精力18 / 铁矿石2＋木料2',work:'打零工 · 3小时 / 精力24',train:'练拳 · 2小时 / 精力18',inner:'吐纳 · 2小时 / 精力8',gather:'采药 · 2小时 / 精力16',fish:'钓鱼 · 2小时 / 精力16',forge:'打造工具 · 3小时 / 精力24',cook:'做鱼饭 · 1小时 / 精力8',explore:'探索 · 1小时 / 精力8',rest:'歇息 · 2小时 / 恢复精力30',sleep:'睡觉 · 8小时',eat:'吃干粮 · 恢复精力12',heal:'用草药 · 恢复气血25',treat:'医者治疗 · 8文',browse:'听街谈 · 半小时 / 精力1'};
 function render(){
  if(!state)return;const s=state;const weapon=currentWeapon(s);$('setup').hidden=true;$('game').hidden=false;$('bottom-nav').hidden=false;$('quick-name').textContent=s.name+' · '+locations[s.place].name;syncViews();$('hero-name').textContent=s.name+' · '+s.background;$('hero-detail').textContent=`${s.gender} · ${s.age+Math.floor((s.day-1)/360)}岁 · ${s.personality} · ${s.dead?'人生已结束':'一介普通人'}`;
  $('weapon-detail').textContent=`当前兵器：${weapon.name} · 对应武学：${skills[weapon.skill]} · 基础伤害加成：${weapon.bonus}`;$('stats').replaceChildren(...[`气血 ${s.hp}/100`,conditionText(s),`精力 ${s.energy}/100`,`铜钱 ${s.coins}文`].map(x=>text('span',x,'pill')));
@@ -34,7 +34,7 @@ function render(){
  $('equipment').replaceChildren();for(const [key,w] of Object.entries(weapons)){if(key!=='unarmed'&&!s.bag[key])continue;const b=button(s.weapon===key?'当前：'+w.name:'换用'+w.name,()=>equip(s,key));b.disabled=!!blocked||s.weapon===key;$('equipment').append(b)}$('bag-actions').replaceChildren();if(!blocked)for(const id of ['eat','heal'])$('bag-actions').append(button(labels[id],()=>act(s,id)));$('shop-hint').hidden=s.place==='town';$('bag').replaceChildren(...Object.entries(items).map(([k,n])=>text('span',n+' ×'+s.bag[k],'pill')));$('skills').replaceChildren(...skillLines(s).map(x=>text('p',x)));
  $('shop').hidden=s.place!=='town'||!!blocked;$('buys').replaceChildren();$('sells').replaceChildren();if(!blocked&&s.place==='town'){for(const [k,p] of Object.entries(prices))$('buys').append(button(`买${items[k]} · ${p}文`,()=>trade(s,'buy',k)));for(const [k,p] of [['herb',3],['fish',5],['tool',18]])$('sells').append(button(`卖${items[k]} · ${p}文`,()=>trade(s,'sell',k)));}
  $('news').replaceChildren(...(s.news.length?s.news:['世界会随你的行动推进。跨日后，这里会出现与别人有关的消息。']).map(x=>text('p',x)));
- const next=s.dead?['创建新的普通角色']:s.pending?['决定眼前事件，也可以不参与']:s.job?[`去${locations[jobs[s.job.id].place].name}完成${jobs[s.job.id].name}`]:['去街市找一份活，或自由探索'];if(s.energy<30)next.push('先歇息，或去客栈、河湾村睡觉');if(s.bag.fish)next.push('鲜鱼可以出售，也能在作坊做饭');if(s.bag.herb>=2)next.push('街市可能有医者收药的约定');for(const e of s.events.filter(e=>e.status==='open'))next.push(`${locations[events[e.kind].place].name}：${events[e.kind].title}（可不参与）`);$('next').replaceChildren(...next.map(x=>text('p',x)));
+ const next=s.dead?['创建新的普通角色']:s.pending?['决定眼前事件，也可以不参与']:s.job?[`去${locations[jobs[s.job.id].place].name}完成${jobs[s.job.id].name}`]:['去街市找一份活，或自由探索'];if(s.energy<30)next.push('先歇息，或去客栈、河湾村睡觉');if(s.bag.ore>=2)next.push('去作坊用铁矿石2、木料2炼成铁料2');if(s.bag.tool)next.push('可带铁制工具去南山坡采矿，或留着做其他手艺');if(s.bag.wood<2)next.push('竹林可拾柴整理木料，供应炼铁、打造和烹饪');if(s.bag.fish)next.push('鲜鱼可以出售，也能在作坊做饭');if(s.bag.herb>=2)next.push('街市可能有医者收药的约定');for(const e of s.events.filter(e=>e.status==='open'))next.push(`${locations[events[e.kind].place].name}：${events[e.kind].title}（可不参与）`);$('next').replaceChildren(...next.map(x=>text('p',x)));
  $('journal').replaceChildren(...s.journal.slice(0,10).map(x=>text('p',`第${x.day}日 · ${x.text}`)));
 }
 function start(){currentView='world';$('feedback').hidden=true;state=fresh({name:$('name').value,age:$('age').value,gender:$('gender').value,background:$('background').value,personality:$('personality').value});save()}

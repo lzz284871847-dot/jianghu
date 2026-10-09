@@ -1,5 +1,5 @@
-import {discoveries} from './discoveries.js?v=1.0.5';
-import {events,people,locations} from './content.js?v=1.0.5';
+import {discoveries} from './discoveries.js?v=1.0.6';
+import {events,people,locations} from './content.js?v=1.0.6';
 export function random(s){let x=s.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;s.seed=x>>>0;return s.seed/4294967296}
 export function npcPlace(s,id){const h=Math.floor(s.minute/60);return id==='master'?(h>=7&&h<18?'road':'inn'):id==='merchant'?(h>=8&&h<20?'town':'inn'):id==='doctor'?(h>=8&&h<18?'village':'inn'):(h>=6&&h<18?'dock':'inn')}
 export function nearbyPeople(s){return Object.entries(people).filter(([id])=>npcPlace(s,id)===s.place).map(([id,p])=>({id,...p,relation:s.relations[id]}))}

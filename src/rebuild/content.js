@@ -2,15 +2,15 @@
 export const locations={
  town:{name:'青石镇',tag:'街市 · 买卖与接活',text:'石板路两旁是粮铺和茶摊。有人赶集，有人找活，也有人只是坐着听闲话。',routes:['inn','forge','dock','village','road'],actions:['work','browse']},
  inn:{name:'长安客栈',tag:'歇脚 · 消息与人物',text:'窗边的旅人喝着茶，店小二收拾空碗。周师傅收工后常来这里歇脚。',routes:['town'],actions:['sleep','browse']},
- forge:{name:'周记作坊',tag:'手艺 · 打造与烹饪',text:'炉边摆着铁料和木柄。这里接小件农具的活，手艺可以从最普通的一把锄头练起。',routes:['town'],actions:['forge','cook']},
+ forge:{name:'周记作坊',tag:'手艺 · 打造与烹饪',text:'炉边摆着铁料和木柄。这里接小件农具的活，手艺可以从最普通的一把锄头练起。',routes:['town'],actions:['forge','cook','smelt']},
  dock:{name:'青石码头',tag:'谋生 · 搬货与钓鱼',text:'船工吆喝着卸货，河岸边也有安静的钓位。靠力气和耐心，都能谋一份生活。',routes:['town','village'],actions:['work','fish']},
  village:{name:'河湾村',tag:'邻里 · 采药与休养',text:'田埂穿过村舍，沈医者在院中晾药。村民愿意让过路人借宿，清晨再各自忙活。',routes:['town','dock','hill'],actions:['gather','sleep']},
  road:{name:'城外小路',tag:'江湖 · 练拳与探索',text:'周师傅白日在树荫下教拳。再往远处走，便是行脚人和商队经过的竹林。',routes:['town','hill','bamboo'],actions:['train','explore']},
- hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。药草不会处处都有，来这里也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','explore']},
- bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，遇事也能转身离开。',routes:['road','hill'],actions:['train','gather','explore']}
+ hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。草药不会处处都有，旧矿点可用铁制工具采矿，也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','mine','explore']},
+ bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill'],actions:['train','gather','collectWood','explore']}
 };
-export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术'};
-export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑'};
+export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿'};
+export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石'};
 export const people={
  master:{gift:'food',name:'周师傅',role:'教拳师傅',personality:'直爽',interest:'习武与喝茶',goal:'把基础拳脚教给肯下功夫的人',line:'学拳是为了站稳脚跟，能不打的时候，也要懂得不打。'},
  merchant:{gift:'fish',name:'柳掌柜',role:'街市商人',personality:'精明',interest:'各地货价',goal:'把小铺经营好',line:'做买卖先从一两件货开始，赔得起，才学得会。'},
@@ -22,8 +22,8 @@ export const jobs={
  tools:{name:'一件农具',place:'forge',text:'作坊需要一件铁制工具；自己备料制作，再交货。',needs:{tool:1},reward:22,skill:'trade'},
  herbs:{name:'医者收药',place:'village',text:'给沈医者送两份草药，采来的或买来的都可以。',needs:{herb:2},reward:12,skill:'trade'}
 };
-export const recipes={forge:{name:'打造工具',hours:3,energy:24,input:{iron:2,wood:1},output:{tool:1},skill:'forge'},cook:{name:'做一份鱼饭',hours:1,energy:8,input:{fish:1,wood:1},output:{food:2},skill:'cook'}};
-export const actionNames={work:'打零工',browse:'听街谈',train:'练习拳脚',inner:'吐纳修炼',gather:'采药',fish:'钓鱼',forge:'打造工具',cook:'做鱼饭',rest:'歇息片刻',sleep:'睡一觉',eat:'吃干粮',heal:'用草药',treat:'请医者治疗',explore:'沿路探索',spar:'请教切磋',deliver:'完成约定'};
+export const recipes={smelt:{name:'炼制铁料',hours:2,energy:18,input:{ore:2,wood:2},output:{iron:2},skill:'forge'},forge:{name:'打造工具',hours:3,energy:24,input:{iron:2,wood:1},output:{tool:1},skill:'forge'},cook:{name:'做一份鱼饭',hours:1,energy:8,input:{fish:1,wood:1},output:{food:2},skill:'cook'}};
+export const actionNames={collectWood:'拾柴整理木料',mine:'浅层采矿',smelt:'炼制铁料',work:'打零工',browse:'听街谈',train:'练习拳脚',inner:'吐纳修炼',gather:'采药',fish:'钓鱼',forge:'打造工具',cook:'做鱼饭',rest:'歇息片刻',sleep:'睡一觉',eat:'吃干粮',heal:'用草药',treat:'请医者治疗',explore:'沿路探索',spar:'请教切磋',deliver:'完成约定'};
 export const events={
  cart:{title:'货车陷泥',place:'road',text:'脚夫正试着把货车推出来。商队有些着急，但这件事与你并没有必然关系。',choices:[{id:'help',label:'帮忙推车',hours:1,energy:12,skill:'carry',xp:1,relation:'porter',change:2,result:'你与脚夫合力推车，商队继续赶路。阿平记住了你的帮忙。'},{id:'tell',label:'回镇上报信',hours:1,to:'town',result:'镇上的脚行派了人去，剩下的事情由他们处理。'},{id:'leave',label:'不参与',result:'你沿自己的路走，脚夫仍在设法处理。'}],after:'脚行帮忙处理了陷泥的货车，商队继续赶路。'},
  child:{title:'走散的孩子',place:'town',text:'一个孩子在茶摊旁找家人。摊主正在问他住在哪里。',choices:[{id:'help',label:'陪摊主一起找',hours:1,energy:4,relation:'merchant',change:2,result:'你们在粮铺找到孩子的家人。他们道谢后领着孩子回去了。'},{id:'leave',label:'交给摊主，继续自己的事',result:'摊主继续照看孩子，你没有插手。'}],after:'茶摊旁走散的孩子已由街坊送回家。'},

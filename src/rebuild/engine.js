@@ -1,9 +1,10 @@
-import {injury,attackFactor} from './condition.js?v=1.0.5';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.5';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.5';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.5';
-import {gain,maxXP,progress} from './progression.js?v=1.0.5';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.5';
+import {resources} from './resources.js?v=1.0.6';
+import {injury,attackFactor} from './condition.js?v=1.0.6';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.6';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.6';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.6';
+import {gain,maxXP,progress} from './progression.js?v=1.0.6';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.6';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -26,7 +27,7 @@ export function gift(s,id){if(!available(s))return false;if(!Object.hasOwn(peopl
 export function lessonFee(s){return s.relations.master>=5?4:6}
 export function treatmentFee(s){return s.relations.doctor>=10?6:8}
 export function lesson(s){if(!available(s))return false;if(npcPlace(s,'master')!==s.place)return fail(s,'周师傅目前不在这里。');if(s.lessonDay===s.day)return fail(s,'今日已请教，先消化练习，明日再来。');if(s.hp<25)return fail(s,'先养好伤，再请教师傅。');const fee=lessonFee(s);if(s.coins<fee)return fail(s,`请教需要${fee}文。`);return settle(s,'向周师傅请教拳脚',60,12,()=>{s.coins-=fee;s.lessonDay=s.day;s.result.push('师傅纠正你的站姿和发力，练的仍是基础拳脚。')},{fist:3})}
-export const prices={food:4,herb:4,iron:5,wood:2,rod:6,staff:12,sword:24};
+export const prices={food:4,herb:4,iron:5,wood:2,rod:6,staff:12,sword:24,tool:20};
 const salePrices={herb:3,fish:5,tool:18};
 export function trade(s,type,key){if(!available(s))return false;if(s.place!=='town'||npcPlace(s,'merchant')!=='town')return fail(s,'请在08:00–20:00到街市买卖。');const price=(type==='buy'?prices:salePrices)[key];if(typeof price!=='number')return fail(s,'这里不经营这件物品。');if(type==='buy'&&s.coins<price)return fail(s,'铜钱不足。');if(type==='sell'&&!s.bag[key])return fail(s,'没有可出售的'+items[key]+'。');return settle(s,(type==='buy'?'购买':'出售')+items[key],15,1,()=>{s.coins+=type==='buy'?-price:price;s.bag[key]+=type==='buy'?1:-1},type==='sell'?{trade:1}:{})}
 export function acceptJob(s,id){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||!['town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');s.job={id,deadline:s.day+2};s.result=[`接下：${jobs[id].name}。三日内完成；也可以放弃，没有强制主线。`];return true}
@@ -47,6 +48,7 @@ export function act(s,id,rng=()=>random(s)){
  if(id==='work')return settle(s,'打零工',180,24,()=>{s.coins+=12},{carry:2});
  if(id==='browse')return settle(s,'听街谈',30,1,()=>{s.result.push('茶客谈起附近的事情：有活可以去街市看，有伤可以找沈医者；传闻听听就好。')});
  if(id==='train'){if(s.hp<25)return fail(s,'受伤太重，先休养。');const w=currentWeapon(s);return settle(s,'练习'+skills[w.skill],120,18,()=>{},{[w.skill]:2})}
+ if(resources[id]){const r=resources[id];if(s.hp<25)return fail(s,'受伤太重，先休养再做重活。');if(r.tool&&!s.bag[r.tool])return fail(s,`需要${items[r.tool]}，可在街市购买或自己打造。`);return settle(s,r.name,r.hours*60,r.energy,()=>{const chance=Math.min(0.95,r.chance+(progress(s.skills[r.skill]).level-1)*0.02)*(s.energy-r.energy<20?0.75:1);if(rng()<chance){for(const [key,n] of Object.entries(r.output))s.bag[key]+=n;s.result.push(r.success)}else s.result.push(r.failure)},{[r.skill]:2})}
  if(id==='gather')return settle(s,'采药',120,16,()=>{if(rng()<0.6+Math.min(0.12,progress(s.skills.herb).level*0.02)){s.bag.herb++;s.result.push('采到草药×1。')}else s.result.push('找了两小时，这次没有合适的药材。')},{herb:2});
  if(id==='fish'){if(!s.bag.rod)return fail(s,'需要钓竿，可在街市花6文购买。');return settle(s,'钓鱼',120,16,()=>{if(rng()<0.6+Math.min(0.12,progress(s.skills.fish).level*0.02))s.bag.fish++;else s.result.push('这次没有钓到鱼。')},{fish:2})}
  if(recipes[id]){const r=recipes[id];for(const [k,n] of Object.entries(r.input))if(s.bag[k]<n)return fail(s,`${items[k]}不足，需要${n}。`);return settle(s,r.name,r.hours*60,r.energy,()=>{for(const [k,n] of Object.entries(r.input))s.bag[k]-=n;const failed=s.energy-r.energy<20&&rng()<0.2;if(!failed)for(const [k,n] of Object.entries(r.output))s.bag[k]+=n;s.result.push(failed?'疲劳导致失误，没有产出。':'本次产出：'+Object.entries(r.output).map(([k,n])=>items[k]+'×'+n).join('、'),'材料消耗：'+Object.entries(r.input).map(([k,n])=>items[k]+' -'+n).join('、'),'当前库存：'+[...new Set([...Object.keys(r.input),...Object.keys(r.output)])].map(k=>items[k]+' '+s.bag[k]).join('、'))},{[r.skill]:2})}
@@ -66,7 +68,7 @@ export function fight(s,id){
  return settle(s,id==='attack'?w.attack:id==='guard'?'防守':id==='inner'?'运功出招':'撤离',1,cost,()=>{const c=s.combat;if(id==='flee'){s.combat=null;s.result.push('你退开脱身，没有必要逞强。');return}if(id!=='guard'){const damage=Math.floor((8+Math.min(4,progress(s.skills[w.skill]).level-1)+w.bonus+(id==='inner'?2:0))*attackFactor(s,cost));c.hp-=damage;s.result.push(`你造成${damage}点伤害。`)}if(c.hp<=0){s.combat=null;if(!c.spar)s.coins+=8;s.result.push(c.spar?'切磋结束，师傅点头示意。':'拦路人逃走，你拾回8文铜钱。');return}const incoming=Math.max(1,c.attack-(id==='guard'?5:0));s.hp=Math.max(0,s.hp-incoming);s.result.push(id==='guard'?`防守挡下${c.attack-incoming}点伤害，仍受伤${incoming}点。`:`对方造成${incoming}点伤害。`);if(c.spar&&s.hp<=25){s.combat=null;s.hp=Math.max(1,s.hp);s.result.push('师傅收手：到这里就好，回去养养伤。')}else if(s.hp===0){s.combat=null;s.dead=true;s.result.push('你伤重死去。这段人生结束，不会自动读档。')}} ,xp);
 }
 export function restore(raw){
- const s=JSON.parse(raw);if(s&&typeof s==='object'){if(s.giftDays===undefined)s.giftDays={};if(s.lessonDay===undefined)s.lessonDay=0;if(s.discoveryDay===undefined)s.discoveryDay=0;if(s.discoveryResolution===undefined)s.discoveryResolution=null;if(s.bag&&s.bag.sword===undefined)s.bag.sword=0;if(s.skills){if(s.skills.staff===undefined)s.skills.staff=0;if(s.skills.sword===undefined)s.skills.sword=0;}if(s.weapon===undefined)s.weapon=s.bag?.staff>0?'staff':'unarmed';}if(!s||s.version!==1||typeof s.name!=='string'||!Object.hasOwn(locations,s.place))throw Error('不是新版存档；旧版存档请在旧版入口使用。');
+ const s=JSON.parse(raw);if(s&&typeof s==='object'){if(s.giftDays===undefined)s.giftDays={};if(s.lessonDay===undefined)s.lessonDay=0;if(s.discoveryDay===undefined)s.discoveryDay=0;if(s.discoveryResolution===undefined)s.discoveryResolution=null;if(s.bag&&s.bag.ore===undefined)s.bag.ore=0;if(s.bag&&s.bag.sword===undefined)s.bag.sword=0;if(s.skills){if(s.skills.forage===undefined)s.skills.forage=0;if(s.skills.mining===undefined)s.skills.mining=0;if(s.skills.staff===undefined)s.skills.staff=0;if(s.skills.sword===undefined)s.skills.sword=0;}if(s.weapon===undefined)s.weapon=s.bag?.staff>0?'staff':'unarmed';}if(!s||s.version!==1||typeof s.name!=='string'||!Object.hasOwn(locations,s.place))throw Error('不是新版存档；旧版存档请在旧版入口使用。');
  const integer=(n,min,max)=>Number.isSafeInteger(n)&&n>=min&&n<=max;
  for(const [k,min,max] of [['age',16,60],['day',1,100000],['minute',0,1439],['hp',0,100],['energy',0,100],['coins',0,10000000],['seed',1,4294967295]])if(!integer(s[k],min,max))throw Error('存档数值无效');
  if(!Object.hasOwn(weapons,s.weapon)||(s.weapon!=='unarmed'&&!s.bag?.[s.weapon]))throw Error('兵器状态无效');if(typeof s.dead!=='boolean'||typeof s.learned!=='boolean'||(s.hp===0)!==s.dead)throw Error('人生状态无效');
