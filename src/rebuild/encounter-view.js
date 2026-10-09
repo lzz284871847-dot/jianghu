@@ -1,5 +1,5 @@
-import {items,skills,locations} from './content.js?v=1.0.35';
-import {maxXP} from './progression.js?v=1.0.35';
+import {items,skills,locations} from './content.js?v=1.0.36';
+import {maxXP} from './progression.js?v=1.0.36';
 // 只读选择预览：奖励和成长仍由引擎在玩家确认后结算。
 export function choiceDetails(s,c){
  const lines=[];

@@ -1,5 +1,5 @@
-import {progress} from './progression.js?v=1.0.35';
-import {jobs,locations,items,skills} from './content.js?v=1.0.35';
+import {progress} from './progression.js?v=1.0.36';
+import {jobs,locations,items,skills,people} from './content.js?v=1.0.36';
 // 普通招工常驻；采购按日轮换，不运行商人资产或店铺账目模拟。
 export function postedJobs(s){return Object.entries(jobs).filter(([,job])=>job.boardDay===undefined||job.boardDay===(s.day-1)%3)}
 export function dailyContract(s){return postedJobs(s).find(([,job])=>job.boardDay!==undefined)}
@@ -30,5 +30,11 @@ export function jobDeliveryBlocker(s,job){
  if(s.place!==job.place)return '请前往'+locations[job.place].name+'完成约定。';
  for(const [k,n] of Object.entries(job.needs||{}))if(s.bag[k]<n)return `${items[k]}不足，需要${n}。`;
  if(s.energy<(job.energy||2))return '精力不足，请歇息或睡觉。';
+ return null;
+}
+
+export function jobEntryBlocker(s,job){
+ const skill=jobSkillBlocker(s,job);if(skill)return skill;
+ if(job.partner&&s.relations[job.partner]<job.relation)return `需与${people[job.partner].name}关系${job.relation}，当前${s.relations[job.partner]}/100。`;
  return null;
 }

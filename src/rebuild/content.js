@@ -20,6 +20,9 @@ export const people={
 };
 export const npcSchedules={master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
+ artisanSupply:{name:'铁匠农具补货',place:'forge',partner:'artisan',relation:5,requires:{forge:2},needs:{tool:2},reward:44,skill:'trade',text:'许铁匠愿向熟悉的手艺人收购铁制工具2件，三日内送到作坊；需锻造Lv2、关系5。用现有库存交付也可以，报酬44文，每日最多一份。'},
+ doctorSupply:{name:'医者药膏补货',place:'village',partner:'doctor',relation:5,requires:{medicine:2},needs:{salve:2},reward:16,skill:'trade',text:'沈医者向熟悉的制药人收普通药膏2份，三日内送到河湾村；需制药Lv2、关系5。报酬16文，每日最多一份，不预付材料。'},
+ merchantSupply:{name:'商人干粮补货',place:'town',partner:'merchant',relation:5,requires:{cook:2},needs:{food:4},reward:18,skill:'trade',text:'柳掌柜向熟悉的厨人收干粮4份，三日内送到街市；需烹饪Lv2、关系5。报酬18文，每日最多一份，交货不会额外增加烹饪经验。'},
  fieldWork:{name:'田间短工',place:'village',text:'帮村民整地除草，雇主提供工具；三小时、精力24，工钱12文。06:00–18:00内完成，每日一份。',hours:3,energy:24,reward:12,skill:'farming',shift:[6,18]},
  smithWork:{name:'作坊短工',place:'forge',text:'需锻造Lv2，帮作坊加工小件农具，雇主提供材料工具，成品归作坊；三小时、精力24，工钱16文。07:00–18:00内完成，每日一份。',hours:3,energy:24,reward:16,skill:'forge',requires:{forge:2},shift:[7,18]},
  escortMedicine:{name:'短途护送药包',start:'town',place:'village',route:['road','hill','village'],text:'从街市领取封好的药包，沿城外小路、南山坡送到河湾村。按顺序经过交接点，三日内交付；途中遇事可以自行处理或放弃。交付半小时、精力6，报酬10文。',energy:6,reward:10,xp:{escort:1,carry:1}},
