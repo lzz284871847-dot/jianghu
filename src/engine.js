@@ -7,7 +7,7 @@ export function note(s,t){s.log.unshift(`第${s.day}日 · ${t}`);s.log=s.log.sl
 export function tick(s,h=1){s.hunger=Math.max(0,s.hunger-h);s.thirst=Math.max(0,s.thirst-2*h);s.hour+=h;while(s.hour>=24){s.hour-=24;s.day++}}
 function base_travel(s,to){if(s.combat||!areas[s.place].to.includes(to))return false;tick(s);s.place=to;note(s,`抵达${to}。`);return true}
 function base_interact(s,id){if(s.combat)return;const n=npcs(s).find(n=>n.id===id&&n.place===s.place);if(!n)return;note(s,`${n.name}：${n.text}`);s.relations[id]=Math.min(100,(s.relations[id]||0)+1);if(id==='master'&&!s.learned){s.learned=true;note(s,'周师傅教你基础吐纳，可自行修炼。')}tick(s)}
-function base_act(s,a,rng=Math.random){if(s.combat)return;if(![...areas[s.place].acts,'吃干粮','用草药','吐纳修炼','切磋'].includes(a))return;switch(a){
+function base_act(s,a,rng=Math.random){if(s.combat)return;if(![...areas[s.place].acts,'休息','吃干粮','用草药','吐纳修炼','切磋'].includes(a))return;switch(a){
 case '打零工':tick(s,3);s.coins+=12;note(s,'搬运货物，赚得12文。');break;
 case '休息':tick(s,2);s.hp=Math.min(100,s.hp+25);note(s,'歇息恢复25点体力。');break;
 case '买干粮':if(!npcs(s).some(n=>n.id==='merchant'&&n.place===s.place)){note(s,'粮铺已打烊。');break}if(s.coins<5){note(s,'铜钱不足。');break}s.coins-=5;s.food++;tick(s);break;
