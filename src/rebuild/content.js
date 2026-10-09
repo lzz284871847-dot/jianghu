@@ -9,8 +9,8 @@ export const locations={
  hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。药草不会处处都有，来这里也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','explore']},
  bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，遇事也能转身离开。',routes:['road','hill'],actions:['train','gather','explore']}
 };
-export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼'};
-export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍'};
+export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术'};
+export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑'};
 export const people={
  master:{gift:'food',name:'周师傅',role:'教拳师傅',personality:'直爽',interest:'习武与喝茶',goal:'把基础拳脚教给肯下功夫的人',line:'学拳是为了站稳脚跟，能不打的时候，也要懂得不打。'},
  merchant:{gift:'fish',name:'柳掌柜',role:'街市商人',personality:'精明',interest:'各地货价',goal:'把小铺经营好',line:'做买卖先从一两件货开始，赔得起，才学得会。'},
