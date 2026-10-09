@@ -1,16 +1,16 @@
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.30';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.30';
-import {travelMinutes} from './routes.js?v=1.0.30';
-import {combatCost,strike} from './combat.js?v=1.0.30';
-import {postedJobs,recordEscortStep,escortStatus,jobSkillBlocker,jobWorkBlocker} from './contracts.js?v=1.0.30';
-import {recipeBlockers} from './crafting.js?v=1.0.30';
-import {resources,resourceChance} from './resources.js?v=1.0.30';
-import {injury} from './condition.js?v=1.0.30';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.30';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.30';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions} from './content.js?v=1.0.30';
-import {gain,maxXP,progress} from './progression.js?v=1.0.30';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.30';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.31';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.31';
+import {travelMinutes} from './routes.js?v=1.0.31';
+import {combatCost,strike} from './combat.js?v=1.0.31';
+import {postedJobs,recordEscortStep,escortStatus,jobSkillBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.31';
+import {recipeBlockers} from './crafting.js?v=1.0.31';
+import {resources,resourceChance} from './resources.js?v=1.0.31';
+import {injury} from './condition.js?v=1.0.31';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.31';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.31';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions} from './content.js?v=1.0.31';
+import {gain,maxXP,progress} from './progression.js?v=1.0.31';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.31';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -62,8 +62,8 @@ export function act(s,id,rng=()=>random(s)){
  if(!available(s))return false;
  if(id==='forgeLesson')return forgeLesson(s);
  if(id==='deliver'){
-  if(!s.job)return fail(s,'没有待完成的约定。');const job=jobs[s.job.id],blocked=jobWorkBlocker(s,job);if(blocked)return fail(s,blocked);if(job.route&&s.job.progress<job.route.length)return fail(s,'护送路程尚未完成。'+escortStatus(s));if(s.place!==job.place)return fail(s,'请前往'+locations[job.place].name+'完成约定。');for(const [k,n] of Object.entries(job.needs||{}))if(s.bag[k]<n)return fail(s,`${items[k]}不足，需要${n}。`);
-  return settle(s,'完成：'+job.name,job.hours?job.hours*60:30,job.energy||2,()=>{for(const [k,n] of Object.entries(job.needs||{}))s.bag[k]-=n;s.coins+=job.reward;s.jobsDone[s.job.id]=s.day;s.job=null;s.result.push(job.hours?'你完成约定的活计，雇主支付工钱；用料和成品都归雇主。':'对方收下交付，这份活就此结束。')},job.xp||{[job.skill]:job.hours?2:1});
+  if(!s.job)return fail(s,'没有待完成的约定。');const job=jobs[s.job.id],blocked=jobDeliveryBlocker(s,job);if(blocked)return fail(s,blocked);
+  return settle(s,'完成：'+job.name,jobMinutes(job),job.energy||2,()=>{for(const [k,n] of Object.entries(job.needs||{}))s.bag[k]-=n;s.coins+=job.reward;s.jobsDone[s.job.id]=s.day;s.job=null;s.result.push(job.hours?'你完成约定的活计，雇主支付工钱；用料和成品都归雇主。':'对方收下交付，这份活就此结束。')},job.xp||{[job.skill]:job.hours?2:1});
  }
  if(Object.hasOwn(waitingActions,id)){const a=waitingActions[id];return settle(s,a.name,a.minutes,0,()=>{s.result.push('你留在原地等候。等候不恢复精力或气血，也不增长技能；周围的人仍照自己的安排活动。')});}
  if(id==='rest')return settle(s,'歇息',120,0,()=>{s.energy=Math.min(100,s.energy+30);s.hp=Math.min(100,s.hp+10)});

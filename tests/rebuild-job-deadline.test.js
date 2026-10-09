@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {fresh,acceptJob,act,restore} from '../src/rebuild/engine.js';
+import {jobs} from '../src/rebuild/content.js';
+import {jobTimeLeft,jobDeadline,jobDeliveryBlocker} from '../src/rebuild/contracts.js';
+import {advance} from '../src/rebuild/world.js';
+const delivery=()=>{const s=fresh();acceptJob(s,'firewood');s.day=3;s.place='village';s.bag.wood=3;return s};
+test('截止倒计时准确且只读，包含当日剩余时间',()=>{const s=delivery();s.minute=1380;const before=structuredClone(s);assert.equal(jobTimeLeft(s),60);assert.match(jobDeadline(s),/第3日结束前完成；剩余1小时0分钟/);assert.deepEqual(s,before);s.minute=1410;assert.equal(jobTimeLeft(s),30);s.job=null;assert.equal(jobTimeLeft(s),0);assert.equal(jobDeadline(s),'')});
+test('交付跨过或恰好到达截止时刻均拒绝，不扣材料精力时间或发工钱',()=>{for(const minute of [1410,1439]){const s=delivery();s.minute=minute;const before=structuredClone(s);assert.match(jobDeliveryBlocker(s,jobs.firewood),/截止时刻/);assert.equal(act(s,'deliver'),false);for(const key of ['bag','coins','energy','minute','job','skills'])assert.deepEqual(s[key],before[key]);assert.deepEqual(restore(JSON.stringify(s)),s)}});
+test('截止前完整完成仍实扣材料和发报酬，只结算经商',()=>{const s=delivery();s.minute=1409;assert.equal(jobDeliveryBlocker(s,jobs.firewood),null);assert.equal(act(s,'deliver'),true);assert.equal(s.minute,1439);assert.equal(s.day,3);assert.equal(s.bag.wood,0);assert.equal(s.coins,38);assert.equal(s.energy,98);assert.equal(s.skills.trade,1);assert.equal(s.job,null)});
+test('护送和三小时劳动也不能超时，不能仅检查开始时间',()=>{for(const id of ['escortMedicine','unload']){const s=fresh();acceptJob(s,id);s.day=3;s.minute=id==='unload'?1320:1410;s.place=jobs[id].place;if(jobs[id].route)s.job.progress=3;assert.equal(act(s,'deliver'),false);assert.equal(s.coins,30);assert.equal(s.energy,100);assert.equal(s.job.id,id);assert.match(s.result.join('；'),/截止时刻/);assert.ok(Object.values(s.skills).every(n=>n===0))}});
+test('拒绝超时后世界仍可自然推进到期，不赔付虚构罚款',()=>{const s=delivery();s.minute=1439;act(s,'deliver');s.events=[];advance(s,1);assert.equal(s.day,4);assert.equal(s.job,null);assert.equal(s.bag.wood,3);assert.equal(s.coins,30);assert.ok(s.news.some(n=>n.includes('约定已经到期')));assert.deepEqual(restore(JSON.stringify(s)),s)});
