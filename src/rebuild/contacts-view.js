@@ -1,6 +1,6 @@
-import {people,locations} from './content.js?v=1.0.24';
-import {npcPlace,npcScheduleText} from './world.js?v=1.0.24';
-import {findRoute} from './routes.js?v=1.0.24';
+import {people,locations} from './content.js?v=1.0.25';
+import {npcPlace,npcScheduleText} from './world.js?v=1.0.25';
+import {findRoute} from './routes.js?v=1.0.25';
 export function contactsView(s,onTravel,doc=document){
  const node=(tag,value)=>{const el=doc.createElement(tag);el.textContent=value;return el};
  return Object.entries(people).map(([id,p])=>{

@@ -9,7 +9,7 @@ export const locations={
  hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。草药不会处处都有，旧矿点可采矿，草丛间可用简易猎具捕猎，也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','mine','hunt','explore']},
  bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill'],actions:['train','gather','collectWood','explore']}
 };
-export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送'};
+export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送',battle:'临战判断'};
 export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
 export const people={
  artisan:{gift:'iron',name:'许铁匠',role:'作坊铁匠',personality:'务实',interest:'炉火与农具',goal:'把农具做好，也教新手学会基本手艺',line:'先学会看火色和落锤，再想打什么名剑。普通农具做结实了，也是一门饭碗。'},
