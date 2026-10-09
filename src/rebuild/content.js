@@ -20,6 +20,8 @@ export const people={
 };
 export const npcSchedules={master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
+ fieldWork:{name:'田间短工',place:'village',text:'帮村民整地除草，雇主提供工具；三小时、精力24，工钱12文。06:00–18:00内完成，每日一份。',hours:3,energy:24,reward:12,skill:'farming',shift:[6,18]},
+ smithWork:{name:'作坊短工',place:'forge',text:'需锻造Lv2，帮作坊加工小件农具，雇主提供材料工具，成品归作坊；三小时、精力24，工钱16文。07:00–18:00内完成，每日一份。',hours:3,energy:24,reward:16,skill:'forge',requires:{forge:2},shift:[7,18]},
  escortMedicine:{name:'短途护送药包',start:'town',place:'village',route:['road','hill','village'],text:'从街市领取封好的药包，沿城外小路、南山坡送到河湾村。按顺序经过交接点，三日内交付；途中遇事可以自行处理或放弃。交付半小时、精力6，报酬10文。',energy:6,reward:10,xp:{escort:1,carry:1}},
  firewood:{name:'村里收柴',place:'village',text:'村民需要木料3份生火，可拾柴整理或买来，三日内送到河湾村。',needs:{wood:3},reward:8,skill:'trade',boardDay:0},
  freshFish:{name:'船家收鱼',place:'dock',text:'船家需要鲜鱼2条做饭，三日内送到码头。',needs:{fish:2},reward:12,skill:'trade',boardDay:1},

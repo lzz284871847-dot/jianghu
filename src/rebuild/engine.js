@@ -1,15 +1,15 @@
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.22';
-import {travelMinutes} from './routes.js?v=1.0.22';
-import {combatCost,strike} from './combat.js?v=1.0.22';
-import {postedJobs,recordEscortStep,escortStatus} from './contracts.js?v=1.0.22';
-import {recipeBlockers} from './crafting.js?v=1.0.22';
-import {resources} from './resources.js?v=1.0.22';
-import {injury} from './condition.js?v=1.0.22';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.22';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.22';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.22';
-import {gain,maxXP,progress} from './progression.js?v=1.0.22';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.22';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.23';
+import {travelMinutes} from './routes.js?v=1.0.23';
+import {combatCost,strike} from './combat.js?v=1.0.23';
+import {postedJobs,recordEscortStep,escortStatus,jobSkillBlocker,jobWorkBlocker} from './contracts.js?v=1.0.23';
+import {recipeBlockers} from './crafting.js?v=1.0.23';
+import {resources} from './resources.js?v=1.0.23';
+import {injury} from './condition.js?v=1.0.23';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.23';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.23';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.23';
+import {gain,maxXP,progress} from './progression.js?v=1.0.23';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.23';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -55,14 +55,14 @@ export function forgeLesson(s){
 export const prices={food:4,herb:4,iron:5,wood:2,rod:6,staff:12,sword:24,tool:20,salve:8,trap:12,seed:3};
 export const salePrices={herb:3,fish:5,tool:18,salve:6,meat:6,vegetable:2};
 export function trade(s,type,key){if(!available(s))return false;if(s.place!=='town'||npcPlace(s,'merchant')!=='town')return fail(s,'请在08:00–20:00到街市买卖。');const price=(type==='buy'?prices:salePrices)[key];if(typeof price!=='number')return fail(s,'这里不经营这件物品。');if(type==='buy'&&s.coins<price)return fail(s,'铜钱不足。');if(type==='sell'&&!s.bag[key])return fail(s,'没有可出售的'+items[key]+'。');return settle(s,(type==='buy'?'购买':'出售')+items[key],15,1,()=>{s.coins+=type==='buy'?-price:price;s.bag[key]+=type==='buy'?1:-1},type==='sell'?{trade:1}:{})}
-export function acceptJob(s,id){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||!['town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(!postedJobs(s).some(([key])=>key===id))return fail(s,'今日未刊出这份采购，去街市看看其他约定。');if(jobs[id].start&&s.place!==jobs[id].start)return fail(s,'请到'+locations[jobs[id].start].name+'领取委托货物。');if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');s.job={id,deadline:s.day+2,...(jobs[id].route?{progress:0}:{})};s.result=[`接下：${jobs[id].name}。三日内完成；也可以放弃，没有强制主线。`,...(jobs[id].route?[escortStatus(s)]:[])];return true}
+export function acceptJob(s,id){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||!['town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(!postedJobs(s).some(([key])=>key===id))return fail(s,'今日未刊出这份采购，去街市看看其他约定。');if(jobs[id].start&&s.place!==jobs[id].start)return fail(s,'请到'+locations[jobs[id].start].name+'领取委托货物。');const skillBlock=jobSkillBlocker(s,jobs[id]);if(skillBlock)return fail(s,skillBlock);if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');s.job={id,deadline:s.day+2,...(jobs[id].route?{progress:0}:{})};s.result=[`接下：${jobs[id].name}。三日内完成；也可以放弃，没有强制主线。`,...(jobs[id].route?[escortStatus(s)]:[])];return true}
 export function abandonJob(s){if(!available(s))return false;s.job=null;s.result=['你放下了这份约定，可以另作打算。'];return true}
 export function act(s,id,rng=()=>random(s)){
  if(!available(s))return false;
  if(id==='forgeLesson')return forgeLesson(s);
  if(id==='deliver'){
-  if(!s.job)return fail(s,'没有待完成的约定。');const job=jobs[s.job.id];if(job.route&&s.job.progress<job.route.length)return fail(s,'护送路程尚未完成。'+escortStatus(s));if(s.place!==job.place)return fail(s,'请前往'+locations[job.place].name+'完成约定。');for(const [k,n] of Object.entries(job.needs||{}))if(s.bag[k]<n)return fail(s,`${items[k]}不足，需要${n}。`);
-  return settle(s,'完成：'+job.name,job.hours?job.hours*60:30,job.energy||2,()=>{for(const [k,n] of Object.entries(job.needs||{}))s.bag[k]-=n;s.coins+=job.reward;s.jobsDone[s.job.id]=s.day;s.job=null;s.result.push('对方收下交付，这份活就此结束。')},job.xp||{[job.skill]:job.hours?2:1});
+  if(!s.job)return fail(s,'没有待完成的约定。');const job=jobs[s.job.id],blocked=jobWorkBlocker(s,job);if(blocked)return fail(s,blocked);if(job.route&&s.job.progress<job.route.length)return fail(s,'护送路程尚未完成。'+escortStatus(s));if(s.place!==job.place)return fail(s,'请前往'+locations[job.place].name+'完成约定。');for(const [k,n] of Object.entries(job.needs||{}))if(s.bag[k]<n)return fail(s,`${items[k]}不足，需要${n}。`);
+  return settle(s,'完成：'+job.name,job.hours?job.hours*60:30,job.energy||2,()=>{for(const [k,n] of Object.entries(job.needs||{}))s.bag[k]-=n;s.coins+=job.reward;s.jobsDone[s.job.id]=s.day;s.job=null;s.result.push(job.hours?'你完成约定的活计，雇主支付工钱；用料和成品都归雇主。':'对方收下交付，这份活就此结束。')},job.xp||{[job.skill]:job.hours?2:1});
  }
  if(id==='rest')return settle(s,'歇息',120,0,()=>{s.energy=Math.min(100,s.energy+30);s.hp=Math.min(100,s.hp+10)});
  if(id==='sleep'){if(!['inn','village'].includes(s.place))return fail(s,'可去客栈住店，或到河湾村借宿。');const fee=s.place==='inn'?5:0;if(s.coins<fee)return fail(s,'住店需要5文。');return settle(s,'睡一觉',480,0,()=>{s.coins-=fee;s.energy=100;s.hp=Math.min(100,s.hp+20)})}
@@ -72,7 +72,7 @@ export function act(s,id,rng=()=>random(s)){
  if(id==='spar'){if(npcPlace(s,'master')!==s.place)return fail(s,'周师傅不在这里。');if(s.hp<30)return fail(s,'先养好伤再切磋。');return settle(s,'请教切磋',5,0,()=>{s.combat={name:'周师傅',hp:45,attack:5,spar:true};s.result.push('点到为止，随时可以认输。')})}
  if(!locations[s.place].actions.includes(id))return fail(s,'此地不能进行这项行动。');
  if(farmActions[id]){const a=farmActions[id],blocked=farmBlocker(s,id);if(blocked)return fail(s,blocked);return settle(s,actionNames[id],a.minutes,a.energy,()=>{a.run(s);s.result.push(farmStatus(s))},{farming:a.xp})}
- if(id==='work')return settle(s,'打零工',180,24,()=>{s.coins+=12},{carry:2});
+ if(id==='work'){if(s.hp<25)return fail(s,'受伤太重，先休养再做重活。');return settle(s,'打零工',180,24,()=>{s.coins+=12},{carry:2});}
  if(id==='browse')return settle(s,'听街谈',30,1,()=>{s.result.push('茶客谈起附近的事情：有活可以去街市看，有伤可以找沈医者；传闻听听就好。')});
  if(id==='train'){if(s.hp<25)return fail(s,'受伤太重，先休养。');const w=currentWeapon(s);return settle(s,'练习'+skills[w.skill],120,18,()=>{},{[w.skill]:2})}
  if(resources[id]){const r=resources[id];if(s.hp<25)return fail(s,'受伤太重，先休养再做重活。');if(r.tool&&!s.bag[r.tool])return fail(s,`需要${items[r.tool]}，可在街市购买或自己打造。`);return settle(s,r.name,r.hours*60,r.energy,()=>{const chance=Math.min(0.95,r.chance+(progress(s.skills[r.skill]).level-1)*0.02)*(s.energy-r.energy<20?0.75:1);if(rng()<chance){for(const [key,n] of Object.entries(r.output))s.bag[key]+=n;s.result.push(r.success)}else s.result.push(r.failure)},{[r.skill]:2})}
