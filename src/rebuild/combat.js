@@ -1,6 +1,6 @@
-import {progress} from './progression.js?v=1.0.28';
-import {attackFactor} from './condition.js?v=1.0.28';
-import {currentWeapon} from './equipment.js?v=1.0.28';
+import {progress} from './progression.js?v=1.0.29';
+import {attackFactor} from './condition.js?v=1.0.29';
+import {currentWeapon} from './equipment.js?v=1.0.29';
 export function battleBonus(s){return Math.min(2,Math.floor(progress(s.skills.battle||0).level/2))}
 export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:id==='inner'?6:4}
 export function heavyChance(s){
