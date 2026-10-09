@@ -9,7 +9,7 @@ export const locations={
  hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。草药不会处处都有，旧矿点可采矿，草丛间可用简易猎具捕猎，也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','mine','hunt','explore']},
  bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill'],actions:['train','gather','collectWood','explore']}
 };
-export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕'};
+export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送'};
 export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
 export const people={
  master:{gift:'food',name:'周师傅',role:'教拳师傅',personality:'直爽',interest:'习武与喝茶',goal:'把基础拳脚教给肯下功夫的人',line:'学拳是为了站稳脚跟，能不打的时候，也要懂得不打。'},
@@ -18,6 +18,7 @@ export const people={
  porter:{gift:'food',name:'阿平',role:'码头脚夫',personality:'随和',interest:'船上的见闻',goal:'攒钱修一修家里的屋顶',line:'码头有活就做，没活的时候，我也会钓两条鱼。'}
 };
 export const jobs={
+ escortMedicine:{name:'短途护送药包',start:'town',place:'village',route:['road','hill','village'],text:'从街市领取封好的药包，沿城外小路、南山坡送到河湾村。按顺序经过交接点，三日内交付；途中遇事可以自行处理或放弃。交付半小时、精力6，报酬10文。',energy:6,reward:10,xp:{escort:1,carry:1}},
  firewood:{name:'村里收柴',place:'village',text:'村民需要木料3份生火，可拾柴整理或买来，三日内送到河湾村。',needs:{wood:3},reward:8,skill:'trade',boardDay:0},
  freshFish:{name:'船家收鱼',place:'dock',text:'船家需要鲜鱼2条做饭，三日内送到码头。',needs:{fish:2},reward:12,skill:'trade',boardDay:1},
  oreSupply:{name:'作坊收矿',place:'forge',text:'作坊收铁矿石2份，三日内送来；无需先炼成铁料。',needs:{ore:2},reward:10,skill:'trade',boardDay:2},
