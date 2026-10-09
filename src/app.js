@@ -1,6 +1,6 @@
 import {date,skillLines,items} from './progression.js';
 import {areas,npcs} from './world.js';
-import {KEY,fresh,restore,note,travel,act,interact,fight} from './engine.js';
+import {KEY,fresh,restore,note,travel,act,interact,fight} from './engine.js?v=0.2.1';
 let s=null;const $=id=>document.getElementById(id);
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch{note(s,'本机保存失败，请导出备份。')}render()}
 function buttons(id,items,fn){$(id).replaceChildren();for(const [label,value] of items){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{fn(value);persist()};$(id).append(b)}}
