@@ -1,3 +1,4 @@
+import {characters} from './characters.js';
 export const areas={
 "作坊":{desc:"炉火旁摆着铁料、木料和药碾，材料柜白日营业，制作台全天可用。",to:["青石镇"],acts:["买铁料","买木料","锻造工具","制作药粉","烹煮干粮"]},
 "青石镇":{desc:"青石板路延向街市，商贩叫卖，远处传来打铁声。",to:["粮铺","客栈","作坊","城外小路","河湾村"],acts:["打零工","休息","打听消息"]},
@@ -9,5 +10,5 @@ export const areas={
 "山坡":{desc:"山坡上的古道通向竹林，风吹过草丛。",to:["河边","竹林"],acts:["探路","采集草药"]},
 "竹林":{desc:"竹影婆娑，地上留着零散的练武足迹。",to:["城外小路","山坡"],acts:["练习拳脚","采集草药","探路"]}
 };
-export function npcs(s){return [{id:'master',name:'周师傅',place:s.hour>=6&&s.hour<18?'城外小路':'客栈',text:'拳脚须日日练，江湖路先学会保护自己。'},{id:'merchant',name:'粮铺掌柜',place:s.hour>=7&&s.hour<19?'粮铺':'客栈',text:'做买卖要讲信用。夜里关铺，天亮再来。'},{id:'porter',name:'脚夫阿平',place:s.hour>=8&&s.hour<17?'青石镇':'客栈',text:'我每日搬货讨生活，攒够路费再去远方。'}]}
+export function npcs(s){return [{id:'master',name:'周师傅',place:s.hour>=6&&s.hour<18?'城外小路':'客栈',text:'拳脚须日日练，江湖路先学会保护自己。'},{id:'merchant',name:'粮铺掌柜',place:s.hour>=7&&s.hour<19?'粮铺':'客栈',text:'做买卖要讲信用。夜里关铺，天亮再来。'},{id:'doctor',name:'沈医者',place:s.hour>=8&&s.hour<18?'河湾村':'客栈',text:'我白日为村民看诊，草药要辨清才能用。'},{id:'farmer',name:'农户许成',place:s.hour>=6&&s.hour<18?'河湾村':'客栈',text:'农具趁手，田里的活才做得踏实。'},{id:'porter',name:'脚夫阿平',place:s.hour>=8&&s.hour<17?'青石镇':'客栈',text:'我每日搬货讨生活，攒够路费再去远方。'}].map(n=>({...characters[n.id],...n,money:s.world.npcMoney[n.id]||0,age:characters[n.id].age+Math.floor((s.day-1)/360)}))}
 
