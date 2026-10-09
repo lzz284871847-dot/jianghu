@@ -1,19 +1,20 @@
-import {inventoryView,skillsView} from './collection-view.js?v=1.0.20';
-import {farmStatus} from './farming.js?v=1.0.20';
-import {findRoute} from './routes.js?v=1.0.20';
-import {combatCost,heavyChance} from './combat.js?v=1.0.20';
-import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.20';
-import {setupOffline} from './offline.js?v=1.0.20';
-import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.20';
-import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.20';
-import {conditionText} from './condition.js?v=1.0.20';
-import {discoveries} from './discoveries.js?v=1.0.20';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.20';
-import {command} from './commands.js?v=1.0.20';
-import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.20';
-import {date} from './progression.js?v=1.0.20';
-import {nearbyPeople} from './world.js?v=1.0.20';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,forgeLesson,forgeLessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.20';
+import {loadSaveFile,importSummary,saveFileName,persistImportedSave} from './save-files.js?v=1.0.21';
+import {inventoryView,skillsView} from './collection-view.js?v=1.0.21';
+import {farmStatus} from './farming.js?v=1.0.21';
+import {findRoute} from './routes.js?v=1.0.21';
+import {combatCost,heavyChance} from './combat.js?v=1.0.21';
+import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.21';
+import {setupOffline} from './offline.js?v=1.0.21';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.21';
+import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.21';
+import {conditionText} from './condition.js?v=1.0.21';
+import {discoveries} from './discoveries.js?v=1.0.21';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.21';
+import {command} from './commands.js?v=1.0.21';
+import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.21';
+import {date} from './progression.js?v=1.0.21';
+import {nearbyPeople} from './world.js?v=1.0.21';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,forgeLesson,forgeLessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.21';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -54,8 +55,10 @@ $('start').onclick=start;
 $('save-now').onclick=()=>save();
 $('free-form').onsubmit=e=>{e.preventDefault();const input=$('free-input').value;if(isPlanInput(input))setPlan(state,input);else command(state,input);$('free-input').blur();save(true)};
 $('reset').onclick=()=>{if(confirm('重新创建角色会替换新版进度，请先导出备份。继续吗？')){state=null;localStorage.removeItem(KEY);$('game').hidden=true;$('setup').hidden=false;$('bottom-nav').hidden=true;$('feedback').hidden=true;currentView='world'}};
-$('export').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='jianghu-wanxiang-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
-$('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>150000)throw Error('存档文件过大');const loaded=restore(await f.text());if(state&&!confirm('导入会替换新版当前角色，继续吗？'))return;state=loaded;currentView='world';$('feedback').hidden=true;save()}catch(error){alert('导入失败：'+error.message)}finally{e.target.value=''}};
+$('export').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download=saveFileName(state);a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+async function importFile(e){const f=e.target.files[0];if(!f)return;try{const loaded=await loadSaveFile(f);if(state&&!confirm('导入以下存档会替换当前角色：\n'+importSummary(loaded)+'\n请先导出当前进度备份。继续吗？'))return;persistImportedSave(localStorage,loaded);state=loaded;currentView='world';$('feedback').hidden=true;render();$('save-status').textContent='存档已导入并保存在此浏览器：'+loaded.name}catch(error){alert('导入失败：'+error.message+'。当前角色与原存档未替换。')}finally{e.target.value=''}}
+$('import').onchange=importFile;
+$('setup-import').onchange=importFile;
 try{const raw=localStorage.getItem(KEY);if(raw){state=restore(raw);render();$('save-status').textContent='本机存档已恢复'}}catch{$('save-status').textContent='存档无法读取，可导入备份或新建角色。'}
 
 setupOffline({status:$('offline-status'),button:$('offline-update')});
