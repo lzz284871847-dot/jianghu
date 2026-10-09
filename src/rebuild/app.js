@@ -1,13 +1,14 @@
-import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice} from './crafting.js?v=1.0.8';
-import {splitPlan,setPlan,runPlan,clearPlan,skipStep} from './planner.js?v=1.0.8';
-import {conditionText} from './condition.js?v=1.0.8';
-import {discoveries} from './discoveries.js?v=1.0.8';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.8';
-import {command} from './commands.js?v=1.0.8';
-import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.8';
-import {date,skillLines} from './progression.js?v=1.0.8';
-import {nearbyPeople} from './world.js?v=1.0.8';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.8';
+import {setupOffline} from './offline.js?v=1.0.9';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice} from './crafting.js?v=1.0.9';
+import {splitPlan,setPlan,runPlan,clearPlan,skipStep} from './planner.js?v=1.0.9';
+import {conditionText} from './condition.js?v=1.0.9';
+import {discoveries} from './discoveries.js?v=1.0.9';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.9';
+import {command} from './commands.js?v=1.0.9';
+import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.9';
+import {date,skillLines} from './progression.js?v=1.0.9';
+import {nearbyPeople} from './world.js?v=1.0.9';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.9';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -50,3 +51,5 @@ $('reset').onclick=()=>{if(confirm('重新创建角色会替换新版进度，�
 $('export').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='jianghu-wanxiang-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 $('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>150000)throw Error('存档文件过大');const loaded=restore(await f.text());if(state&&!confirm('导入会替换新版当前角色，继续吗？'))return;state=loaded;currentView='world';$('feedback').hidden=true;save()}catch(error){alert('导入失败：'+error.message)}finally{e.target.value=''}};
 try{const raw=localStorage.getItem(KEY);if(raw){state=restore(raw);render();$('save-status').textContent='本机存档已恢复'}}catch{$('save-status').textContent='存档无法读取，可导入备份或新建角色。'}
+
+setupOffline({status:$('offline-status'),button:$('offline-update')});

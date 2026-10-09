@@ -1,0 +1,12 @@
+{
+  "id": "./",
+  "name": "江湖：万象",
+  "short_name": "江湖",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1e9",
+  "theme_color": "#eef1e9",
+  "description": "普通人起步的单机开放江湖文字游戏。"
+}
