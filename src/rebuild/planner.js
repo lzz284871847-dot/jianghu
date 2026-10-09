@@ -1,13 +1,31 @@
-import {findRoute} from './routes.js?v=1.0.16';
-import {locations} from './content.js?v=1.0.16';
-import {command,parseCommand} from './commands.js?v=1.0.16';
-import {date} from './progression.js?v=1.0.16';
+import {findRoute} from './routes.js?v=1.0.17';
+import {locations} from './content.js?v=1.0.17';
+import {command,parseCommand} from './commands.js?v=1.0.17';
+import {date} from './progression.js?v=1.0.17';
 export const planLimit=8;
-export function splitPlan(input){return String(input).split(/[；;、，,\n]+/).map(x=>x.trim()).filter(Boolean)}
+function readPlan(input){
+ const raw=String(input).split(/[；;、，,\n]+/).map(x=>x.trim()).filter(Boolean),steps=[];
+ for(const value of raw){
+  const match=value.match(/^(.+?)(?:\s*[×x*]\s*([0-9]+)|\s*([0-9一二两三四五六七八九十]+)\s*次)[。！!]?$/);
+  if(!match){steps.push(value)}
+  else{
+   const countText=match[2]||match[3],count=/^[0-9]+$/.test(countText)?Number(countText):countText==='两'?2:countText.length===1?'一二三四五六七八'.indexOf(countText)+1:0;
+   if(!Number.isSafeInteger(count)||count<1||count>planLimit)return {steps:[],error:'重复次数需为1–8，整份计划最多8项行动。'};
+   const action=match[1].trim(),parsed=parseCommand(action);
+   if(!parsed||!['act','practice','trade'].includes(parsed.kind))return {steps:[],error:'重复安排只支持已实装的日常行动、练习和买卖；移动、接活、装备请单独列出。'};
+   for(let i=0;i<count;i++)steps.push(action);
+  }
+  if(steps.length>planLimit)return {steps:[],error:'整份计划最多8项行动，请减少次数或拆开安排。'};
+ }
+ return {steps,error:''};
+}
+export function splitPlan(input){return readPlan(input).steps}
+export function isPlanInput(input){return /[；;、，,\n×x*]/.test(String(input))||/[0-9一二两三四五六七八九十]+\s*次[。！!]?\s*$/.test(String(input))}
 export function setPlan(s,input){
- const steps=splitPlan(input);let reason='';
+ const {steps,error}=readPlan(input);let reason='';
  if(s.dead)reason='这段人生已结束，不能安排新的行动。';
  else if(s.plan?.length)reason='已有未完成的安排；请先继续、跳过或清空计划。';
+ else if(error)reason=error;
  else if(!steps.length||steps.length>planLimit||steps.some(x=>x.length>40))reason='每份计划需1–8项行动，每项最多40字。';
  else{const unknown=steps.find(x=>!parseCommand(x));if(unknown)reason='尚未实装或无法理解：'+unknown+'。计划未加入，请修改后再试。'}
  if(reason){s.result=[reason];return false}

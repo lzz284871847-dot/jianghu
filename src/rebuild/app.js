@@ -1,18 +1,18 @@
-import {farmStatus} from './farming.js?v=1.0.16';
-import {findRoute} from './routes.js?v=1.0.16';
-import {combatCost,heavyChance} from './combat.js?v=1.0.16';
-import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.16';
-import {setupOffline} from './offline.js?v=1.0.16';
-import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.16';
-import {splitPlan,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.16';
-import {conditionText} from './condition.js?v=1.0.16';
-import {discoveries} from './discoveries.js?v=1.0.16';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.16';
-import {command} from './commands.js?v=1.0.16';
-import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.16';
-import {date,skillLines} from './progression.js?v=1.0.16';
-import {nearbyPeople} from './world.js?v=1.0.16';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.16';
+import {farmStatus} from './farming.js?v=1.0.17';
+import {findRoute} from './routes.js?v=1.0.17';
+import {combatCost,heavyChance} from './combat.js?v=1.0.17';
+import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.17';
+import {setupOffline} from './offline.js?v=1.0.17';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.17';
+import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.17';
+import {conditionText} from './condition.js?v=1.0.17';
+import {discoveries} from './discoveries.js?v=1.0.17';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.17';
+import {command} from './commands.js?v=1.0.17';
+import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.17';
+import {date,skillLines} from './progression.js?v=1.0.17';
+import {nearbyPeople} from './world.js?v=1.0.17';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.17';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -51,7 +51,7 @@ function render(){
 function start(){currentView='world';$('feedback').hidden=true;state=fresh({name:$('name').value,age:$('age').value,gender:$('gender').value,background:$('background').value,personality:$('personality').value});save()}
 $('start').onclick=start;
 $('save-now').onclick=()=>save();
-$('free-form').onsubmit=e=>{e.preventDefault();const input=$('free-input').value;if(splitPlan(input).length>1)setPlan(state,input);else command(state,input);$('free-input').blur();save(true)};
+$('free-form').onsubmit=e=>{e.preventDefault();const input=$('free-input').value;if(isPlanInput(input))setPlan(state,input);else command(state,input);$('free-input').blur();save(true)};
 $('reset').onclick=()=>{if(confirm('重新创建角色会替换新版进度，请先导出备份。继续吗？')){state=null;localStorage.removeItem(KEY);$('game').hidden=true;$('setup').hidden=false;$('bottom-nav').hidden=true;$('feedback').hidden=true;currentView='world'}};
 $('export').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='jianghu-wanxiang-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 $('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>150000)throw Error('存档文件过大');const loaded=restore(await f.text());if(state&&!confirm('导入会替换新版当前角色，继续吗？'))return;state=loaded;currentView='world';$('feedback').hidden=true;save()}catch(error){alert('导入失败：'+error.message)}finally{e.target.value=''}};

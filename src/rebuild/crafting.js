@@ -1,5 +1,5 @@
-import {items,skills,recipes} from './content.js?v=1.0.16';
-import {progress,maxXP} from './progression.js?v=1.0.16';
+import {items,skills,recipes} from './content.js?v=1.0.17';
+import {progress,maxXP} from './progression.js?v=1.0.17';
 // 配方与引擎共用条件检查，界面不能绕过缺料或技能门槛。
 export function recipeBlockers(s,r){
  const reasons=[];
