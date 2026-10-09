@@ -1,5 +1,5 @@
-import {command,parseCommand} from './commands.js?v=1.0.7';
-import {date} from './progression.js?v=1.0.7';
+import {command,parseCommand} from './commands.js?v=1.0.8';
+import {date} from './progression.js?v=1.0.8';
 export const planLimit=8;
 export function splitPlan(input){return String(input).split(/[；;、，,\n]+/).map(x=>x.trim()).filter(Boolean)}
 export function setPlan(s,input){

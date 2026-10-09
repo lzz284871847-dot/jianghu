@@ -1,12 +1,13 @@
-import {splitPlan,setPlan,runPlan,clearPlan,skipStep} from './planner.js?v=1.0.7';
-import {conditionText} from './condition.js?v=1.0.7';
-import {discoveries} from './discoveries.js?v=1.0.7';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.7';
-import {command} from './commands.js?v=1.0.7';
-import {locations,skills,items,people,jobs,events,actionNames} from './content.js?v=1.0.7';
-import {date,skillLines} from './progression.js?v=1.0.7';
-import {nearbyPeople} from './world.js?v=1.0.7';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.7';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice} from './crafting.js?v=1.0.8';
+import {splitPlan,setPlan,runPlan,clearPlan,skipStep} from './planner.js?v=1.0.8';
+import {conditionText} from './condition.js?v=1.0.8';
+import {discoveries} from './discoveries.js?v=1.0.8';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.8';
+import {command} from './commands.js?v=1.0.8';
+import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.8';
+import {date,skillLines} from './progression.js?v=1.0.8';
+import {nearbyPeople} from './world.js?v=1.0.8';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.8';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -27,7 +28,8 @@ function render(){
  $('map').replaceChildren();for(const [id,loc] of Object.entries(locations)){const b=button(loc.name,()=>travel(s,id),'map-place'+(id===s.place?' current':''));b.disabled=s.dead||!!s.pending||!!s.combat||!locations[s.place].routes.includes(id);b.append(text('small',id===s.place?'你在这里':loc.tag.split(' · ')[0]));$('map').append(b)}
  const blocked=s.dead||s.pending||s.combat;
  $('plan-card').hidden=!s.plan.length;$('plan-list').replaceChildren(...s.plan.map((step,i)=>text('p',`${i+1}. ${step}`)));$('plan-controls').replaceChildren();if(s.plan.length){const run=button('执行计划',()=>runPlan(s,()=>save()));run.disabled=!!blocked;$('plan-controls').append(run,button('跳过第一项',()=>skipStep(s),'quiet'),button('清空计划',()=>clearPlan(s),'quiet'));}
- $('actions').replaceChildren();if(!blocked){if(s.place==='town'){const shopButton=text('button','逛街市 · 买卖物品');shopButton.type='button';shopButton.onclick=()=>switchView('bag');$('actions').append(shopButton)}const ids=[...locations[s.place].actions,'rest','eat','heal',...(s.learned?['inner']:[]),...(nearbyPeople(s).some(n=>n.id==='master')?['spar']:[]),...(nearbyPeople(s).some(n=>n.id==='doctor')?['treat']:[]),...(s.job?['deliver']:[])];for(const id of [...new Set(ids)])$('actions').append(button(id==='train'?`练习${skills[weapon.skill]} · 2小时 / 精力18`:id==='treat'?`医者治疗 · ${treatmentFee(s)}文`:labels[id]||actionNames[id],()=>act(s,id)));}
+ $('actions').replaceChildren();if(!blocked){if(s.place==='town'){const shopButton=text('button','逛街市 · 买卖物品');shopButton.type='button';shopButton.onclick=()=>switchView('bag');$('actions').append(shopButton)}const ids=[...locations[s.place].actions.filter(id=>!recipes[id]),'rest','eat','heal',...(s.learned?['inner']:[]),...(nearbyPeople(s).some(n=>n.id==='master')?['spar']:[]),...(nearbyPeople(s).some(n=>n.id==='doctor')?['treat']:[]),...(s.job?['deliver']:[])];for(const id of [...new Set(ids)])$('actions').append(button(id==='train'?`练习${skills[weapon.skill]} · 2小时 / 精力18`:id==='treat'?`医者治疗 · ${treatmentFee(s)}文`:labels[id]||actionNames[id],()=>act(s,id)));}
+ $('workbench').hidden=s.place!=='forge'||!!blocked;$('recipe-list').replaceChildren();if(s.place==='forge'&&!blocked)for(const [id,r] of Object.entries(recipes)){const card=text('div','','person'),missing=recipeBlockers(s,r);card.append(text('h3',r.name),text('p','产出：'+recipeOutput(r)),text('p','材料：'+recipeMaterials(s,r)),text('p',`耗时${r.hours}小时 · 精力${r.energy}${r.level?` · 需要${skills[r.skill]} Lv${r.level}`:''}`,'muted'),text('p',recipePractice(s,r),'muted'));if(missing.length)card.append(text('p',missing.join('；'),'muted'));else if(s.energy-r.energy<20)card.append(text('p','疲劳提示：本次有20%概率失误；失误仍消耗材料，练习经验减半。','muted'));const b=button(r.name,()=>act(s,id));b.disabled=missing.length>0;card.append(b);$('recipe-list').append(card);}
  $('scene').replaceChildren();$('scene').hidden=!s.pending&&!s.combat&&!s.dead;
  if(s.dead){$('scene').append(text('h2','这一段人生结束了'),text('p','死亡不会自动回到上一刻。你可以导出人生记录，再创建另一个普通人。'));}
  else if(s.pending){if(s.pending.type==='bandit'){$('scene').append(text('h2','有人拦路'),text('p','对方来意不善。交手可能受伤或死亡；绕路离开也是一种选择。'),button('谨慎交手',()=>choose(s,'fight')),button('绕路离开 · 半小时 / 精力0',()=>choose(s,'leave')));}else if(s.pending.type==='discovery'){const def=discoveries[s.pending.kind];$('scene').append(text('h2',def.title),text('p',def.text));for(const c of def.choices)$('scene').append(button(c.label+((c.hours||c.energy)?` · ${c.hours||0}小时 / 精力${c.energy||0}`:''),()=>choose(s,c.id)));}else{const e=s.events.find(e=>e.id===s.pending.id),def=events[e.kind];$('scene').append(text('h2',def.title),text('p',def.text));for(const c of def.choices)$('scene').append(button(c.label+((c.hours||c.energy)?` · ${c.hours||0}小时 / 精力${c.energy||0}`:''),()=>choose(s,c.id)));}}
