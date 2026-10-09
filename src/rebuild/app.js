@@ -1,18 +1,19 @@
-import {farmStatus} from './farming.js?v=1.0.18';
-import {findRoute} from './routes.js?v=1.0.18';
-import {combatCost,heavyChance} from './combat.js?v=1.0.18';
-import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.18';
-import {setupOffline} from './offline.js?v=1.0.18';
-import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.18';
-import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.18';
-import {conditionText} from './condition.js?v=1.0.18';
-import {discoveries} from './discoveries.js?v=1.0.18';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.18';
-import {command} from './commands.js?v=1.0.18';
-import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.18';
-import {date,skillLines} from './progression.js?v=1.0.18';
-import {nearbyPeople} from './world.js?v=1.0.18';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.18';
+import {inventoryView,skillsView} from './collection-view.js?v=1.0.19';
+import {farmStatus} from './farming.js?v=1.0.19';
+import {findRoute} from './routes.js?v=1.0.19';
+import {combatCost,heavyChance} from './combat.js?v=1.0.19';
+import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.19';
+import {setupOffline} from './offline.js?v=1.0.19';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.19';
+import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.19';
+import {conditionText} from './condition.js?v=1.0.19';
+import {discoveries} from './discoveries.js?v=1.0.19';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.19';
+import {command} from './commands.js?v=1.0.19';
+import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.19';
+import {date} from './progression.js?v=1.0.19';
+import {nearbyPeople} from './world.js?v=1.0.19';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.19';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -42,7 +43,7 @@ function render(){
  else if(s.combat){$('scene').append(text('h2',s.combat.name+' · 气血 '+s.combat.hp),text('p',s.combat.spar?'切磋点到为止。每段交手耗时一分钟。':'这是真正的危险。精力与伤势会影响交手，请量力而行。'));$('scene').append(text('p',conditionText(s)+'；精力不足仍可撤离。'));if(s.combat.prepared)$('scene').append(text('p','已稳住架势：下一次出招基础伤害+2，重击基础命中率+10个百分点。'));$('scene').append(text('p','普通出招稳妥；重击威力为1.5倍，可能落空，落空仍会消耗精力并遭到还击。','muted'));for(const [id,label] of [['attack',weapon.attack+' · 精力4'],['heavy',`重击 · 精力8 / 命中${Math.round(heavyChance(s)*100)}%`],['guard','防守蓄势 · 精力4'],...(s.learned?[['inner','运功出招 · 精力6']]:[]),['flee','撤离 · 至多精力3']]){const b=button(label,()=>fight(s,id));b.disabled=id!=='flee'&&s.energy<combatCost(s,id);$('scene').append(b);}}
  $('people').replaceChildren();for(const n of nearbyPeople(s)){const card=text('div','','person');card.append(text('h3',n.name+' · '+n.role),text('p',`${n.personality} · 关系 ${n.relation}/100`,'muted'));const details=document.createElement('details');details.append(text('summary','了解此人'),text('p',`兴趣：${n.interest}。眼下打算：${n.goal}。喜欢：${items[n.gift]}。${n.id==='master'?'按当前兵器请教拳脚、棍法或剑术，每天合计一次；请教1小时，常态经验+3。关系达到5后，费用减至4文。':n.id==='doctor'?'交谈可学基础制药；关系达到10后，诊金减至6文。':''}`));card.append(details);if(!blocked){card.append(button('与'+n.name+'交谈',()=>talk(s,n.id)),button(`赠礼：${items[n.gift]}×1`,()=>gift(s,n.id)));if(n.id==='master')card.append(button(`请教${skills[weapon.skill]} · ${lessonFee(s)}文 / 1小时 / 精力12`,()=>lesson(s)));}$('people').append(card)}if(!nearbyPeople(s).length)$('people').append(text('p','这里暂时没有熟悉的人。','muted'));
  $('jobs').replaceChildren();if(s.job){const j=jobs[s.job.id];$('jobs').append(text('h3',j.name),text('p',`去${locations[j.place].name}完成；截止第${s.job.deadline}日。${j.text}`));if(j.route)$('jobs').append(text('p',escortStatus(s)));if(j.needs)$('jobs').append(text('p','交货材料：'+jobMaterials(s,j)));if(!blocked&&s.place!==jobDestination(s))$('jobs').append(button('安排前往'+locations[jobDestination(s)].name,()=>planTravel(s,jobDestination(s))));if(!blocked)$('jobs').append(button('放弃这份约定',()=>abandonJob(s),'quiet'));}else if(!blocked&&s.place==='town'){$('jobs').append(text('p','采购每日轮换，已接约定保留到截止日。','muted'));for(const [id,j] of postedJobs(s)){const b=button(s.jobsDone[id]===s.day?'今日已完成':'接下：'+j.name,()=>acceptJob(s,id));b.disabled=s.jobsDone[id]===s.day;$('jobs').append(text('h3',j.name+' · '+j.reward+'文'),text('p',j.text),b);}}else $('jobs').append(text('p','去青石镇看看招工和收货的约定。没有必须完成的任务。','muted'));
- $('equipment').replaceChildren();for(const [key,w] of Object.entries(weapons)){if(key!=='unarmed'&&!s.bag[key])continue;const b=button(s.weapon===key?'当前：'+w.name:'换用'+w.name,()=>equip(s,key));b.disabled=!!blocked||s.weapon===key;$('equipment').append(b)}$('bag-actions').replaceChildren();if(!blocked)for(const id of ['eat','heal','useSalve'])$('bag-actions').append(button(labels[id],()=>act(s,id)));$('shop-hint').hidden=s.place==='town';$('bag').replaceChildren(...Object.entries(items).map(([k,n])=>text('span',n+' ×'+s.bag[k],'pill')));$('skills').replaceChildren(...skillLines(s).map(x=>text('p',x)));
+ $('equipment').replaceChildren();for(const [key,w] of Object.entries(weapons)){if(key!=='unarmed'&&!s.bag[key])continue;const b=button(s.weapon===key?'当前：'+w.name:'换用'+w.name,()=>equip(s,key));b.disabled=!!blocked||s.weapon===key;$('equipment').append(b)}$('bag-actions').replaceChildren();if(!blocked)for(const id of ['eat','heal','useSalve'])$('bag-actions').append(button(labels[id],()=>act(s,id)));$('shop-hint').hidden=s.place==='town';$('bag').replaceChildren(...inventoryView(s));$('skills').replaceChildren(...skillsView(s));
  $('shop').hidden=s.place!=='town'||!!blocked;$('buys').replaceChildren();$('sells').replaceChildren();if(!blocked&&s.place==='town'){for(const [k,p] of Object.entries(prices))$('buys').append(button(`买${items[k]} · ${p}文`,()=>trade(s,'buy',k)));for(const [k,p] of Object.entries(salePrices))$('sells').append(button(`卖${items[k]} · ${p}文`,()=>trade(s,'sell',k)));}
  $('news').replaceChildren(...(s.news.length?s.news:['世界会随你的行动推进。跨日后，这里会出现与别人有关的消息。']).map(x=>text('p',x)));
  const next=s.dead?['创建新的普通角色']:s.pending?['决定眼前事件，也可以不参与']:s.job?[jobs[s.job.id].route?escortStatus(s):`去${locations[jobs[s.job.id].place].name}完成${jobs[s.job.id].name}`]:['去街市找一份活，或自由探索'];if(!s.dead&&!s.job){const [,job]=dailyContract(s);next.push(`今日采购：${job.name}，到${locations[job.place].name}交货，${job.reward}文（可不接）`);}if(s.energy<30)next.push('先歇息，或去客栈、河湾村睡觉');if(s.bag.ore>=2)next.push('去作坊用铁矿石2、木料2炼成铁料2');if(s.bag.tool)next.push('可带铁制工具去南山坡采矿，或留着做其他手艺');if(s.bag.wood<2)next.push('竹林可拾柴整理木料，供应炼铁、打造和烹饪');if(s.learnedMedicine&&s.bag.herb>=2)next.push('河湾村可用草药2、木料1调制药膏');if(!s.learnedMedicine)next.push('可向河湾村的沈医者学习普通药膏制作');if(s.plot)next.push(farmStatus(s));else if(s.bag.seed)next.push('到河湾村借地播种，菜种1、借地2文');if(s.bag.vegetable)next.push('蔬菜可出售，或在作坊配木料做菜饭干粮');if(s.bag.trap)next.push('带猎具到南山坡捕猎，可能空手而归');if(s.bag.meat)next.push('猎物肉可出售，或在作坊配木料做烤肉干粮');if(s.bag.fish)next.push('鲜鱼可以出售，也能在作坊做饭');if(s.bag.herb>=2)next.push('街市可能有医者收药的约定');for(const e of s.events.filter(e=>e.status==='open'))next.push(`${locations[events[e.kind].place].name}：${events[e.kind].title}（可不参与）`);$('next').replaceChildren(...next.map(x=>text('p',x)));
