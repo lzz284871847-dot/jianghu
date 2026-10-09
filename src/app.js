@@ -1,9 +1,9 @@
-import {actionLabels} from './trading.js?v=0.5.0';
-import {relationName} from './characters.js?v=0.5.0';
-import {dailyMenu} from './simulation.js?v=0.5.0';
-import {date,skillLines,items} from './progression.js?v=0.5.0';
-import {areas,npcs} from './world.js?v=0.5.0';
-import {KEY,fresh,restore,note,travel,act,interact,fight,chooseEvent,gift,treatment} from './engine.js?v=0.5.0';
+import {actionLabels} from './trading.js?v=0.5.1';
+import {relationName} from './characters.js?v=0.5.1';
+import {dailyMenu} from './simulation.js?v=0.5.1';
+import {date,skillLines,items} from './progression.js?v=0.5.1';
+import {areas,npcs} from './world.js?v=0.5.1';
+import {KEY,fresh,restore,note,travel,act,interact,fight,chooseEvent,gift,treatment} from './engine.js?v=0.5.1';
 let s=null;const $=id=>document.getElementById(id);
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch{note(s,'本机保存失败，请导出备份。')}render()}
 function buttons(id,items,fn){$(id).replaceChildren();for(const [label,value] of items){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{fn(value);persist()};$(id).append(b)}}
