@@ -1,10 +1,10 @@
 {
   "name": "jianghu",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/engine.js && node --check src/app.js"
+    "check": "node --check src/engine.js && node --check src/app.js && node --check src/progression.js && node --check src/world.js"
   }
 }
