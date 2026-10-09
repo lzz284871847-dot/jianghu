@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>江湖 · 初入江湖</title>
+<style>
+:root{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;color:#343b35;background:#f2eee5}*{box-sizing:border-box}body{margin:0}.app{max-width:650px;margin:auto;min-height:100dvh;padding:18px 16px 90px;background:#f8f5ec}h1{font-size:25px;margin:12px 0 5px;color:#3c574c}h2{font-size:18px;margin:0 0 12px}p{line-height:1.65}.muted{color:#778077;font-size:13px}.card{background:#fffdf7;border:1px solid #d9d8ca;border-radius:15px;padding:16px;margin:14px 0;box-shadow:0 3px 10px #303a2610}.stats{display:flex;flex-wrap:wrap;gap:8px}.stat{background:#e7ece4;border-radius:9px;padding:7px 10px;font-size:13px}button,input,select{font:inherit}button{background:#557968;color:white;border:0;border-radius:10px;padding:12px 15px;min-height:44px;cursor:pointer}button.secondary{background:#e8e9de;color:#354a3d}button:disabled{opacity:.45}.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}input,select{padding:12px;width:100%;border:1px solid #bbc5b8;border-radius:9px;background:white;margin:7px 0 14px}.scene{background:linear-gradient(145deg,#dce7dd,#e9e2d2);border-radius:12px;padding:18px;min-height:125px}.log{max-height:210px;overflow:auto;font-size:14px}.log p{border-bottom:1px solid #eee9df;padding-bottom:8px;margin:9px 0}.hide{display:none}footer{position:fixed;bottom:0;left:0;right:0;background:#f8f5ecdd;backdrop-filter:blur(8px);padding:10px 10px calc(10px + env(safe-area-inset-bottom));text-align:center;border-top:1px solid #ddd}footer button{max-width:650px;width:100%}
+</style></head><body><main class="app">
+<header><h1>江湖</h1><div class="muted">初入江湖 · 单机精简版 v0.1 · 普通人的江湖</div></header>
+<section id="setup" class="card"><h2>平凡人的开始</h2><p>你没有显赫家世，也没有注定的奇遇。江湖很大，先谋一口饭吃。</p><label for="name">姓名</label><input id="name" maxlength="12" value="无名客"><label for="trade">出身</label><select id="trade"><option value="农家">农家子弟</option><option value="学徒">市井学徒</option><option value="行商">小贩之家</option></select><button id="start">踏入江湖</button></section>
+<section id="game" class="hide">
+<div class="card"><h2 id="hero"></h2><div id="stats" class="stats"></div></div>
+<div class="card"><div class="scene"><h2 id="place"></h2><p id="desc"></p><div class="muted" id="clock"></div></div></div>
+<div class="card"><h2>去往何处</h2><div id="places" class="actions"></div></div>
+<div class="card"><h2>此地行动</h2><div id="actions" class="actions"></div></div>
+<div class="card"><h2>此地人物</h2><div id="npcs" class="actions"></div></div><div id="combat" class="card hide"></div><div class="card"><h2>江湖见闻</h2><div id="log" class="log" aria-live="polite"></div></div>
+<div class="actions"><button class="secondary" id="export">导出存档</button><label>导入存档<input id="import" type="file" accept=".json,application/json"></label><button class="secondary" id="reset">重新开始</button></div>
+</section><footer><button id="save">保存进度</button></footer></main>
+<script type="module" src="./src/app.js"></script></body></html>
