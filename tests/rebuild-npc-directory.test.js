@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {people,npcSchedules} from '../src/rebuild/content.js';
+import {fresh,talk,restore} from '../src/rebuild/engine.js';
+import {npcPlace,npcScheduleText,nearbyPeople} from '../src/rebuild/world.js';
+import {planTravel,runPlan} from '../src/rebuild/planner.js';
+test('每位人物显示作息与实际位置共用数据，切换时刻前后准确',()=>{assert.deepEqual(Object.keys(npcSchedules).sort(),Object.keys(people).sort());for(const [id,rule] of Object.entries(npcSchedules)){const s=fresh();for(const [minute,place] of [[rule.from*60-1,rule.off],[rule.from*60,rule.place],[rule.to*60-1,rule.place],[rule.to*60,rule.off]]){s.minute=minute;assert.equal(npcPlace(s,id),place);s.place=place;assert.ok(nearbyPeople(s).some(p=>p.id===id))}assert.match(npcScheduleText(id),/其余时间/)}assert.equal(npcPlace(fresh(),'toString'),null)});
+test('查找人物只列真实路线，不瞬移、不互动、不改变资源或关系',()=>{const s=fresh(),before=structuredClone(s.relations);assert.equal(planTravel(s,npcPlace(s,'artisan')),true);assert.equal(s.place,'town');assert.equal(s.minute,480);assert.equal(s.coins,30);assert.equal(s.energy,100);assert.deepEqual(s.relations,before);assert.deepEqual(s.plan,['去周记作坊']);runPlan(s);assert.equal(s.place,'forge');assert.equal(s.minute,510);assert.equal(s.energy,100);assert.deepEqual(s.relations,before);assert.deepEqual(restore(JSON.stringify(s)),s)});
+test('人物不会等待玩家，跨过收工时刻后目录更新，旧路线不追踪或自动改路',()=>{const s=fresh();s.minute=1070;planTravel(s,npcPlace(s,'artisan'));runPlan(s);assert.equal(s.place,'forge');assert.equal(npcPlace(s,'artisan'),'inn');assert.equal(talk(s,'artisan'),false);assert.equal(s.relations.artisan,0);planTravel(s,npcPlace(s,'artisan'));assert.deepEqual(s.plan,['去青石镇','去长安客栈']);assert.equal(s.energy,100);assert.equal(s.minute,1100)});

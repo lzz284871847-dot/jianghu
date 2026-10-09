@@ -1,20 +1,21 @@
-import {loadSaveFile,importSummary,saveFileName,persistImportedSave} from './save-files.js?v=1.0.21';
-import {inventoryView,skillsView} from './collection-view.js?v=1.0.21';
-import {farmStatus} from './farming.js?v=1.0.21';
-import {findRoute} from './routes.js?v=1.0.21';
-import {combatCost,heavyChance} from './combat.js?v=1.0.21';
-import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.21';
-import {setupOffline} from './offline.js?v=1.0.21';
-import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.21';
-import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.21';
-import {conditionText} from './condition.js?v=1.0.21';
-import {discoveries} from './discoveries.js?v=1.0.21';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.21';
-import {command} from './commands.js?v=1.0.21';
-import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.21';
-import {date} from './progression.js?v=1.0.21';
-import {nearbyPeople} from './world.js?v=1.0.21';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,forgeLesson,forgeLessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.21';
+import {contactsView} from './contacts-view.js?v=1.0.22';
+import {loadSaveFile,importSummary,saveFileName,persistImportedSave} from './save-files.js?v=1.0.22';
+import {inventoryView,skillsView} from './collection-view.js?v=1.0.22';
+import {farmStatus} from './farming.js?v=1.0.22';
+import {findRoute} from './routes.js?v=1.0.22';
+import {combatCost,heavyChance} from './combat.js?v=1.0.22';
+import {postedJobs,dailyContract,jobMaterials,jobDestination,escortStatus} from './contracts.js?v=1.0.22';
+import {setupOffline} from './offline.js?v=1.0.22';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.22';
+import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.22';
+import {conditionText} from './condition.js?v=1.0.22';
+import {discoveries} from './discoveries.js?v=1.0.22';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.22';
+import {command} from './commands.js?v=1.0.22';
+import {locations,skills,items,people,jobs,events,recipes,actionNames} from './content.js?v=1.0.22';
+import {date} from './progression.js?v=1.0.22';
+import {nearbyPeople} from './world.js?v=1.0.22';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,forgeLesson,forgeLessonFee,treatmentFee,trade,prices,salePrices,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.22';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -35,6 +36,7 @@ function render(){
  $('map').replaceChildren();for(const [id,loc] of Object.entries(locations)){const route=findRoute(s,id),direct=locations[s.place].routes.includes(id);const b=button(loc.name,()=>direct?travel(s,id):planTravel(s,id),'map-place'+(id===s.place?' current':''));b.disabled=s.dead||!!s.pending||!!s.combat||id===s.place||!route;b.append(text('small',id===s.place?'你在这里':direct?`邻近 · ${route.minutes}分钟`:`列远行计划 · ${route.steps.length}段 / 预计${route.minutes}分钟`));$('map').append(b)}
 
  const blocked=s.dead||s.pending||s.combat;
+ $('contacts').replaceChildren(...contactsView(s,to=>{planTravel(s,to);save(true)}));
  $('plan-card').hidden=!s.plan.length;$('plan-list').replaceChildren(...s.plan.map((step,i)=>text('p',`${i+1}. ${step}`)));$('plan-controls').replaceChildren();if(s.plan.length){const run=button('执行计划',()=>runPlan(s,()=>save()));run.disabled=!!blocked;$('plan-controls').append(run,button('跳过第一项',()=>skipStep(s),'quiet'),button('清空计划',()=>clearPlan(s),'quiet'));}
  $('actions').replaceChildren();if(!blocked){if(s.place==='town'){const shopButton=text('button','逛街市 · 买卖物品');shopButton.type='button';shopButton.onclick=()=>switchView('bag');$('actions').append(shopButton)}const ids=[...locations[s.place].actions.filter(id=>!recipes[id]),'rest','eat','heal',...(s.bag.salve?['useSalve']:[]),...(s.learned?['inner']:[]),...(nearbyPeople(s).some(n=>n.id==='master')?['spar']:[]),...(nearbyPeople(s).some(n=>n.id==='doctor')?['treat']:[]),...(s.job?['deliver']:[])];for(const id of [...new Set(ids)])$('actions').append(button(id==='train'?`练习${skills[weapon.skill]} · 2小时 / 精力18`:id==='treat'?`医者治疗 · ${treatmentFee(s)}文`:labels[id]||actionNames[id],()=>act(s,id)));}
  const localRecipes=recipesAt(s.place);$('workbench').hidden=!localRecipes.length||!!blocked;$('workbench-title').textContent=s.place==='village'?'村中药炉':'作坊配方';$('workbench-hint').textContent=s.place==='village'?'先向沈医者学习基础制药，查看材料与产出再动手。使用现成药膏不增加制药经验。':'查看材料和产出再动手。制作兵器不会自动装备，也不增加对应武学经验。';$('recipe-list').replaceChildren();if(localRecipes.length&&!blocked)for(const [id,r] of localRecipes){const card=text('div','','person'),missing=recipeBlockers(s,r);card.append(text('h3',r.name),text('p','产出：'+recipeOutput(r)),text('p','材料：'+recipeMaterials(s,r)),text('p',`耗时${r.hours}小时 · 精力${r.energy}${r.level?` · 需要${skills[r.skill]} Lv${r.level}`:''}`,'muted'),text('p',recipePractice(s,r),'muted'));if(missing.length)card.append(text('p',missing.join('；'),'muted'));else if(s.energy-r.energy<20)card.append(text('p','疲劳提示：本次有20%概率失误；失误仍消耗材料，练习经验减半。','muted'));const b=button(r.name,()=>act(s,id));b.disabled=missing.length>0;card.append(b);$('recipe-list').append(card);}

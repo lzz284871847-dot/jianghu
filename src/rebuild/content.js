@@ -18,6 +18,7 @@ export const people={
  doctor:{gift:'herb',name:'沈医者',role:'乡村医者',personality:'温和',interest:'草药与乡邻',goal:'收齐本月常用的药材',line:'山上寻药也要量力，受了伤就别硬撑。'},
  porter:{gift:'food',name:'阿平',role:'码头脚夫',personality:'随和',interest:'船上的见闻',goal:'攒钱修一修家里的屋顶',line:'码头有活就做，没活的时候，我也会钓两条鱼。'}
 };
+export const npcSchedules={master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
  escortMedicine:{name:'短途护送药包',start:'town',place:'village',route:['road','hill','village'],text:'从街市领取封好的药包，沿城外小路、南山坡送到河湾村。按顺序经过交接点，三日内交付；途中遇事可以自行处理或放弃。交付半小时、精力6，报酬10文。',energy:6,reward:10,xp:{escort:1,carry:1}},
  firewood:{name:'村里收柴',place:'village',text:'村民需要木料3份生火，可拾柴整理或买来，三日内送到河湾村。',needs:{wood:3},reward:8,skill:'trade',boardDay:0},

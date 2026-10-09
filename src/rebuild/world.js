@@ -1,9 +1,10 @@
-import {farmStatus} from './farming.js?v=1.0.21';
-import {procurementNews} from './contracts.js?v=1.0.21';
-import {discoveries} from './discoveries.js?v=1.0.21';
-import {events,people,locations} from './content.js?v=1.0.21';
+import {farmStatus} from './farming.js?v=1.0.22';
+import {procurementNews} from './contracts.js?v=1.0.22';
+import {discoveries} from './discoveries.js?v=1.0.22';
+import {events,people,locations,npcSchedules} from './content.js?v=1.0.22';
 export function random(s){let x=s.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;s.seed=x>>>0;return s.seed/4294967296}
-export function npcPlace(s,id){const h=Math.floor(s.minute/60);return id==='master'?(h>=7&&h<18?'road':'inn'):id==='merchant'?(h>=8&&h<20?'town':'inn'):id==='doctor'?(h>=8&&h<18?'village':'inn'):id==='artisan'?(h>=7&&h<18?'forge':'inn'):(h>=6&&h<18?'dock':'inn')}
+export function npcPlace(s,id){const schedule=npcSchedules[id];if(!Object.hasOwn(npcSchedules,id))return null;const h=Math.floor(s.minute/60);return h>=schedule.from&&h<schedule.to?schedule.place:schedule.off}
+export function npcScheduleText(id){if(!Object.hasOwn(npcSchedules,id))return '去向未知';const schedule=npcSchedules[id],hour=h=>String(h).padStart(2,'0')+':00';return `${hour(schedule.from)}–${hour(schedule.to)} ${locations[schedule.place].name}；其余时间 ${locations[schedule.off].name}`}
 export function nearbyPeople(s){return Object.entries(people).filter(([id])=>npcPlace(s,id)===s.place).map(([id,p])=>({id,...p,relation:s.relations[id]}))}
 export function advance(s,minutes){let total=s.minute+minutes;while(total>=1440){total-=1440;s.day++;newDay(s)}s.minute=total;}
 function newDay(s){
