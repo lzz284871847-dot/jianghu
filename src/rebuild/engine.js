@@ -1,15 +1,16 @@
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.25';
-import {travelMinutes} from './routes.js?v=1.0.25';
-import {combatCost,strike} from './combat.js?v=1.0.25';
-import {postedJobs,recordEscortStep,escortStatus,jobSkillBlocker,jobWorkBlocker} from './contracts.js?v=1.0.25';
-import {recipeBlockers} from './crafting.js?v=1.0.25';
-import {resources} from './resources.js?v=1.0.25';
-import {injury} from './condition.js?v=1.0.25';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.25';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.25';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.25';
-import {gain,maxXP,progress} from './progression.js?v=1.0.25';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.25';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.26';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.26';
+import {travelMinutes} from './routes.js?v=1.0.26';
+import {combatCost,strike} from './combat.js?v=1.0.26';
+import {postedJobs,recordEscortStep,escortStatus,jobSkillBlocker,jobWorkBlocker} from './contracts.js?v=1.0.26';
+import {recipeBlockers} from './crafting.js?v=1.0.26';
+import {resources} from './resources.js?v=1.0.26';
+import {injury} from './condition.js?v=1.0.26';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.26';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.26';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.26';
+import {gain,maxXP,progress} from './progression.js?v=1.0.26';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.26';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -27,11 +28,11 @@ function settle(s,name,minutes,cost,run,xp={}){
 function signed(n){return (n>=0?'+':'')+n}
 export function travel(s,to){if(!available(s))return false;if(!locations[s.place].routes.includes(to))return fail(s,'这里没有直达的路。');return settle(s,'前往'+locations[to].name,travelMinutes(s,to),0,()=>{s.place=to;recordEscortStep(s,to)})}
 export function equip(s,key){if(!available(s))return false;if(!Object.hasOwn(weapons,key))return fail(s,'没有这类兵器。');if(key!=='unarmed'&&!s.bag[key])return fail(s,'背包里没有'+weapons[key].name+'。');if(s.weapon===key)return fail(s,'已经使用这件兵器。');return settle(s,'换用'+weapons[key].name,5,0,()=>{s.weapon=key;s.result.push(`当前兵器：${weapons[key].name}；练习和出招结算${skills[weapons[key].skill]}。`)})}
-export function talk(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');return settle(s,'与'+people[id].name+'交谈',30,1,()=>{s.result.push(people[id].line);if(s.talkDays[id]!==s.day){const old=s.relations[id];s.relations[id]=Math.min(100,old+1);s.talkDays[id]=s.day;s.result.push(`关系：${old}/100 → ${s.relations[id]}/100`)}else s.result.push('今日已经交谈过，不重复增加关系。');if(id==='master'&&!s.learned){s.learned=true;s.result.push('周师傅教你基础吐纳，现在可以自行练习。')}if(id==='doctor'&&!s.learnedMedicine){s.learnedMedicine=true;s.result.push('沈医者教你基础制药：在河湾村用草药2、木料1调制普通药膏2。仅是常见药膏，没有神效。')}})}
-export function gift(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');if(s.giftDays[id]===s.day)return fail(s,'今日已赠礼，改日再来。');const key=people[id].gift;if(!s.bag[key])return fail(s,`${people[id].name}喜欢${items[key]}，你目前没有。`);return settle(s,'赠礼给'+people[id].name,15,1,()=>{s.bag[key]--;s.giftDays[id]=s.day;const before=s.relations[id];s.relations[id]=Math.min(100,before+2);s.result.push(`关系：${before}/100 → ${s.relations[id]}/100（+${s.relations[id]-before}）`)})}
-export function lessonFee(s){return s.relations.master>=5?4:6}
-export function treatmentFee(s){return s.relations.doctor>=10?6:8}
-export function forgeLessonFee(s){return s.relations.artisan>=5?4:6}
+export function talk(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');return settle(s,'与'+people[id].name+'交谈',30,1,()=>{s.result.push(people[id].line);if(s.talkDays[id]!==s.day){const old=s.relations[id];s.relations[id]=Math.min(100,old+1);s.talkDays[id]=s.day;s.result.push(...relationshipChange(s,id,old))}else s.result.push('今日已经交谈过，不重复增加关系。');if(id==='master'&&!s.learned){s.learned=true;s.result.push('周师傅教你基础吐纳，现在可以自行练习。')}if(id==='doctor'&&!s.learnedMedicine){s.learnedMedicine=true;s.result.push('沈医者教你基础制药：在河湾村用草药2、木料1调制普通药膏2。仅是常见药膏，没有神效。')}})}
+export function gift(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');if(s.giftDays[id]===s.day)return fail(s,'今日已赠礼，改日再来。');const key=people[id].gift;if(!s.bag[key])return fail(s,`${people[id].name}喜欢${items[key]}，你目前没有。`);return settle(s,'赠礼给'+people[id].name,15,1,()=>{s.bag[key]--;s.giftDays[id]=s.day;const before=s.relations[id];s.relations[id]=Math.min(100,before+2);s.result.push(...relationshipChange(s,id,before))})}
+export function lessonFee(s){return relationshipFee(s,'master')}
+export function treatmentFee(s){return relationshipFee(s,'doctor')}
+export function forgeLessonFee(s){return relationshipFee(s,'artisan')}
 function instruction(s,teacher,record,skill,fee,practice){
  if(!available(s))return false;
  const name=people[teacher].name;
@@ -86,7 +87,7 @@ export function choose(s,id){
  if(s.dead||!s.pending)return fail(s,'当前没有待决定的事情。');
  if(s.pending.type==='discovery'){const kind=s.pending.kind,def=discoveries[kind],c=def.choices.find(x=>x.id===id);if(!c)return fail(s,'没有这个选择。');for(const [key,n] of Object.entries(c.input||{}))if(s.bag[key]<n)return fail(s,`${items[key]}不足，需要${n}；可以改选或离开。`);return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{s.pending=null;for(const [key,n] of Object.entries(c.input||{}))s.bag[key]-=n;for(const [key,n] of Object.entries(c.output||{}))s.bag[key]+=n;s.coins+=c.coins||0;if(c.to)s.place=c.to;if(id==='leave')s.discoveryResolution={kind,expires:s.day+1};s.result.push(c.result)},c.xp||{})}
  if(s.pending.type==='bandit'){if(!['fight','leave'].includes(id))return fail(s,'请选择交手或绕开。');return settle(s,id==='fight'?'迎战拦路人':'绕路离开',id==='fight'?1:30,0,()=>{s.pending=null;if(id==='fight'){s.combat={name:'拦路人',hp:32,attack:8,spar:false};s.result.push('实战可能致命，可随时尝试撤离。')}})}
- const e=s.events.find(e=>e.id===s.pending.id&&e.status==='open');if(!e){s.pending=null;return fail(s,'事情已经结束。');}const c=events[e.kind].choices.find(c=>c.id===id);if(!c)return fail(s,'没有这个选择。');return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{e.status=id==='leave'?'ignored':'resolved';s.pending=null;if(c.to)s.place=c.to;if(c.relation)s.relations[c.relation]=Math.min(100,s.relations[c.relation]+c.change);s.result.push(c.result)},c.skill?{[c.skill]:c.xp}:{});
+ const e=s.events.find(e=>e.id===s.pending.id&&e.status==='open');if(!e){s.pending=null;return fail(s,'事情已经结束。');}const c=events[e.kind].choices.find(c=>c.id===id);if(!c)return fail(s,'没有这个选择。');return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{e.status=id==='leave'?'ignored':'resolved';s.pending=null;if(c.to)s.place=c.to;if(c.relation){const before=s.relations[c.relation];s.relations[c.relation]=Math.min(100,before+c.change);s.result.push(...relationshipChange(s,c.relation,before));}s.result.push(c.result)},c.skill?{[c.skill]:c.xp}:{});
 }
 export function fight(s,id,rng=()=>random(s)){
  if(s.dead||!s.combat)return fail(s,'当前没有战斗。');if(!['attack','heavy','guard','inner','flee'].includes(id))return fail(s,'未知战斗行动。');if(id==='inner'&&!s.learned)return fail(s,'尚未学会吐纳。');
