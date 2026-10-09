@@ -1,8 +1,9 @@
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.4';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.4';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.4';
-import {gain,maxXP,progress} from './progression.js?v=1.0.4';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.4';
+import {injury,attackFactor} from './condition.js?v=1.0.5';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.5';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.5';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.5';
+import {gain,maxXP,progress} from './progression.js?v=1.0.5';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.5';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -11,7 +12,7 @@ function settle(s,name,minutes,cost,run,xp={}){
  if(cost>s.energy)return fail(s,'精力不足，请歇息或睡觉。');const before=structuredClone(s);s.result=[];const efficiency=Math.max(0,s.energy-cost)<20?0.5:1;
  run();s.energy=Math.max(0,s.energy-cost);advance(s,minutes);
  s.result.unshift(name,`精力：${before.energy} → ${s.energy}（${signed(s.energy-before.energy)}）`,`金钱：${before.coins} → ${s.coins}（${signed(s.coins-before.coins)}文）`);
- if(s.hp!==before.hp)s.result.push(`气血：${before.hp} → ${s.hp}（${signed(s.hp-before.hp)}）`);
+ if(s.hp!==before.hp){s.result.push(`气血：${before.hp} → ${s.hp}（${signed(s.hp-before.hp)}）`);if(injury(s.hp).name!==injury(before.hp).name)s.result.push(`伤势：${injury(before.hp).name} → ${injury(s.hp).name}`);}
  for(const [k,n] of Object.entries(xp)){const line=gain(s,k,Math.max(1,Math.floor(n*efficiency)));if(line)s.result.push(line)}
  for(const [k,n] of Object.entries(items))if(s.bag[k]!==before.bag[k])s.result.push(`${n}：${before.bag[k]} → ${s.bag[k]}（${signed(s.bag[k]-before.bag[k])}）`);
  if(s.energy<20)s.result.push(s.energy<10?'极疲：行动效率与交手能力下降。':'疲惫：成长效率下降，先歇歇也无妨。');
@@ -55,14 +56,14 @@ export function act(s,id,rng=()=>random(s)){
 export function choose(s,id){
  if(s.dead||!s.pending)return fail(s,'当前没有待决定的事情。');
  if(s.pending.type==='discovery'){const kind=s.pending.kind,def=discoveries[kind],c=def.choices.find(x=>x.id===id);if(!c)return fail(s,'没有这个选择。');for(const [key,n] of Object.entries(c.input||{}))if(s.bag[key]<n)return fail(s,`${items[key]}不足，需要${n}；可以改选或离开。`);return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{s.pending=null;for(const [key,n] of Object.entries(c.input||{}))s.bag[key]-=n;for(const [key,n] of Object.entries(c.output||{}))s.bag[key]+=n;s.coins+=c.coins||0;if(c.to)s.place=c.to;if(id==='leave')s.discoveryResolution={kind,expires:s.day+1};s.result.push(c.result)},c.xp||{})}
- if(s.pending.type==='bandit'){if(!['fight','leave'].includes(id))return fail(s,'请选择交手或绕开。');return settle(s,id==='fight'?'迎战拦路人':'绕路离开',id==='fight'?1:30,id==='fight'?0:3,()=>{s.pending=null;if(id==='fight'){s.combat={name:'拦路人',hp:32,attack:8,spar:false};s.result.push('实战可能致命，可随时尝试撤离。')}})}
+ if(s.pending.type==='bandit'){if(!['fight','leave'].includes(id))return fail(s,'请选择交手或绕开。');return settle(s,id==='fight'?'迎战拦路人':'绕路离开',id==='fight'?1:30,0,()=>{s.pending=null;if(id==='fight'){s.combat={name:'拦路人',hp:32,attack:8,spar:false};s.result.push('实战可能致命，可随时尝试撤离。')}})}
  const e=s.events.find(e=>e.id===s.pending.id&&e.status==='open');if(!e){s.pending=null;return fail(s,'事情已经结束。');}const c=events[e.kind].choices.find(c=>c.id===id);if(!c)return fail(s,'没有这个选择。');return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{e.status=id==='leave'?'ignored':'resolved';s.pending=null;if(c.to)s.place=c.to;if(c.relation)s.relations[c.relation]=Math.min(100,s.relations[c.relation]+c.change);s.result.push(c.result)},c.skill?{[c.skill]:c.xp}:{});
 }
 export function fight(s,id){
  if(s.dead||!s.combat)return fail(s,'当前没有战斗。');if(!['attack','guard','inner','flee'].includes(id))return fail(s,'未知战斗行动。');if(id==='inner'&&!s.learned)return fail(s,'尚未学会吐纳。');
  const cost=id==='flee'?Math.min(3,s.energy):id==='inner'?6:4;
  const w=currentWeapon(s);const xp=id==='attack'?{[w.skill]:1}:id==='inner'?{[w.skill]:1,inner:1}:{};
- return settle(s,id==='attack'?w.attack:id==='guard'?'防守':id==='inner'?'运功出招':'撤离',1,cost,()=>{const c=s.combat;if(id==='flee'){s.combat=null;s.result.push('你退开脱身，没有必要逞强。');return}if(id!=='guard'){const damage=Math.floor((8+Math.min(4,progress(s.skills[w.skill]).level-1)+w.bonus+(id==='inner'?2:0))*(s.energy<20?0.6:1)*(s.hp<30?0.8:1));c.hp-=damage;s.result.push(`你造成${damage}点伤害。`)}if(c.hp<=0){s.combat=null;if(!c.spar)s.coins+=8;s.result.push(c.spar?'切磋结束，师傅点头示意。':'拦路人逃走，你拾回8文铜钱。');return}s.hp=Math.max(0,s.hp-Math.max(1,c.attack-(id==='guard'?5:0)));if(c.spar&&s.hp<=25){s.combat=null;s.hp=Math.max(1,s.hp);s.result.push('师傅收手：到这里就好，回去养养伤。')}else if(s.hp===0){s.combat=null;s.dead=true;s.result.push('你伤重死去。这段人生结束，不会自动读档。')}} ,xp);
+ return settle(s,id==='attack'?w.attack:id==='guard'?'防守':id==='inner'?'运功出招':'撤离',1,cost,()=>{const c=s.combat;if(id==='flee'){s.combat=null;s.result.push('你退开脱身，没有必要逞强。');return}if(id!=='guard'){const damage=Math.floor((8+Math.min(4,progress(s.skills[w.skill]).level-1)+w.bonus+(id==='inner'?2:0))*attackFactor(s,cost));c.hp-=damage;s.result.push(`你造成${damage}点伤害。`)}if(c.hp<=0){s.combat=null;if(!c.spar)s.coins+=8;s.result.push(c.spar?'切磋结束，师傅点头示意。':'拦路人逃走，你拾回8文铜钱。');return}const incoming=Math.max(1,c.attack-(id==='guard'?5:0));s.hp=Math.max(0,s.hp-incoming);s.result.push(id==='guard'?`防守挡下${c.attack-incoming}点伤害，仍受伤${incoming}点。`:`对方造成${incoming}点伤害。`);if(c.spar&&s.hp<=25){s.combat=null;s.hp=Math.max(1,s.hp);s.result.push('师傅收手：到这里就好，回去养养伤。')}else if(s.hp===0){s.combat=null;s.dead=true;s.result.push('你伤重死去。这段人生结束，不会自动读档。')}} ,xp);
 }
 export function restore(raw){
  const s=JSON.parse(raw);if(s&&typeof s==='object'){if(s.giftDays===undefined)s.giftDays={};if(s.lessonDay===undefined)s.lessonDay=0;if(s.discoveryDay===undefined)s.discoveryDay=0;if(s.discoveryResolution===undefined)s.discoveryResolution=null;if(s.bag&&s.bag.sword===undefined)s.bag.sword=0;if(s.skills){if(s.skills.staff===undefined)s.skills.staff=0;if(s.skills.sword===undefined)s.skills.sword=0;}if(s.weapon===undefined)s.weapon=s.bag?.staff>0?'staff':'unarmed';}if(!s||s.version!==1||typeof s.name!=='string'||!Object.hasOwn(locations,s.place))throw Error('不是新版存档；旧版存档请在旧版入口使用。');

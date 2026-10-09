@@ -1,5 +1,5 @@
-import {locations,items,jobs} from './content.js?v=1.0.4';
-import {travel,equip,act,trade,acceptJob} from './engine.js?v=1.0.4';
+import {locations,items,jobs} from './content.js?v=1.0.5';
+import {travel,equip,act,trade,acceptJob} from './engine.js?v=1.0.5';
 const aliases={休息:'rest',歇息:'rest',睡觉:'sleep',练拳:'train',练习拳脚:'train',吐纳:'inner',吐纳修炼:'inner',采药:'gather',采集草药:'gather',钓鱼:'fish',打零工:'work',打造工具:'forge',做鱼饭:'cook',吃干粮:'eat',用草药:'heal',治疗:'treat',探索:'explore',切磋:'spar',交货:'deliver',完成约定:'deliver'};
 const placeAliases={街市:'town',小镇:'town',青石镇:'town',客栈:'inn',作坊:'forge',码头:'dock',村庄:'village',河湾村:'village',城外:'road',城外小路:'road',山坡:'hill',南山坡:'hill',竹林:'bamboo'};
 export function command(s,input){
