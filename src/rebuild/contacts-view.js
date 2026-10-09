@@ -1,7 +1,7 @@
-import {relationshipSummary,relationshipBenefit} from './relationships.js?v=1.0.29';
-import {people,locations} from './content.js?v=1.0.29';
-import {npcPlace,npcScheduleText} from './world.js?v=1.0.29';
-import {findRoute} from './routes.js?v=1.0.29';
+import {relationshipSummary,relationshipBenefit} from './relationships.js?v=1.0.30';
+import {people,locations} from './content.js?v=1.0.30';
+import {npcPlace,npcScheduleText} from './world.js?v=1.0.30';
+import {findRoute} from './routes.js?v=1.0.30';
 export function contactsView(s,onTravel,doc=document){
  const node=(tag,value)=>{const el=doc.createElement(tag);el.textContent=value;return el};
  return Object.entries(people).map(([id,p])=>{

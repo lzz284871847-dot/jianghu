@@ -44,3 +44,6 @@ export const events={
  fair:{title:'临时小集',place:'dock',text:'一艘货船带来了小摊贩。码头有人卖旧器物，也有人只来看热闹。',choices:[{id:'browse',label:'逛一逛，了解行情',hours:1,energy:4,skill:'trade',xp:1,result:'你比较了几家的价钱，记住了常见货物的行情。没有买下任何东西。'},{id:'leave',label:'不逛了',result:'小集还在继续，你有自己的安排。'}],after:'码头的小集散了，船上的商贩去了下一站。'},
  rain:{title:'山道落石',place:'hill',text:'几块碎石挡住了旧道，过路人正在商量清理。',choices:[{id:'help',label:'一起清理',hours:1,energy:12,skill:'carry',xp:1,result:'你们把碎石搬到路边，旧道重新可以通行。'},{id:'leave',label:'绕开，不参与',hours:0.5,result:'你从旁边绕过，其他行人继续清理。'}],after:'南山坡的落石已由过路人清理。'}
 };
+
+// 等候只推进游戏时间；与恢复精力的歇息分开。
+export const waitingActions={wait30:{name:"等半小时",minutes:30},wait60:{name:"等一小时",minutes:60}};
