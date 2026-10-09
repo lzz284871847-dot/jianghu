@@ -12,7 +12,7 @@ export const locations={
 export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送'};
 export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
 export const people={
- master:{gift:'food',name:'周师傅',role:'教拳师傅',personality:'直爽',interest:'习武与喝茶',goal:'把基础拳脚教给肯下功夫的人',line:'学拳是为了站稳脚跟，能不打的时候，也要懂得不打。'},
+ master:{gift:'food',name:'周师傅',role:'基础武艺师傅',personality:'直爽',interest:'习武与喝茶',goal:'把基础拳脚、棍法与剑术教给肯下功夫的人',line:'学拳是为了站稳脚跟，能不打的时候，也要懂得不打。'},
  merchant:{gift:'fish',name:'柳掌柜',role:'街市商人',personality:'精明',interest:'各地货价',goal:'把小铺经营好',line:'做买卖先从一两件货开始，赔得起，才学得会。'},
  doctor:{gift:'herb',name:'沈医者',role:'乡村医者',personality:'温和',interest:'草药与乡邻',goal:'收齐本月常用的药材',line:'山上寻药也要量力，受了伤就别硬撑。'},
  porter:{gift:'food',name:'阿平',role:'码头脚夫',personality:'随和',interest:'船上的见闻',goal:'攒钱修一修家里的屋顶',line:'码头有活就做，没活的时候，我也会钓两条鱼。'}

@@ -1,15 +1,15 @@
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.17';
-import {travelMinutes} from './routes.js?v=1.0.17';
-import {combatCost,strike} from './combat.js?v=1.0.17';
-import {postedJobs,recordEscortStep,escortStatus} from './contracts.js?v=1.0.17';
-import {recipeBlockers} from './crafting.js?v=1.0.17';
-import {resources} from './resources.js?v=1.0.17';
-import {injury} from './condition.js?v=1.0.17';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.17';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.17';
-import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.17';
-import {gain,maxXP,progress} from './progression.js?v=1.0.17';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.17';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.18';
+import {travelMinutes} from './routes.js?v=1.0.18';
+import {combatCost,strike} from './combat.js?v=1.0.18';
+import {postedJobs,recordEscortStep,escortStatus} from './contracts.js?v=1.0.18';
+import {recipeBlockers} from './crafting.js?v=1.0.18';
+import {resources} from './resources.js?v=1.0.18';
+import {injury} from './condition.js?v=1.0.18';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.18';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.18';
+import {locations,skills,items,people,jobs,recipes,events,actionNames} from './content.js?v=1.0.18';
+import {gain,maxXP,progress} from './progression.js?v=1.0.18';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.18';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -31,7 +31,17 @@ export function talk(s,id){if(!available(s))return false;if(!Object.hasOwn(peopl
 export function gift(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');if(s.giftDays[id]===s.day)return fail(s,'今日已赠礼，改日再来。');const key=people[id].gift;if(!s.bag[key])return fail(s,`${people[id].name}喜欢${items[key]}，你目前没有。`);return settle(s,'赠礼给'+people[id].name,15,1,()=>{s.bag[key]--;s.giftDays[id]=s.day;const before=s.relations[id];s.relations[id]=Math.min(100,before+2);s.result.push(`关系：${before}/100 → ${s.relations[id]}/100（+${s.relations[id]-before}）`)})}
 export function lessonFee(s){return s.relations.master>=5?4:6}
 export function treatmentFee(s){return s.relations.doctor>=10?6:8}
-export function lesson(s){if(!available(s))return false;if(npcPlace(s,'master')!==s.place)return fail(s,'周师傅目前不在这里。');if(s.lessonDay===s.day)return fail(s,'今日已请教，先消化练习，明日再来。');if(s.hp<25)return fail(s,'先养好伤，再请教师傅。');const fee=lessonFee(s);if(s.coins<fee)return fail(s,`请教需要${fee}文。`);return settle(s,'向周师傅请教拳脚',60,12,()=>{s.coins-=fee;s.lessonDay=s.day;s.result.push('师傅纠正你的站姿和发力，练的仍是基础拳脚。')},{fist:3})}
+export function lesson(s,key=s.weapon||'unarmed'){
+ if(!available(s))return false;
+ if(npcPlace(s,'master')!==s.place)return fail(s,'周师傅目前不在这里。');
+ if(!Object.hasOwn(weapons,key)||key!==(s.weapon||'unarmed'))return fail(s,'请先在背包换用对应兵器，再请教这项武学。');
+ if(s.lessonDay===s.day)return fail(s,'今日已请教，先消化练习，明日再来。');
+ if(s.hp<25)return fail(s,'先养好伤，再请教师傅。');
+ const w=weapons[key],name=skills[w.skill],fee=lessonFee(s);
+ if(s.skills[w.skill]>=maxXP)return fail(s,`基础${name}已经完成，师傅暂时没有更高阶段课程；不收学费。`);
+ if(s.coins<fee)return fail(s,`请教需要${fee}文。`);
+ return settle(s,'向周师傅请教'+name,60,12,()=>{s.coins-=fee;s.lessonDay=s.day;s.result.push(`师傅纠正你的站姿、发力与${key==='unarmed'?'拳脚动作':key==='staff'?'握棍和收棍动作':'握剑和收剑动作'}，练的仍是基础${name}。`)},{[w.skill]:3});
+}
 export const prices={food:4,herb:4,iron:5,wood:2,rod:6,staff:12,sword:24,tool:20,salve:8,trap:12,seed:3};
 export const salePrices={herb:3,fish:5,tool:18,salve:6,meat:6,vegetable:2};
 export function trade(s,type,key){if(!available(s))return false;if(s.place!=='town'||npcPlace(s,'merchant')!=='town')return fail(s,'请在08:00–20:00到街市买卖。');const price=(type==='buy'?prices:salePrices)[key];if(typeof price!=='number')return fail(s,'这里不经营这件物品。');if(type==='buy'&&s.coins<price)return fail(s,'铜钱不足。');if(type==='sell'&&!s.bag[key])return fail(s,'没有可出售的'+items[key]+'。');return settle(s,(type==='buy'?'购买':'出售')+items[key],15,1,()=>{s.coins+=type==='buy'?-price:price;s.bag[key]+=type==='buy'?1:-1},type==='sell'?{trade:1}:{})}
