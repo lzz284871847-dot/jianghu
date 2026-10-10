@@ -1,5 +1,6 @@
 import {MARTIAL_ARTS} from './martial-data.js?v=0.2.0';
 import {newCombat,resolve} from './combat-core.js?v=0.2.0';
+import {useMove,usableMoves} from './martial-moves.js?v=0.2.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
@@ -10,3 +11,23 @@ export function train(s,id){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!ar
 export function availableMoves(s,id){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!art||!m.known[id])return [];const points=(m.practice[id]||0)+(m.insight[id]||0)+(m.experience[id]||0)+(m.mastery[id]||0);return art.moves.filter((move,i)=>i===0||points>=i*120);}
 export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s);if(!m.known[m.equipped])throw Error('尚未学会当前武学');if(s.combat)throw Error('交手尚未结束');s.combat=newCombat(opponent,m.equipped);s.result=['与'+opponent+'交手。撤退并不保证成功。'];}
 export function martialTurn(s,action,rng){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng);const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}if(result.ended){s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
+
+// Move turns resolve the chosen technique and an actual enemy response in one transaction.
+export function martialMoveTurn(s,moveId,rng=()=>.5){
+ if(!s.combat)throw Error('当前没有战斗');
+ const c=s.combat,enemyHpBefore=c.enemyHp;
+ const move=useMove(s,c,moveId,rng),m=ensureMartial(s),id=c.martial;
+ m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);
+ if(c.enemyHp<enemyHpBefore)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);
+ if(!c.ended){
+  // Opponent responds even after a failed or out-of-range move.
+  const response=resolve(c,s,'guard',rng);
+  // 'guard' represents the player's existing stance during enemy response;
+  // restore its artificial cost, because the technique already paid its cost.
+  s.energy=Math.min(100,s.energy+3);
+  s.result=[...move.log,...response.log];
+ }else s.result=[...move.log];
+ if(c.ended)s.combat=null;
+ return {move,ended:c.ended||null,log:s.result};
+}
+export {usableMoves};
