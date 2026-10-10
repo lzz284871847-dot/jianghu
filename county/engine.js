@@ -39,9 +39,9 @@ export function martialAction(s,kind,id,rng=()=>random(s)){
   try{const outcome=kind==='move'?martialMoveTurn(s,id,rng):martialTurn(s,id,rng);return !!outcome;}catch(e){return fail(s,e.message);}
  }
  if(!available(s))return false;
- if(kind==='learn')return learnArt(s,id);
+ if(kind==='learn'){if(!learnArt(s,id))return false;advance(s,60);s.result.push('求学耗时1小时。');return true;}
  if(kind==='equip')return equipArt(s,id);
- if(kind==='train')return trainArt(s,id);
+ if(kind==='train'){if(!trainArt(s,id))return false;advance(s,120);s.result.push('练习耗时2小时。');return true;}
  if(kind==='challenge'){
   if(s.place!=='school'&&s.place!=='oldroad')return fail(s,'请到武馆或旧道寻找交手对象。');
   try{beginMartialCombat(s,id);return true;}catch(e){return fail(s,e.message);}
@@ -50,8 +50,8 @@ export function martialAction(s,kind,id,rng=()=>random(s)){
 }
 export {usableMoves};
 export function restore(raw){const s=JSON.parse(raw),int=(n,a,b)=>Number.isSafeInteger(n)&&n>=a&&n<=b,obj=x=>x&&typeof x==='object'&&!Array.isArray(x);if(!obj(s)||s.version!=='county-1')throw Error('不是青河县独立存档。');if(typeof s.name!=='string'||!s.name.trim()||s.name.length>12||!int(s.age,16,60)||!['男','女'].includes(s.gender)||!['农家','学徒','小贩'].includes(s.background)||!['谨慎','随和','勤奋'].includes(s.personality)||!Object.hasOwn(talents,s.talent))throw Error('人物资料无效。');for(const [k,a,b] of [['day',1,100000],['minute',0,1439],['hp',0,100],['energy',0,100],['coins',0,10000000],['seed',1,4294967295],['encounterDay',0,s.day]])if(!int(s[k],a,b))throw Error('数值无效。');if(!Object.hasOwn(places,s.place)||!['晴','雨'].includes(s.weather)||typeof s.dead!=='boolean'||s.dead!==(s.hp===0))throw Error('世界状态无效。');for(const [map,keys,max] of [[s.bag,Object.keys(items),1000000],[s.skills,Object.keys(skills),MAX],[s.relations,Object.keys(people),100]]){if(!obj(map))throw Error('记录无效。');for(const k of keys)if(!int(map[k],0,max))throw Error('库存或成长无效。');}if(!obj(s.talkDays)||Object.entries(s.talkDays).some(([k,v])=>!Object.hasOwn(people,k)||!int(v,1,s.day)))throw Error('交谈记录无效。');if(!obj(s.nodes)||Object.keys(s.nodes).length!==Object.keys(nodeDefs).length)throw Error('资源点无效。');for(const [k,d] of Object.entries(nodeDefs)){const n=s.nodes[k];if(!obj(n)||!int(n.left,0,d.capacity)||!int(n.refreshDay,s.day+1,s.day+2)||n.refreshDay%2!==1)throw Error('资源记录无效。');}if(s.pending&&!(s.pending.type==='bandit'&&s.place==='oldroad'||s.pending.type==='resource'&&Object.hasOwn(resources,s.pending.key)&&!!s.nodes[s.place+':'+s.pending.key]&&resources[s.pending.key].risk>0))throw Error('选择无效。');if(s.combat){
- if(!obj(s.combat)||s.place!=='oldroad')throw Error('战斗无效。');
- if(Object.hasOwn(s.combat,'hp')){if(!int(s.combat.hp,1,28))throw Error('旧战斗无效。');}
+ if(!obj(s.combat)||!['oldroad','school'].includes(s.place))throw Error('战斗无效。');
+ if(Object.hasOwn(s.combat,'hp')){if(!int(s.combat.hp,1,28)||s.place!=='oldroad')throw Error('旧战斗无效。');}
  else if(!Object.hasOwn(OPPONENTS,s.combat.opponent)||!Object.hasOwn(MARTIAL_ARTS,s.combat.martial)||!int(s.combat.round,0,10000)||!int(s.combat.distance,0,4)||!STANCES.includes(s.combat.stance)||!STANCES.includes(s.combat.enemyStance)||!int(s.combat.enemyHp,1,100)||!int(s.combat.enemyEnergy,0,100)||!int(s.combat.playerGuard,0,30)||!int(s.combat.enemyGuard,0,30)||!int(s.combat.exits,0,10)||!Array.isArray(s.combat.history)||s.combat.history.length>30)throw Error('战斗记录无效。');
  }
  if(s.martial===undefined)s.martial=makeMartial();if(s.injuries===undefined)s.injuries={};if(s.injuryRecovery===undefined)s.injuryRecovery={};if(s.martial!==undefined){const m=s.martial;if(!obj(m)||!Object.hasOwn(MARTIAL_ARTS,m.equipped))throw Error('武学记录无效。');for(const k of ['known','practice','insight','experience','mastery'])if(!obj(m[k])||Object.entries(m[k]).some(([id,v])=>!Object.hasOwn(MARTIAL_ARTS,id)||(k==='known'?v!==true:!int(v,0,2400))))throw Error('武学成长无效。');if(Object.keys(m.known).some(id=>!['practice','insight','experience','mastery'].every(k=>Object.hasOwn(m[k],id))))throw Error('武学数据缺失。');}
