@@ -1,7 +1,7 @@
-import {activeArt} from './martial.js?v=1.0.54';
-import {progress} from './progression.js?v=1.0.54';
-import {attackFactor} from './condition.js?v=1.0.54';
-import {currentWeapon} from './equipment.js?v=1.0.54';
+import {activeArt} from './martial.js?v=1.0.55';
+import {progress} from './progression.js?v=1.0.55';
+import {attackFactor} from './condition.js?v=1.0.55';
+import {currentWeapon} from './equipment.js?v=1.0.55';
 export function battleBonus(s){return Math.min(2,Math.floor(progress(s.skills.battle||0).level/2))}
 export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:['inner','counter','art'].includes(id)?6:4}
 export function heavyChance(s){
@@ -15,7 +15,7 @@ export function strike(s,id,rng){
  if(id==='heavy'&&rng()>=chance)return {damage:0,hit:false};
  const art=activeArt(s),artBonus=id==='art'&&art?(s.art==='steadySword'?Math.min(2,progress(s.skills[s.art]).level): -2):0;
  const base=8+artBonus+battleBonus(s)+Math.min(4,progress(s.skills[weapon.skill]).level-1)+weapon.bonus+prepared+(['inner','counter'].includes(id)?2:0);
- const guard=s.combat?.name==='持棍拦路人'&&!['heavy','counter'].includes(id)?2:0;return {damage:Math.max(1,Math.floor(base*(id==='heavy'?1.5:1)*attackFactor(s,combatCost(s,id)))-guard),hit:true};
+ const guard=!['heavy','counter'].includes(id)?s.combat?.name==='持棍拦路人'?2:s.combat?.name==='武馆长棍陪练'?3:0:0;return {damage:Math.max(1,Math.floor(base*(id==='heavy'?1.5:1)*attackFactor(s,combatCost(s,id)))-guard),hit:true};
 }
 
 // 普通基础考较，仅记录通过日期，不授予隐藏加成或额外奖励。
@@ -37,4 +37,13 @@ export function counterBlocker(s){
 
 // 对手只有一项可见特点，不增加敌人技能或隐藏状态。
 export function banditForPlace(place){return place==='hill'?{name:'持棍拦路人',hp:40,attack:6,spar:false}:{name:'拦路人',hp:32,attack:8,spar:false}}
-export function opponentHint(name){return name==='持棍拦路人'?'棍架护身：普通与运功出招伤害减少2；重击或拆招反击可以破架，不受这项减伤。':'出手较急，没有护身棍架。'}
+export function opponentHint(name){if(name==='武馆剑术陪练')return '快剑抢隙：通常还击4；你使用重击或运功出招时，还击增加2至6，即使重击落空也会被抢攻。防守、反击和已学武艺不触发这项加伤。';if(name==='武馆长棍陪练')return '稳棍护身：普通、运功及武艺招式伤害减少3；重击或拆招反击可以破架，不受这项减伤。通常还击6。';return name==='持棍拦路人'?'棍架护身：普通与运功出招伤害减少2；重击或拆招反击可以破架，不受这项减伤。':'出手较急，没有护身棍架。'}
+
+// 两种公开陪练共用现有招式；姓名决定一项明示特点，不增加隐藏状态。
+export const sparPartners={
+ swordPartner:{name:'武馆剑术陪练',hp:40,attack:4,spar:true},
+ staffPartner:{name:'武馆长棍陪练',hp:48,attack:6,spar:true}
+};
+export function sparProfile(name){return Object.values(sparPartners).find(p=>p.name===name)||null;}
+export function sparPartnerBlocker(s,id){if(!Object.hasOwn(sparPartners,id))return '没有这名陪练。';if(s.place!=='liuxi')return '请到柳溪集武馆。';if(s.minute<480||s.minute+5>1080)return '陪练入场需在08:00–18:00内完成，入场5分钟。';if(s.hp<50)return '切磋前气血至少50，先养伤。';if(s.energy<30)return '切磋前精力至少30，先休息。';return '';}
+export function opponentAttack(c,id){return c.attack+(c.name==='武馆剑术陪练'&&['heavy','inner'].includes(id)?2:0);}

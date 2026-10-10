@@ -1,21 +1,21 @@
-import {careers,newCareer,recordCareer,careerBlocker,validCareer} from './careers.js?v=1.0.54';
-import {sites,siteAt,siteBlocker,validSites} from './sites.js?v=1.0.54';
-import {rememberHelp,gatheringBlocker,validEchoes} from './continuity.js?v=1.0.54';
-import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker,validMartial} from './martial.js?v=1.0.54';
-import {marketBlocker,marketHours,marketPrices} from './market.js?v=1.0.54';
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.54';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.54';
-import {travelMinutes} from './routes.js?v=1.0.54';
-import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.54';
-import {isEscortJob,jobRoute,postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.54';
-import {recipeBlockers} from './crafting.js?v=1.0.54';
-import {resources,resourceChance} from './resources.js?v=1.0.54';
-import {injury} from './condition.js?v=1.0.54';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.54';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.54';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.54';
-import {gain,maxXP,progress} from './progression.js?v=1.0.54';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.54';
+import {careers,newCareer,recordCareer,careerBlocker,validCareer} from './careers.js?v=1.0.55';
+import {sites,siteAt,siteBlocker,validSites} from './sites.js?v=1.0.55';
+import {rememberHelp,gatheringBlocker,validEchoes} from './continuity.js?v=1.0.55';
+import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker,validMartial} from './martial.js?v=1.0.55';
+import {marketBlocker,marketHours,marketPrices} from './market.js?v=1.0.55';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.55';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.55';
+import {travelMinutes} from './routes.js?v=1.0.55';
+import {sparPartners,sparProfile,sparPartnerBlocker,opponentAttack,combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.55';
+import {isEscortJob,jobRoute,postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.55';
+import {recipeBlockers} from './crafting.js?v=1.0.55';
+import {resources,resourceChance} from './resources.js?v=1.0.55';
+import {injury} from './condition.js?v=1.0.55';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.55';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.55';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.55';
+import {gain,maxXP,progress} from './progression.js?v=1.0.55';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.55';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',arts:{steadySword:false,shelterStaff:false},art:null,artPassed:{},learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,homeDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,career:newCareer(),sites:{},echoes:{},events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -58,7 +58,7 @@ export function forgeLesson(s){
  if(s.place!=='forge')return fail(s,'请在07:00–18:00到作坊，请许铁匠指导基础锻造。');
  return instruction(s,'artisan','forgeLessonDay','forge',forgeLessonFee(s),'许铁匠用练习用废铁教你看火色、落锤和检查缺口；学费包含练习用料，没有成品带走。');
 }
-export {prices,salePrices} from './market.js?v=1.0.54';
+export {prices,salePrices} from './market.js?v=1.0.55';
 export function trade(s,type,key,quantity=1){
  if(!available(s))return false;
  if(!['buy','sell'].includes(type)||!Number.isInteger(quantity)||quantity<1||quantity>20)return fail(s,'每笔买卖数量需为1–20的整数。');
@@ -73,6 +73,7 @@ export function acceptJob(s,id,routeKey){if(!available(s))return false;if(!Objec
 export function abandonJob(s){if(!available(s))return false;s.job=null;s.result=['你放下了这份约定，可以另作打算。'];return true}
 export function act(s,id,rng=()=>random(s)){
  if(!available(s))return false;
+ if(Object.hasOwn(sparPartners,id)){const blocked=sparPartnerBlocker(s,id);if(blocked)return fail(s,blocked);return settle(s,'挑战'+sparPartners[id].name,5,0,()=>{s.combat={...sparPartners[id]};s.result.push(opponentHint(s.combat.name),'点到为止，可随时撤离；无工钱、额外经验奖励或考较记录，技能按实际出招结算。')});}
  if(['verifySmith','verifyHealer','verifyBoat'].includes(id)){const key=Object.keys(careers).find(k=>careers[k].action===id),def=careers[key],blocked=careerBlocker(s,key,npcPlace(s,def.teacher));if(blocked)return fail(s,blocked);return settle(s,'验收：'+def.name,30,2,()=>{for(const [k,n] of Object.entries(def.needs))s.bag[k]-=n;s.coins+=def.payment;s.career.passed[key]=s.day;s.result.push('验收通过，已交付的物品属于对方；开放新的可选工作，没有额外技能经验或职业加成。');});}
  if(id==='surveySite'||id==='visitSite'){const key=siteAt(s);if(!key)return fail(s,'这里没有这批旧址。');if(id==='visitSite'&&!s.sites[key])return fail(s,'先查看附近旧址，留下地点记录。');if(id==='surveySite'&&s.sites[key])return fail(s,'已经记录此处，可直接再次查看。');return settle(s,id==='surveySite'?'寻找'+sites[key].name:'查看'+sites[key].name,id==='surveySite'?60:0,id==='surveySite'?4:0,()=>{if(!s.sites[key])s.sites[key]={day:s.day,done:[]};s.pending={type:'site',key};s.result.push('地点记录已保留。选择取料、调查或返回；不会自动发放物资。')});}
  if(['learnSwordArt','learnStaffArt'].includes(id)){const key=id==='learnSwordArt'?'steadySword':'shelterStaff',a=arts[key],blocked=learnArtBlocker(s,key);if(blocked)return fail(s,blocked);return settle(s,'学习'+a.name,60,12,()=>{s.coins-=a.fee;s.arts[key]=true;s.result.push('教习演示后，你按兵器练习入门动作。已学会，需自行选用；没有装备或隐藏加成。')},{[key]:1,[a.basic]:1})}
@@ -124,9 +125,9 @@ export function fight(s,id,rng=()=>random(s)){
   if(id==='flee'){s.combat=null;s.result.push('你退开脱身，没有必要逞强。');return}
   if(id==='guard'){c.prepared=true;s.result.push('稳住架势：下一次出招基础伤害+2，重击基础命中率+10个百分点；连续防守不叠加。')}
   else{const prepared=!!c.prepared,result=strike(s,id,rng);delete c.prepared;if(prepared)s.result.push('用上守势后的出招机会，本次消耗架势。');if(result.hit){c.hp-=result.damage;s.result.push(`你造成${result.damage}点伤害。`)}else s.result.push('重击落空，没有伤到对方；精力已消耗，仍结算相关发力练习。')}
-  if(c.hp<=0){s.combat=null;if(c.artAssessment){s.artPassed[c.artAssessment]=s.day;s.result.push(arts[c.artAssessment].name+'进阶考较通过，记录已保存；没有额外奖励。');}if(c.assessment){s.assessments[c.assessment]=s.day;s.result.push('基础'+skills[weapons[c.assessment].skill]+'考较通过，记录已保存。没有额外经验、工钱或装备奖励。');}if(!c.spar)s.coins+=8;s.result.push(c.spar?'切磋结束，师傅点头示意。':'拦路人逃走，你拾回8文铜钱。');return}
-  const reduction=id==='guard'?5:id==='counter'?3:id==='art'?(s.art==='shelterStaff'?4:1):0;const incoming=Math.max(1,c.attack-reduction);s.hp=Math.max(0,s.hp-incoming);s.result.push(id==='art'?`招式卸去${c.attack-incoming}点还击伤害，仍受伤${incoming}点。`:id==='counter'?`拆招卸去${c.attack-incoming}点还击伤害，仍受伤${incoming}点。`:id==='guard'?`防守挡下${c.attack-incoming}点伤害，仍受伤${incoming}点。`:`对方造成${incoming}点伤害。`);
-  if(c.spar&&s.hp<=25){s.combat=null;s.hp=Math.max(1,s.hp);s.result.push('师傅收手：到这里就好，回去养养伤。')}
+  if(c.hp<=0){s.combat=null;if(c.artAssessment){s.artPassed[c.artAssessment]=s.day;s.result.push(arts[c.artAssessment].name+'进阶考较通过，记录已保存；没有额外奖励。');}if(c.assessment){s.assessments[c.assessment]=s.day;s.result.push('基础'+skills[weapons[c.assessment].skill]+'考较通过，记录已保存。没有额外经验、工钱或装备奖励。');}if(!c.spar)s.coins+=8;s.result.push(c.spar?(sparProfile(c.name)?'陪练收招，切磋结束。':'切磋结束，师傅点头示意。'):'拦路人逃走，你拾回8文铜钱。');return}
+  const reduction=id==='guard'?5:id==='counter'?3:id==='art'?(s.art==='shelterStaff'?4:1):0;const attack=opponentAttack(c,id),incoming=Math.max(1,attack-reduction);if(attack>c.attack)s.result.push('快剑趁你出招较慢，抢攻还击伤害增加2。');s.hp=Math.max(0,s.hp-incoming);s.result.push(id==='art'?`招式卸去${attack-incoming}点还击伤害，仍受伤${incoming}点。`:id==='counter'?`拆招卸去${attack-incoming}点还击伤害，仍受伤${incoming}点。`:id==='guard'?`防守挡下${attack-incoming}点伤害，仍受伤${incoming}点。`:`对方造成${incoming}点伤害。`);
+  if(c.spar&&s.hp<=25){s.combat=null;s.hp=Math.max(1,s.hp);s.result.push(sparProfile(c.name)?'陪练收手：到这里就好，回去养养伤。':'师傅收手：到这里就好，回去养养伤。')}
   else if(s.hp===0){s.combat=null;s.dead=true;s.result.push('你伤重死去。这段人生结束，不会自动读档。')}
  },xp);
 }
@@ -151,7 +152,8 @@ export function restore(raw){
  if(s.job?.routeKey!==undefined&&!jobs[s.job.id].routes)throw Error('护送路线无效');
  if(s.job&&isEscortJob(jobs[s.job.id])&&!integer(s.job.progress,0,jobRoute(s).length))throw Error('护送进度无效');
  if(!validMartial(s))throw Error('武艺记录无效');
- if(s.combat&&(!['周师傅','陆教习','拦路人','持棍拦路人'].includes(s.combat.name)||!integer(s.combat.hp,1,s.combat.name==='陆教习'?50:45)||!integer(s.combat.attack,1,8)||s.combat.spar!==['周师傅','陆教习'].includes(s.combat.name)))throw Error('战斗无效');
+ if(s.combat&&(!['周师傅','陆教习','拦路人','持棍拦路人',...Object.values(sparPartners).map(p=>p.name)].includes(s.combat.name)||!integer(s.combat.hp,1,sparProfile(s.combat.name)?.hp||(s.combat.name==='陆教习'?50:45))||!integer(s.combat.attack,1,8)||s.combat.spar!==(['周师傅','陆教习'].includes(s.combat.name)||!!sparProfile(s.combat.name))))throw Error('战斗无效');
+ if(s.combat&&sparProfile(s.combat.name)&&(s.combat.attack!==sparProfile(s.combat.name).attack||s.place!=='liuxi'))throw Error('陪练状态无效');
  if(!integer(s.homeDay,0,s.day))throw Error('住所记录无效');
  if(!s.assessments||typeof s.assessments!=='object'||Array.isArray(s.assessments)||Object.entries(s.assessments).some(([key,day])=>!Object.hasOwn(weapons,key)||!integer(day,1,s.day)))throw Error('考较记录无效');
  if(s.combat?.assessment!==undefined&&(!Object.hasOwn(weapons,s.combat.assessment)||s.combat.assessment!==s.weapon||s.combat.name!=='周师傅'||!s.combat.spar||s.combat.attack!==7||s.assessments[s.combat.assessment]))throw Error('考较状态无效');
