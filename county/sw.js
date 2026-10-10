@@ -1,4 +1,4 @@
-const VERSION='0.1.0',CACHE='jianghu-qinghe:'+VERSION,BASE=new URL('./',self.registration.scope),FILES=['index.html','style.css','app.js','commands.js','content.js','engine.js','world.js','progression.js','storage.js','manifest.webmanifest'];
+const VERSION='0.2.0',CACHE='jianghu-qinghe:'+VERSION,BASE=new URL('./',self.registration.scope),FILES=['index.html','style.css','app.js','commands.js','content.js','engine.js','world.js','progression.js','storage.js','martial-data.js','combat-core.js','martial-moves.js','martial-progression.js','injury.js','manifest.webmanifest'];
 const url=p=>new URL(p+'?v='+VERSION,BASE).href;
 self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(FILES.map(p=>new Request(url(p),{cache:'reload'})));await self.skipWaiting();})()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const k of await caches.keys())if(k.startsWith('jianghu-qinghe:')&&k!==CACHE)await caches.delete(k);await self.clients.claim();})()));

@@ -1,0 +1,27 @@
+name: Qinghe county regression
+on:
+  pull_request:
+    paths:
+      - 'county/**'
+      - '.github/workflows/qinghe-ci.yml'
+  push:
+    branches:
+      - feature/qinghe-martial-combat-0.2.0
+    paths:
+      - 'county/**'
+      - '.github/workflows/qinghe-ci.yml'
+  workflow_dispatch:
+jobs:
+  county-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          for file in county/*.js county/*.mjs; do node --check "$file"; done
+      - name: County regression tests
+        run: node --test county/*.test.mjs
