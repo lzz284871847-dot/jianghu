@@ -8,8 +8,8 @@ export function newCombat(opponent='brawler',martial='qinghe_fist'){
 }
 export function intent(c){const type=OPPONENTS[c.opponent].style;if(c.enemyEnergy<18)return 'guard';if(c.distance>=3)return type==='kite'?'retreat':'advance';if(c.playerGuard>0)return type==='adapt'||type==='counter'?'feint':'strike';return ({rush:'heavy',cautious:'guard',reach:'strike',tempo:'strike',pressure:'heavy',defend:'guard',counter:'guard',kite:'retreat',adapt:c.round%3===0?'feint':'strike'})[type]||'strike';}
 export function legal(c,action){return ACTIONS.includes(action)&&!(action==='retreat'&&c.distance===4)&&!(action==='advance'&&c.distance===0);}
-export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5){
- const log=[],action='';
+export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5,action=''){ 
+ const log=[];
  
   if(enemy==='advance')c.distance=clamp(c.distance-1,0,4);
   else if(enemy==='retreat')c.distance=clamp(c.distance+1,0,4);
@@ -53,7 +53,7 @@ export function resolve(c,player,action,rng=()=>.5){
   else log.push(inReach?'攻击未能命中。':'兵器距离不足，攻击落空。');
  }
  if(c.enemyHp<=0){c.ended='victory';log.push('对手失去继续战斗的能力。');}
- if(!c.ended)log.push(...enemyResponse(c,player,enemy,rng));
+ if(!c.ended)log.push(...enemyResponse(c,player,enemy,rng,action));
  if(player.hp===0){player.dead=true;c.ended='death';log.push('角色死亡，不能自动复活。');}
 
  const result={round:c.round,action,enemyIntent:enemy,distanceBefore,distanceAfter:c.distance,hpDelta:player.hp-before.hp,energyDelta:player.energy-before.energy,enemyHpDelta:c.enemyHp-before.enemyHp,ended:c.ended||null,log};
