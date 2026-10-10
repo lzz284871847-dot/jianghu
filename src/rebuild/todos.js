@@ -1,10 +1,10 @@
-import {gatherings} from './continuity.js?v=1.0.51';
-import {locations,jobs,recipes,skills,events} from './content.js?v=1.0.51';
-import {currentWeapon} from './equipment.js?v=1.0.51';
-import {isEscortJob,boardJobs,dailyContract,jobDestination,escortStatus,jobDeliveryBlocker,jobDeadline} from './contracts.js?v=1.0.51';
-import {farmBlocker,farmStatus} from './farming.js?v=1.0.51';
-import {recipeBlockers} from './crafting.js?v=1.0.51';
-import {npcPlace} from './world.js?v=1.0.51';
+import {gatherings} from './continuity.js?v=1.0.52';
+import {locations,jobs,recipes,skills,events} from './content.js?v=1.0.52';
+import {currentWeapon} from './equipment.js?v=1.0.52';
+import {isEscortJob,boardJobs,dailyContract,jobDestination,escortStatus,jobDeliveryBlocker,jobDeadline} from './contracts.js?v=1.0.52';
+import {farmBlocker,farmStatus} from './farming.js?v=1.0.52';
+import {recipeBlockers} from './crafting.js?v=1.0.52';
+import {npcPlace} from './world.js?v=1.0.52';
 // 建议只读取实际状态，不执行行动、不替玩家做选择。
 export function todoSuggestions(s){
  if(s.dead)return [{text:'这段人生已经结束。可在系统页导出记录或创建新角色。'}];

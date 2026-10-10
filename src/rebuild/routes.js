@@ -1,4 +1,4 @@
-import {locations} from './content.js?v=1.0.51';
+import {locations} from './content.js?v=1.0.52';
 export function travelMinutes(s,to){return s.weather==='雨'&&['road','hill','bamboo','ferry'].includes(to)?60:30}
 // 仅按当前天气估算，行程仍由已有移动规则逐段执行。
 export function findRoute(s,to){

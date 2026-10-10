@@ -1,7 +1,7 @@
-import {items,skills,homePrice,recipes,locations,people,jobs,events} from './content.js?v=1.0.51';
-import {skillLines} from './progression.js?v=1.0.51';
-import {resources} from './resources.js?v=1.0.51';
-import {weapons} from './equipment.js?v=1.0.51';
+import {items,skills,homePrice,recipes,locations,people,jobs,events} from './content.js?v=1.0.52';
+import {skillLines} from './progression.js?v=1.0.52';
+import {resources} from './resources.js?v=1.0.52';
+import {weapons} from './equipment.js?v=1.0.52';
 // 只整理展示，不修改库存、技能或存档。
 const groups={恢复用品:['food','herb','salve'],兵器:['staff','sword'],工具:['tool','rod','trap'],原料与种子:['iron','wood','fish','ore','meat','seed','vegetable']};
 function node(doc,tag,value,className=''){const el=doc.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
