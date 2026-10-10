@@ -1,4 +1,4 @@
-import {jobs,locations} from './content.js?v=1.0.56';
+import {jobs,locations} from './content.js?v=1.0.57';
 // 有限步骤与真实结算，不添加任务链、临时剧情或独立奖励货币。
 const leave={id:'leave',label:'退出这份委托',minutes:0,energy:0,end:true,result:'你退出了约定，没有罚款或奖励。'};
 export const errands={

@@ -1,16 +1,17 @@
-import {errandStage} from './errands.js?v=1.0.56';
-import {continuityDay,npcActivity,gatherings} from './continuity.js?v=1.0.56';
-import {farmStatus} from './farming.js?v=1.0.56';
-import {procurementNews} from './contracts.js?v=1.0.56';
-import {discoveries} from './discoveries.js?v=1.0.56';
-import {events,people,locations,npcSchedules} from './content.js?v=1.0.56';
+import {tradeNews} from './risk-trade.js?v=1.0.57';
+import {errandStage} from './errands.js?v=1.0.57';
+import {continuityDay,npcActivity,gatherings} from './continuity.js?v=1.0.57';
+import {farmStatus} from './farming.js?v=1.0.57';
+import {procurementNews} from './contracts.js?v=1.0.57';
+import {discoveries} from './discoveries.js?v=1.0.57';
+import {events,people,locations,npcSchedules} from './content.js?v=1.0.57';
 export function random(s){let x=s.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;s.seed=x>>>0;return s.seed/4294967296}
 export function npcPlace(s,id){const schedule=npcActivity(s,id)||npcSchedules[id];if(!Object.hasOwn(npcSchedules,id))return null;const h=Math.floor(s.minute/60);return h>=schedule.from&&h<schedule.to?schedule.place:schedule.off}
 export function npcScheduleText(id,s){if(s&&npcActivity(s,id))return npcActivity(s,id).text;if(!Object.hasOwn(npcSchedules,id))return '去向未知';const schedule=npcSchedules[id],hour=h=>String(h).padStart(2,'0')+':00';return `${hour(schedule.from)}–${hour(schedule.to)} ${locations[schedule.place].name}；其余时间 ${locations[schedule.off].name}`}
 export function nearbyPeople(s){return Object.entries(people).filter(([id])=>npcPlace(s,id)===s.place).map(([id,p])=>({id,...p,relation:s.relations[id]}))}
 export function advance(s,minutes){let total=s.minute+minutes;while(total>=1440){total-=1440;s.day++;newDay(s)}s.minute=total;}
 function newDay(s){
- const news=[`第${s.day-1}日结束 · 世界新闻`];
+ const news=[`第${s.day-1}日结束 · 世界新闻`];if(s.tradeRun?.remaining)news.push('你仍有茶货未售出；柳溪报价每过一日减2文，最低2文，没有自动成交。');
  if(s.plot&&s.plot.readyDay===s.day)news.push('你的菜地已成熟，可自行安排收获。'+farmStatus(s));
  if(s.discoveryResolution&&s.discoveryResolution.expires<=s.day){news.push('【可靠消息】'+discoveries[s.discoveryResolution.kind].after);s.discoveryResolution=null;}
  continuityDay(s,news);
@@ -24,4 +25,4 @@ function newDay(s){
  if(s.job&&s.job.deadline<s.day){news.push('你接下的约定已经到期，对方另找了人。');s.job=null;if(s.pending?.type==='errand')s.pending=null;}
  s.news=[...news,...s.news].slice(0,20);
 }
-export function encounter(s){if(s.pending||s.combat||s.dead)return;const step=errandStage(s);if(step&&step.place===s.place){s.pending={type:'errand',id:s.job.id};return;}const e=s.events.find(e=>e.status==='open'&&events[e.kind].place===s.place&&(!gatherings[e.kind]||s.day===e.expires-2&&s.minute>=480&&s.minute<gatherings[e.kind].close));if(e)s.pending={type:'world',id:e.id};}
+export function encounter(s){if(s.pending||s.combat||s.dead)return;if(s.tradeRun?.remaining&&!s.tradeRun.heard&&['bamboo','liuxi'].includes(s.place)){s.tradeRun.heard=true;s.result.push('【可靠行情】'+tradeNews(s));if(s.place==='bamboo'){s.pending={type:'trade'};return;}}const step=errandStage(s);if(step&&step.place===s.place){s.pending={type:'errand',id:s.job.id};return;}const e=s.events.find(e=>e.status==='open'&&events[e.kind].place===s.place&&(!gatherings[e.kind]||s.day===e.expires-2&&s.minute>=480&&s.minute<gatherings[e.kind].close));if(e)s.pending={type:'world',id:e.id};}

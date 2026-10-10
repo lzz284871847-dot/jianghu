@@ -1,7 +1,7 @@
-import {errandDestination,errandStatus} from './errands.js?v=1.0.56';
-import {travelMinutes} from './routes.js?v=1.0.56';
-import {progress} from './progression.js?v=1.0.56';
-import {jobs,locations,items,skills,people} from './content.js?v=1.0.56';
+import {errandDestination,errandStatus} from './errands.js?v=1.0.57';
+import {travelMinutes} from './routes.js?v=1.0.57';
+import {progress} from './progression.js?v=1.0.57';
+import {jobs,locations,items,skills,people} from './content.js?v=1.0.57';
 // 普通招工常驻；采购按日轮换，不运行商人资产或店铺账目模拟。
 export function postedJobs(s){return Object.entries(jobs).filter(([,job])=>(!job.board||job.board===s.place)&&(job.boardDay===undefined||job.boardDay===(s.day-1)%3))}
 export function boardJobs(s){return postedJobs(s).filter(([,job])=>(job.board||'town')===s.place)}

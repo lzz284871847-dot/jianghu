@@ -12,7 +12,7 @@ export const locations={
  bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill','liuxi'],actions:['train','gather','collectWood','explore']}
 };
 export const skills={steadySword:'平川剑法',shelterStaff:'护身棍法',fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送',battle:'临战判断'};
-export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
+export const items={tea:'本批茶货',food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
 export const people={tutor:{gift:'food',name:'陆教习',role:'柳溪武馆教习',personality:'严谨',interest:'基础剑棍与扎实步法',goal:'教好普通剑棍，让学徒懂得何时进、何时守',line:'基础扎实，再学一门普通武艺。招式各有所长，练熟要花时间，考较也不是天下排名。'},
  qiao:{gift:'vegetable',name:'乔掌柜',role:'柳溪集商贩',personality:'精细',interest:'常用农具与菜蔬',goal:'收齐集上农户要用的工具，做稳当的小买卖',line:'镇上与集上各有价，差价不是白来的钱。算上路程，再看这一趟值不值得。'},
  boatman:{gift:'wood',name:'贺船工',role:'旧渡口船工',personality:'厚道',interest:'河岸道路与修船手艺',goal:'把靠岸小舟的系泊木桩整好，收工后回集上歇脚',line:'沿岸走就能到码头，不必花船钱。护送货物先认交接点，遇事也可以放下这份活。'},

@@ -1,17 +1,18 @@
-import {events,locations,items,skills,jobs} from './content.js?v=1.0.56';
-import {gatherings,npcActivity,followups} from './continuity.js?v=1.0.56';
-import {sites,siteAt} from './sites.js?v=1.0.56';
-import {resources,resourceChance} from './resources.js?v=1.0.56';
-import {farmActions,farmBlocker} from './farming.js?v=1.0.56';
-import {currentWeapon} from './equipment.js?v=1.0.56';
-import {npcPlace} from './world.js?v=1.0.56';
-import {relationshipFee} from './relationships.js?v=1.0.56';
-import {jobDeliveryBlocker,jobMinutes,jobMaterials} from './contracts.js?v=1.0.56';
-import {artPracticeBlocker,activeArt} from './martial.js?v=1.0.56';
+import {tradeQuote} from './risk-trade.js?v=1.0.57';
+import {events,locations,items,skills,jobs} from './content.js?v=1.0.57';
+import {gatherings,npcActivity,followups} from './continuity.js?v=1.0.57';
+import {sites,siteAt} from './sites.js?v=1.0.57';
+import {resources,resourceChance} from './resources.js?v=1.0.57';
+import {farmActions,farmBlocker} from './farming.js?v=1.0.57';
+import {currentWeapon} from './equipment.js?v=1.0.57';
+import {npcPlace} from './world.js?v=1.0.57';
+import {relationshipFee} from './relationships.js?v=1.0.57';
+import {jobDeliveryBlocker,jobMinutes,jobMaterials} from './contracts.js?v=1.0.57';
+import {artPracticeBlocker,activeArt} from './martial.js?v=1.0.57';
 // 全部只读：不推进时间、不抽随机数、不模拟操作，也不自动领取。
 export function localOutlook(s){
  if(s.dead)return ['这段人生已经结束，可导出记录。'];
- const rows=[];
+ const rows=[];const quote=tradeQuote(s);if(quote)rows.push(quote.name+'：茶货'+quote.price+'文/包，剩余收购额度'+quote.capacity+'包；成交前可查看风险贸易栏。');
  for(const e of s.events){if(e.status!=='open'||e.expires<=s.day||events[e.kind].place!==s.place)continue;const g=gatherings[e.kind];if(g&&(e.expires-2!==s.day||s.minute>=g.close))continue;rows.push(events[e.kind].title+'：'+(g?(s.minute<480?'08:00开始，':'正在开放，')+Math.floor(g.close/60)+'点收场。':'仍可参与，第'+(e.expires-1)+'日结束后收场。'));}
  const key=siteAt(s);if(key){const record=s.sites[key],left=record?new Set(sites[key].choices.filter(c=>!record.done.includes(c.claim)).map(c=>c.claim)).size:0;rows.push(record?sites[key].name+'：'+(left?'还有'+left+'项可处理，有限物资不刷新。':'已全部处理，可查看记录。'):'附近有普通旧址，可花1小时、精力4查看并留下记录。');}
  const activity=npcActivity(s);if(activity&&(activity.place===s.place||activity.id==='merchant'&&s.place==='town'||activity.id==='master'&&s.place==='road'||activity.id==='boatman'&&s.place==='ferry'))rows.push(activity.text);

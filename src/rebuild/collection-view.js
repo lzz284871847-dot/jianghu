@@ -1,14 +1,15 @@
-import {items,skills,homePrice,recipes,locations,people,jobs,events} from './content.js?v=1.0.56';
-import {skillLines} from './progression.js?v=1.0.56';
-import {resources} from './resources.js?v=1.0.56';
-import {weapons} from './equipment.js?v=1.0.56';
+import {items,skills,homePrice,recipes,locations,people,jobs,events} from './content.js?v=1.0.57';
+import {skillLines} from './progression.js?v=1.0.57';
+import {resources} from './resources.js?v=1.0.57';
+import {weapons} from './equipment.js?v=1.0.57';
 // 只整理展示，不修改库存、技能或存档。
-const groups={恢复用品:['food','herb','salve'],兵器:['staff','sword'],工具:['tool','rod','trap'],原料与种子:['iron','wood','fish','ore','meat','seed','vegetable']};
+const groups={贸易货物:['tea'],恢复用品:['food','herb','salve'],兵器:['staff','sword'],工具:['tool','rod','trap'],原料与种子:['iron','wood','fish','ore','meat','seed','vegetable']};
 function node(doc,tag,value,className=''){const el=doc.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 export function itemUseLines(s,key){
  if(!Object.hasOwn(items,key))return [];
  const lines=[],recovery={food:'吃一份：精力+12、气血+5，上限100；不需要维持饱食或饮水。',herb:'用一份处理伤口：气血+25，上限100。',salve:'用一份药膏：气血+35，上限100。'};
  if(recovery[key])lines.push(recovery[key]);
+ if(key==='tea')lines.push('本批风险贸易的真实库存；在江湖页风险贸易栏出售。柳溪集行情与收购额度会影响收益，可回青石镇按6文/包止损，河湾村最多收本批1包。不能当干粮食用或通过普通商铺重复出售。');
  if(key==='ore')lines.push('铁矿石需先炼成铁料，不能直接打造工具或铁剑。');
  if(key==='seed')lines.push('河湾村播种：菜种1、借地2文；七个游戏日成熟，不照料也有基础收成。');
  if(weapons[key])lines.push(`在背包装备区换用后，练习与出招增长${skills[weapons[key].skill]}；获得兵器不会自动装备。`);
