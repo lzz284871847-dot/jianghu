@@ -24,4 +24,4 @@ jobs:
         run: |
           for file in county/*.js county/*.mjs; do node --check "$file"; done
       - name: County regression tests
-        run: node --test county/*.test.js county/*.test.mjs
+        run: node --test county
