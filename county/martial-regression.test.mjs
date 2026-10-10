@@ -42,3 +42,11 @@ test('minor injuries treatable at full health',()=>{
  assert.equal(act(s,'heal'),true);assert.equal(s.injuries.bruise,undefined);
 });
 
+
+test('tactical combat accepts basic strike and heavy',()=>{
+ const s=fresh();s.place='school';assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ assert.equal(martialAction(s,'turn','strike',()=>0.5),true);
+ assert.equal(s.combat?.round,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
