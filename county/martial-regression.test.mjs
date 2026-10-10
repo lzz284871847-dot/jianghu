@@ -41,3 +41,4 @@ test('minor injuries treatable at full health',()=>{
  // Ordinary treatment uses the existing action pipeline.
  assert.equal(act(s,'heal'),true);assert.equal(s.injuries.bruise,undefined);
 });
+
