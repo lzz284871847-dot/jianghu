@@ -1,17 +1,17 @@
-import {marketBlocker,marketHours} from './market.js?v=1.0.46';
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.46';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.46';
-import {travelMinutes} from './routes.js?v=1.0.46';
-import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.46';
-import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.46';
-import {recipeBlockers} from './crafting.js?v=1.0.46';
-import {resources,resourceChance} from './resources.js?v=1.0.46';
-import {injury} from './condition.js?v=1.0.46';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.46';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.46';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.46';
-import {gain,maxXP,progress} from './progression.js?v=1.0.46';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.46';
+import {marketBlocker,marketHours} from './market.js?v=1.0.47';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.47';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.47';
+import {travelMinutes} from './routes.js?v=1.0.47';
+import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.47';
+import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.47';
+import {recipeBlockers} from './crafting.js?v=1.0.47';
+import {resources,resourceChance} from './resources.js?v=1.0.47';
+import {injury} from './condition.js?v=1.0.47';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.47';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.47';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.47';
+import {gain,maxXP,progress} from './progression.js?v=1.0.47';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.47';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,homeDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -98,7 +98,7 @@ export function choose(s,id){
  if(s.dead||!s.pending)return fail(s,'当前没有待决定的事情。');
  if(s.pending.type==='discovery'){const kind=s.pending.kind,def=discoveries[kind],c=def.choices.find(x=>x.id===id);if(!c)return fail(s,'没有这个选择。');if(c.coins<0&&s.coins<-c.coins)return fail(s,`这项选择需${-c.coins}文，铜钱不足；可以改选或离开。`);for(const [key,level] of Object.entries(c.requires||{}))if(progress(s.skills[key]).level<level)return fail(s,`需要${skills[key]}Lv${level}，当前Lv${progress(s.skills[key]).level}；可以改选或离开。`);if(c.minHp&&s.hp<c.minHp)return fail(s,'受伤太重，先休养；也可以改选或离开。');if(c.tool&&!s.bag[c.tool])return fail(s,`需要${items[c.tool]}；工具可重复使用，也可以改选或离开。`);for(const [key,n] of Object.entries(c.input||{}))if(s.bag[key]<n)return fail(s,`${items[key]}不足，需要${n}；可以改选或离开。`);return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{s.pending=null;for(const [key,n] of Object.entries(c.input||{}))s.bag[key]-=n;for(const [key,n] of Object.entries(c.output||{}))s.bag[key]+=n;s.coins+=c.coins||0;if(c.to)s.place=c.to;if(id==='leave')s.discoveryResolution={kind,expires:s.day+1};s.result.push(c.result)},c.xp||{})}
  if(s.pending.type==='bandit'){if(!['fight','leave'].includes(id))return fail(s,'请选择交手或绕开。');return settle(s,id==='fight'?'迎战拦路人':'绕路离开',id==='fight'?1:30,0,()=>{s.pending=null;if(id==='fight'){s.combat=banditForPlace(s.place);s.result.push(opponentHint(s.combat.name),'实战可能致命，可随时尝试撤离。')}})}
- const e=s.events.find(e=>e.id===s.pending.id&&e.status==='open');if(!e){s.pending=null;return fail(s,'事情已经结束。');}const c=events[e.kind].choices.find(c=>c.id===id);if(!c)return fail(s,'没有这个选择。');if(c.coins<0&&s.coins<-c.coins)return fail(s,`这项选择需${-c.coins}文，铜钱不足；可以改选或离开。`);for(const [key,level] of Object.entries(c.requires||{}))if(progress(s.skills[key]).level<level)return fail(s,`需要${skills[key]}Lv${level}，当前Lv${progress(s.skills[key]).level}；可以改选或离开。`);if(c.minHp&&s.hp<c.minHp)return fail(s,'受伤太重，先休养；也可以改选其他处理方式。');for(const [key,n] of Object.entries(c.input||{}))if(s.bag[key]<n)return fail(s,`${items[key]}不足，需要${n}；可以改选或离开。`);return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{e.status=id==='leave'?'ignored':'resolved';s.pending=null;for(const [key,n] of Object.entries(c.input||{}))s.bag[key]-=n;s.coins+=c.coins||0;if(c.input)s.result.push('材料消耗：'+Object.entries(c.input).map(([key,n])=>items[key]+' -'+n).join('、'),'当前库存：'+Object.keys(c.input).map(key=>items[key]+' '+s.bag[key]).join('、'));if(c.to)s.place=c.to;if(c.relation){const before=s.relations[c.relation];s.relations[c.relation]=Math.min(100,before+c.change);s.result.push(...relationshipChange(s,c.relation,before));}s.result.push(c.result)},c.skill?{[c.skill]:c.xp}:{});
+ const e=s.events.find(e=>e.id===s.pending.id&&e.status==='open');if(!e){s.pending=null;return fail(s,'事情已经结束。');}const c=events[e.kind].choices.find(c=>c.id===id);if(!c)return fail(s,'没有这个选择。');if(c.familiar&&s.relations[c.familiar.person]<c.familiar.relation)return fail(s,`需要与${people[c.familiar.person].name}关系${c.familiar.relation}，当前${s.relations[c.familiar.person]}；可以改选或离开。`);if(c.coins<0&&s.coins<-c.coins)return fail(s,`这项选择需${-c.coins}文，铜钱不足；可以改选或离开。`);for(const [key,level] of Object.entries(c.requires||{}))if(progress(s.skills[key]).level<level)return fail(s,`需要${skills[key]}Lv${level}，当前Lv${progress(s.skills[key]).level}；可以改选或离开。`);if(c.minHp&&s.hp<c.minHp)return fail(s,'受伤太重，先休养；也可以改选其他处理方式。');for(const [key,n] of Object.entries(c.input||{}))if(s.bag[key]<n)return fail(s,`${items[key]}不足，需要${n}；可以改选或离开。`);return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{e.status=id==='leave'?'ignored':'resolved';s.pending=null;for(const [key,n] of Object.entries(c.input||{}))s.bag[key]-=n;s.coins+=c.coins||0;if(c.input)s.result.push('材料消耗：'+Object.entries(c.input).map(([key,n])=>items[key]+' -'+n).join('、'),'当前库存：'+Object.keys(c.input).map(key=>items[key]+' '+s.bag[key]).join('、'));if(c.to)s.place=c.to;if(c.relation){const before=s.relations[c.relation];s.relations[c.relation]=Math.min(100,before+c.change);s.result.push(...relationshipChange(s,c.relation,before));}s.result.push(c.result)},c.skill?{[c.skill]:c.xp}:{});
 }
 export function fight(s,id,rng=()=>random(s)){
  if(s.dead||!s.combat)return fail(s,'当前没有战斗。');if(!['attack','heavy','guard','inner','counter','flee'].includes(id))return fail(s,'未知战斗行动。');if(id==='inner'&&!s.learned)return fail(s,'尚未学会吐纳。');
