@@ -1,6 +1,6 @@
-import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=0.1.0';
-import {gain,progress,MAX} from './progression.js?v=0.1.0';
-import {advance,random,npcPlace} from './world.js?v=0.1.0';
+import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=0.2.0';
+import {gain,progress,MAX} from './progression.js?v=0.2.0';
+import {advance,random,npcPlace} from './world.js?v=0.2.0';
 import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=0.2.0';
 import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=0.2.0';
 import {injuryValid,treatInjury} from './injury.js?v=0.2.0';
