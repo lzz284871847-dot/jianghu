@@ -1,9 +1,9 @@
-import {locations,jobs,recipes,skills} from './content.js?v=1.0.47';
-import {currentWeapon} from './equipment.js?v=1.0.47';
-import {dailyContract,jobDestination,escortStatus,jobDeliveryBlocker,jobDeadline} from './contracts.js?v=1.0.47';
-import {farmBlocker,farmStatus} from './farming.js?v=1.0.47';
-import {recipeBlockers} from './crafting.js?v=1.0.47';
-import {npcPlace} from './world.js?v=1.0.47';
+import {locations,jobs,recipes,skills} from './content.js?v=1.0.48';
+import {currentWeapon} from './equipment.js?v=1.0.48';
+import {boardJobs,dailyContract,jobDestination,escortStatus,jobDeliveryBlocker,jobDeadline} from './contracts.js?v=1.0.48';
+import {farmBlocker,farmStatus} from './farming.js?v=1.0.48';
+import {recipeBlockers} from './crafting.js?v=1.0.48';
+import {npcPlace} from './world.js?v=1.0.48';
 // 建议只读取实际状态，不执行行动、不替玩家做选择。
 export function todoSuggestions(s){
  if(s.dead)return [{text:'这段人生已经结束。可在系统页导出记录或创建新角色。'}];
@@ -17,7 +17,8 @@ export function todoSuggestions(s){
  if(s.plot){const key=s.day>=s.plot.readyDay?'harvest':'tend';if(!farmBlocker(s,key))at('village',key,farmStatus(s),key==='harvest'?'收获成熟蔬菜':'照料这茬菜地');}
  else if(s.bag.seed&&!farmBlocker(s,'plant'))at('village','plant','菜地空闲，可用菜种1、借地2文播种。','借地播种');
  for(const key of ['brew','smelt','cookMeat','cookVegetables','cook']){const recipe=recipes[key];if(!recipeBlockers(s,recipe).length)at(recipe.place||'forge',key,`${recipe.name}：${recipe.hours}小时 / 精力${recipe.energy}，会实际消耗配方材料。`,recipe.name);}
- if(!s.job){const [key,job]=dailyContract(s);if(s.jobsDone[key]!==s.day){if(s.place==='town')rows.push({text:`今日采购：${job.name}，${job.reward}文，可接可不接。`,kind:'job',key,label:'接今日采购约定'});else rows.push({text:`今日采购：${job.name}；到街市看看其他活也可以。`,kind:'travel',key:'town',label:'列路线：青石镇'});}}
+ if(!s.job&&s.place==='liuxi')for(const [key,job] of boardJobs(s))if(s.jobsDone[key]!==s.day)rows.push({text:`当地委托：${job.name}，${job.reward}文；可接可不接。`,kind:'job',key,label:'接下：'+job.name});
+ if(!s.job&&s.place!=='liuxi'){const [key,job]=dailyContract(s);if(s.jobsDone[key]!==s.day){if(s.place==='town')rows.push({text:`今日采购：${job.name}，${job.reward}文，可接可不接。`,kind:'job',key,label:'接今日采购约定'});else rows.push({text:`今日采购：${job.name}；到街市看看其他活也可以。`,kind:'travel',key:'town',label:'列路线：青石镇'});}}
  if(s.hp>=25&&s.energy>=12&&s.bag.wood<2)at('bamboo','collectWood','木料较少，竹林可拾柴整理木料；2小时 / 精力12。','拾柴补充木料');
  if(s.hp>=25&&s.energy>=18){const skill=skills[currentWeapon(s).skill],place=locations[s.place].actions.includes('train')?s.place:'road';at(place,'train',`练习基础${skill}：2小时 / 精力18，只增长相关武学。`,'练习当前武学');}
  const unique=new Map();for(const row of rows){const key=row.kind+':'+row.key;if(!unique.has(key))unique.set(key,row)}return [...unique.values()].slice(0,6);

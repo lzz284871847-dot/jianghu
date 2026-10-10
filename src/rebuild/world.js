@@ -1,7 +1,7 @@
-import {farmStatus} from './farming.js?v=1.0.47';
-import {procurementNews} from './contracts.js?v=1.0.47';
-import {discoveries} from './discoveries.js?v=1.0.47';
-import {events,people,locations,npcSchedules} from './content.js?v=1.0.47';
+import {farmStatus} from './farming.js?v=1.0.48';
+import {procurementNews} from './contracts.js?v=1.0.48';
+import {discoveries} from './discoveries.js?v=1.0.48';
+import {events,people,locations,npcSchedules} from './content.js?v=1.0.48';
 export function random(s){let x=s.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;s.seed=x>>>0;return s.seed/4294967296}
 export function npcPlace(s,id){const schedule=npcSchedules[id];if(!Object.hasOwn(npcSchedules,id))return null;const h=Math.floor(s.minute/60);return h>=schedule.from&&h<schedule.to?schedule.place:schedule.off}
 export function npcScheduleText(id){if(!Object.hasOwn(npcSchedules,id))return '去向未知';const schedule=npcSchedules[id],hour=h=>String(h).padStart(2,'0')+':00';return `${hour(schedule.from)}–${hour(schedule.to)} ${locations[schedule.place].name}；其余时间 ${locations[schedule.off].name}`}
@@ -13,7 +13,7 @@ function newDay(s){
  if(s.discoveryResolution&&s.discoveryResolution.expires<=s.day){news.push('【可靠消息】'+discoveries[s.discoveryResolution.kind].after);s.discoveryResolution=null;}
  s.weather=random(s)<0.3?'雨':'晴';news.push(`【可靠消息】次日天气：${s.weather}。`,procurementNews(s));
  for(const e of s.events)if(['open','ignored'].includes(e.status)&&e.expires<=s.day){e.status='resolved';news.push('【可靠消息】'+events[e.kind].after)}
- const lives=['许铁匠修好邻人的锄头，收工后去客栈歇脚。','阿平给家中的屋顶补了几块瓦，随后回码头找活。','柳掌柜整理旧货，准备下一次赶集。','沈医者到邻村看诊后回村整理药材。','周师傅与老友喝茶，白日仍在城外教拳。'];news.push('【可靠消息】'+lives[Math.floor(random(s)*lives.length)]);
+ const lives=['乔掌柜在柳溪集整理农具货架，收摊后在集口歇脚。','贺船工查看旧渡口的系泊木桩，收工后沿岸回柳溪集。','许铁匠修好邻人的锄头，收工后去客栈歇脚。','阿平给家中的屋顶补了几块瓦，随后回码头找活。','柳掌柜整理旧货，准备下一次赶集。','沈医者到邻村看诊后回村整理药材。','周师傅与老友喝茶，白日仍在城外教拳。'];news.push('【可靠消息】'+lives[Math.floor(random(s)*lives.length)]);
  if(random(s)<0.55){const kinds=Object.keys(events),kind=kinds[Math.floor(random(s)*kinds.length)];if(!s.events.some(e=>e.kind===kind&&e.status==='open')){s.events.push({id:`${kind}-${s.day}`,kind,status:'open',expires:s.day+2});news.push(`【街坊消息】${locations[events[kind].place].name}：${events[kind].title}。`);}}
  if(random(s)<0.2)news.push('【未证实传闻】有人说邻县武馆月底收徒，消息尚待核实。');
  s.events=s.events.slice(-12);

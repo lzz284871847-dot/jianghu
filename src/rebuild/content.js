@@ -1,25 +1,31 @@
 // 内容与规则分开：全部事件、人物和行动均来自代码，不使用生成式剧情。
 export const locations={
- town:{name:'青石镇',tag:'街市 · 买卖与接活',text:'石板路两旁是粮铺和茶摊。有人赶集，有人找活，也有人只是坐着听闲话。',routes:['inn','forge','dock','village','road'],actions:['work','browse']},
+ liuxi:{board:true,name:'柳溪集',tag:'外地集市 · 带货与采购',text:'柳树下的小集与青石镇各有行情。铁制工具在此卖21文、鲜鱼7文、蔬菜3文；先算好买料和路程，再决定带什么货。可走旧渡口的河岸路，也可经竹林来往。',routes:['ferry','bamboo'],actions:['browse']},
+ ferry:{name:'旧渡口',tag:'河岸 · 护送与邻人',text:'摆渡的小舟搁在岸边，沿岸步道通往青石码头和柳溪集。走这条步道不收船费，不会强制遇敌；可以钓鱼、找活，也可以只看河水。',routes:['dock','liuxi'],actions:['work','fish','browse']},
+ town:{board:true,name:'青石镇',tag:'街市 · 买卖与接活',text:'石板路两旁是粮铺和茶摊。有人赶集，有人找活，也有人只是坐着听闲话。',routes:['inn','forge','dock','village','road'],actions:['work','browse']},
  inn:{name:'长安客栈',tag:'歇脚 · 消息与人物',text:'窗边的旅人喝着茶，店小二收拾空碗。周师傅收工后常来这里歇脚。',routes:['town'],actions:['sleep','browse']},
  forge:{name:'周记作坊',tag:'手艺 · 打造与烹饪',text:'炉边摆着铁料和木柄。这里接小件农具的活，手艺可以从最普通的一把锄头练起。',routes:['town'],actions:['forge','cook','cookMeat','cookVegetables','smelt','craftStaff','craftSword','craftTrap']},
- dock:{name:'青石码头',tag:'谋生 · 搬货与钓鱼',text:'船工吆喝着卸货，河岸边也有安静的钓位。靠力气和耐心，都能谋一份生活。',routes:['town','village'],actions:['work','fish']},
+ dock:{name:'青石码头',tag:'谋生 · 搬货与钓鱼',text:'船工吆喝着卸货，河岸边也有安静的钓位。靠力气和耐心，都能谋一份生活。',routes:['town','village','ferry'],actions:['work','fish']},
  village:{name:'河湾村',tag:'邻里 · 采药与休养',text:'田埂穿过村舍，沈医者在院中晾药。村民愿意让过路人借宿，药炉也能借用；先向沈医者学习基础制药。',routes:['town','dock','hill'],actions:['gather','sleep','brew','plant','tend','harvest']},
  road:{name:'城外小路',tag:'江湖 · 练拳与探索',text:'周师傅白日在树荫下教拳。再往远处走，便是行脚人和商队经过的竹林。',routes:['town','hill','bamboo'],actions:['train','explore']},
  hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。草药不会处处都有，旧矿点可采矿，草丛间可用简易猎具捕猎，也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','mine','hunt','explore']},
- bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill'],actions:['train','gather','collectWood','explore']}
+ bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill','liuxi'],actions:['train','gather','collectWood','explore']}
 };
 export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送',battle:'临战判断'};
 export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
 export const people={
+ qiao:{gift:'vegetable',name:'乔掌柜',role:'柳溪集商贩',personality:'精细',interest:'常用农具与菜蔬',goal:'收齐集上农户要用的工具，做稳当的小买卖',line:'镇上与集上各有价，差价不是白来的钱。算上路程，再看这一趟值不值得。'},
+ boatman:{gift:'wood',name:'贺船工',role:'旧渡口船工',personality:'厚道',interest:'河岸道路与修船手艺',goal:'把靠岸小舟的系泊木桩整好，收工后回集上歇脚',line:'沿岸走就能到码头，不必花船钱。护送货物先认交接点，遇事也可以放下这份活。'},
  artisan:{gift:'iron',name:'许铁匠',role:'作坊铁匠',personality:'务实',interest:'炉火与农具',goal:'把农具做好，也教新手学会基本手艺',line:'先学会看火色和落锤，再想打什么名剑。普通农具做结实了，也是一门饭碗。'},
  master:{gift:'food',name:'周师傅',role:'基础武艺师傅',personality:'直爽',interest:'习武与喝茶',goal:'把基础拳脚、棍法与剑术教给肯下功夫的人',line:'学拳是为了站稳脚跟，能不打的时候，也要懂得不打。'},
  merchant:{gift:'fish',name:'柳掌柜',role:'街市商人',personality:'精明',interest:'各地货价',goal:'把小铺经营好',line:'做买卖先从一两件货开始，赔得起，才学得会。'},
  doctor:{gift:'herb',name:'沈医者',role:'乡村医者',personality:'温和',interest:'草药与乡邻',goal:'收齐本月常用的药材',line:'山上寻药也要量力，受了伤就别硬撑。'},
  porter:{gift:'food',name:'阿平',role:'码头脚夫',personality:'随和',interest:'船上的见闻',goal:'攒钱修一修家里的屋顶',line:'码头有活就做，没活的时候，我也会钓两条鱼。'}
 };
-export const npcSchedules={master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
+export const npcSchedules={qiao:{place:'liuxi',from:8,to:18,off:'liuxi'},boatman:{place:'ferry',from:6,to:18,off:'liuxi'},master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
+ liuxiTools:{board:'liuxi',name:'柳溪集收农具',place:'liuxi',needs:{tool:1},reward:26,skill:'trade',text:'乔掌柜为农户收铁制工具1件，三日内送到柳溪集，报酬26文。每日最多一份，材料或货物自备；普通出售工具仍为21文。'},
+ ferryParcel:{board:'liuxi',name:'沿岸护送货包',start:'liuxi',place:'dock',route:['ferry','dock'],energy:6,reward:12,xp:{escort:1,carry:1},cargo:'封好货包',text:'在柳溪集领封好的普通货包，沿旧渡口、青石码头顺序交接，三日内完成；步行不收船费、不耗精力，最终交付半小时、精力6，报酬12文。途中事情可忽略，没有必打战斗。'},
  repairTools:{name:'农具修理',place:'forge',partner:'artisan',relation:5,requires:{forge:2},hours:1,energy:12,shift:[7,18],needs:{iron:1,wood:1},reward:18,xp:{forge:2,woodwork:1},text:'许铁匠介绍一份修理活：修整农具刃口、更换木柄。需锻造Lv2、关系5，自备铁料1、木料1；作坊提供锤具。一小时、精力12，07:00–18:00内完成，工钱18文，每日最多一份。修好的农具归委托人。',result:'本次完成：修复农具1件，已交还委托人，不进入背包。你修整刃口并加工木柄，收到18文工钱。'},
  artisanSupply:{name:'铁匠农具补货',place:'forge',partner:'artisan',relation:5,requires:{forge:2},needs:{tool:2},reward:44,skill:'trade',text:'许铁匠愿向熟悉的手艺人收购铁制工具2件，三日内送到作坊；需锻造Lv2、关系5。用现有库存交付也可以，报酬44文，每日最多一份。'},
  doctorSupply:{name:'医者药膏补货',place:'village',partner:'doctor',relation:5,requires:{medicine:2},needs:{salve:2},reward:16,skill:'trade',text:'沈医者向熟悉的制药人收普通药膏2份，三日内送到河湾村；需制药Lv2、关系5。报酬16文，每日最多一份，不预付材料。'},
@@ -48,7 +54,8 @@ export const events={
  fair:{title:'临时小集',place:'dock',text:'一艘货船带来了小摊贩。码头有人卖旧器物，也有人只来看热闹。',choices:[{id:'browse',label:'逛一逛，了解行情',hours:1,energy:4,skill:'trade',xp:1,result:'你比较了几家的价钱，记住了常见货物的行情。没有买下任何东西。'},{id:'leave',label:'不逛了',result:'小集还在继续，你有自己的安排。'}],after:'码头的小集散了，船上的商贩去了下一站。'},
  rain:{title:'山道落石',place:'hill',text:'几块碎石挡住了旧道，过路人正在商量清理。',choices:[{id:'help',label:'一起清理',hours:1,energy:12,skill:'carry',xp:1,coins:6,result:'你们把碎石搬到路边，旧道重新可以通行。同行商人凑了6文酬谢你。'},{id:'leave',label:'绕开，不参与',hours:0.5,result:'你从旁边绕过，其他行人继续清理。'}],after:'南山坡的落石已由过路人清理。'},
  dockMeal:{title:'船工的伙食委托',place:'dock',text:'一批船工等着开饭，领工愿付18文请熟悉烹饪的人用自备鲜鱼1、木料1做两份饭食，码头提供灶具。也可以直接交干粮2份，收12文。两条路线任选其一，饭食交给船工，不留在你的背包。',choices:[{id:'cook',label:'现做两份饭食，收18文',requires:{cook:2},input:{fish:1,wood:1},hours:1,energy:8,minHp:25,skill:'cook',xp:2,coins:18,result:'本次制作：鱼饭2份，已交给船工，不进入背包。领工付你18文；灶具留在码头。'},{id:'deliver',label:'交干粮2份，收12文',input:{food:2},hours:0.5,energy:2,skill:'trade',xp:1,coins:12,result:'你交出干粮2份，领工验收后付了12文。没有进行烹饪，因此不增长烹饪经验。'},{id:'leave',label:'不接这份伙食委托',result:'你没有接下委托，领工继续找人准备伙食。'}],after:'码头领工后来请附近饭摊备好伙食，船工吃过饭继续装货。'},
- porterRoof:{title:'阿平准备修屋顶',place:'dock',text:'阿平在码头留了口信，想准备修屋顶的木板。你可以送木料2份，关系增加4，没有工钱或技能经验；若木工Lv2且与阿平关系至少5，也可用自备木料2份加工补板，收16文、关系增加2。他会自己带回家修屋顶，不需要你替他安排生活。',choices:[{id:'supply',label:'送木料2份，帮他备料',input:{wood:2},hours:0.5,energy:2,relation:'porter',change:4,result:'你把木料交到阿平留下的收料处。他记下你的帮助，没有支付工钱；未加工木料，不增长木工经验。'},{id:'prepare',label:'加工补屋顶的木板，收16文',input:{wood:2},requires:{woodwork:2},familiar:{person:'porter',relation:5},hours:1,energy:12,minHp:25,skill:'woodwork',xp:2,coins:16,relation:'porter',change:2,result:'本次完成：补屋顶木板1组，已交付，不进入背包。你加工好木板，收到阿平留下的16文工钱；他会自行带回家补屋顶。'},{id:'leave',label:'不参与阿平的家事',result:'你没有接下这件事，阿平仍会自己找邻人帮忙。'}],after:'阿平已请邻人帮忙备好木板，收工后带回家补了屋顶。'}
+ porterRoof:{title:'阿平准备修屋顶',place:'dock',text:'阿平在码头留了口信，想准备修屋顶的木板。你可以送木料2份，关系增加4，没有工钱或技能经验；若木工Lv2且与阿平关系至少5，也可用自备木料2份加工补板，收16文、关系增加2。他会自己带回家修屋顶，不需要你替他安排生活。',choices:[{id:'supply',label:'送木料2份，帮他备料',input:{wood:2},hours:0.5,energy:2,relation:'porter',change:4,result:'你把木料交到阿平留下的收料处。他记下你的帮助，没有支付工钱；未加工木料，不增长木工经验。'},{id:'prepare',label:'加工补屋顶的木板，收16文',input:{wood:2},requires:{woodwork:2},familiar:{person:'porter',relation:5},hours:1,energy:12,minHp:25,skill:'woodwork',xp:2,coins:16,relation:'porter',change:2,result:'本次完成：补屋顶木板1组，已交付，不进入背包。你加工好木板，收到阿平留下的16文工钱；他会自行带回家补屋顶。'},{id:'leave',label:'不参与阿平的家事',result:'你没有接下这件事，阿平仍会自己找邻人帮忙。'}],after:'阿平已请邻人帮忙备好木板，收工后带回家补了屋顶。'},
+ ferryMooring:{title:'贺船工的系泊木桩',place:'ferry',text:'贺船工留了口信，要为搁岸小舟整理系泊处。可帮忙搬齐碎石收8文；若木工Lv2且关系至少5，可自备木料1加工垫木收14文。小舟已搁岸，没有人落水，也不要求你乘船。',choices:[{id:'help',label:'搬齐系泊处碎石，收8文',hours:1,energy:12,minHp:25,skill:'carry',xp:1,coins:8,relation:'boatman',change:2,result:'你把碎石搬齐，贺船工留下的8文工钱交到你手上。小舟仍留在岸边。'},{id:'woodwork',label:'加工系泊垫木，收14文',requires:{woodwork:2},familiar:{person:'boatman',relation:5},input:{wood:1},hours:1,energy:10,minHp:25,skill:'woodwork',xp:1,coins:14,relation:'boatman',change:2,result:'本次完成：系泊垫木1件，已留在系泊处，不进入背包。你收到14文工钱，贺船工会自行装好木桩。'},{id:'leave',label:'不参与，沿岸继续走',result:'你没有接下这份活，贺船工另找邻人整理。'}],after:'贺船工已请邻人整理好系泊处，小舟照常停在旧渡口。'}
 };
 
 // 等候只推进游戏时间；与恢复精力的歇息分开。
