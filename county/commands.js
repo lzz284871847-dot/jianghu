@@ -1,0 +1,4 @@
+import {places,items} from './content.js?v=0.1.0';
+import {move,act,trade} from './engine.js?v=0.1.0';
+const aliases={打工:'work',做短工:'work',休息:'rest',歇息:'rest',睡觉:'sleep',等半小时:'wait',吃干粮:'eat',用药材:'heal',治疗:'doctor',练拳:'train',拾柴:'wood',采药:'herb',钓鱼:'fish',采矿:'ore',狩猎:'hunt',分拣余菜:'vegetables',煮饭:'rice',做菜饭:'cookVegetables',炼铁:'smelt'};
+export function command(s,input){const value=String(input).trim().replace(/[。！\s]/g,'').replace(/^我想|^我要|^我/,'');if(Object.hasOwn(aliases,value))return act(s,aliases[value]);if(value.startsWith('去')){const key=Object.keys(places).find(k=>places[k].name===value.slice(1));if(key)return move(s,key);}const match=value.match(/^([买卖])(.+?)(?:×([0-9]+))?$/);if(match){const key=Object.keys(items).find(k=>items[k]===match[2]);if(key)return trade(s,match[1]==='买'?'buy':'sell',key,match[3]?Number(match[3]):1);}s.result=['没有识别这项行动。可输入：去河湾村、采药、钓鱼、做短工、休息、买粮食×2；远行请按附近道路逐段走。'];return false;}
