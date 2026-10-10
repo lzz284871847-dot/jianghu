@@ -1,6 +1,6 @@
 // 内容与规则分开：全部事件、人物和行动均来自代码，不使用生成式剧情。
 export const locations={
- liuxi:{board:true,name:'柳溪集',tag:'外地集市 · 带货与采购',text:'柳树下的小集与青石镇各有行情。铁制工具在此卖21文、鲜鱼7文、蔬菜3文；先算好买料和路程，再决定带什么货。可走旧渡口的河岸路，也可经竹林来往。',routes:['ferry','bamboo'],actions:['browse']},
+ liuxi:{board:true,name:'柳溪集',tag:'外地集市 · 带货与采购',text:'集旁有一间小武馆，陆教习08:00–18:00教授普通剑棍。柳树下的小集与青石镇各有行情。铁制工具在此卖21文、鲜鱼7文、蔬菜3文；先算好买料和路程，再决定带什么货。可走旧渡口的河岸路，也可经竹林来往。',routes:['ferry','bamboo'],actions:['browse']},
  ferry:{name:'旧渡口',tag:'河岸 · 护送与邻人',text:'摆渡的小舟搁在岸边，沿岸步道通往青石码头和柳溪集。走这条步道不收船费，不会强制遇敌；可以钓鱼、找活，也可以只看河水。',routes:['dock','liuxi'],actions:['work','fish','browse']},
  town:{board:true,name:'青石镇',tag:'街市 · 买卖与接活',text:'石板路两旁是粮铺和茶摊。有人赶集，有人找活，也有人只是坐着听闲话。',routes:['inn','forge','dock','village','road'],actions:['work','browse']},
  inn:{name:'长安客栈',tag:'歇脚 · 消息与人物',text:'窗边的旅人喝着茶，店小二收拾空碗。周师傅收工后常来这里歇脚。',routes:['town'],actions:['sleep','browse']},
@@ -11,9 +11,9 @@ export const locations={
  hill:{name:'南山坡',tag:'野外 · 草药与行路',text:'山风吹过草丛，旧道绕向竹林。草药不会处处都有，旧矿点可采矿，草丛间可用简易猎具捕猎，也可以只是看看路。',routes:['village','road','bamboo'],actions:['gather','mine','hunt','explore']},
  bamboo:{name:'竹林',tag:'野外 · 练武与偶遇',text:'竹影落在土路上，脚步声在林间格外清楚。这里适合练拳，也能捡拾落枝整理木料，遇事可以转身离开。',routes:['road','hill','liuxi'],actions:['train','gather','collectWood','explore']}
 };
-export const skills={fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送',battle:'临战判断'};
+export const skills={steadySword:'平川剑法',shelterStaff:'护身棍法',fist:'拳脚',inner:'吐纳',carry:'搬运',herb:'采药',forge:'锻造',cook:'烹饪',trade:'经商',fish:'钓鱼',staff:'棍法',sword:'剑术',forage:'采集',mining:'采矿',woodwork:'木工',medicine:'制药',hunt:'狩猎',farming:'农耕',escort:'护送',battle:'临战判断'};
 export const items={food:'干粮',herb:'草药',iron:'铁料',wood:'木料',tool:'铁制工具',fish:'鲜鱼',rod:'钓竿',staff:'木棍',sword:'普通铁剑',ore:'铁矿石',salve:'普通药膏',trap:'简易猎具',meat:'猎物肉',seed:'菜种',vegetable:'蔬菜'};
-export const people={
+export const people={tutor:{gift:'food',name:'陆教习',role:'柳溪武馆教习',personality:'严谨',interest:'基础剑棍与扎实步法',goal:'教好普通剑棍，让学徒懂得何时进、何时守',line:'基础扎实，再学一门普通武艺。招式各有所长，练熟要花时间，考较也不是天下排名。'},
  qiao:{gift:'vegetable',name:'乔掌柜',role:'柳溪集商贩',personality:'精细',interest:'常用农具与菜蔬',goal:'收齐集上农户要用的工具，做稳当的小买卖',line:'镇上与集上各有价，差价不是白来的钱。算上路程，再看这一趟值不值得。'},
  boatman:{gift:'wood',name:'贺船工',role:'旧渡口船工',personality:'厚道',interest:'河岸道路与修船手艺',goal:'把靠岸小舟的系泊木桩整好，收工后回集上歇脚',line:'沿岸走就能到码头，不必花船钱。护送货物先认交接点，遇事也可以放下这份活。'},
  artisan:{gift:'iron',name:'许铁匠',role:'作坊铁匠',personality:'务实',interest:'炉火与农具',goal:'把农具做好，也教新手学会基本手艺',line:'先学会看火色和落锤，再想打什么名剑。普通农具做结实了，也是一门饭碗。'},
@@ -22,7 +22,7 @@ export const people={
  doctor:{gift:'herb',name:'沈医者',role:'乡村医者',personality:'温和',interest:'草药与乡邻',goal:'收齐本月常用的药材',line:'山上寻药也要量力，受了伤就别硬撑。'},
  porter:{gift:'food',name:'阿平',role:'码头脚夫',personality:'随和',interest:'船上的见闻',goal:'攒钱修一修家里的屋顶',line:'码头有活就做，没活的时候，我也会钓两条鱼。'}
 };
-export const npcSchedules={qiao:{place:'liuxi',from:8,to:18,off:'liuxi'},boatman:{place:'ferry',from:6,to:18,off:'liuxi'},master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
+export const npcSchedules={tutor:{place:'liuxi',from:8,to:18,off:'liuxi'},qiao:{place:'liuxi',from:8,to:18,off:'liuxi'},boatman:{place:'ferry',from:6,to:18,off:'liuxi'},master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
  liuxiTools:{board:'liuxi',name:'柳溪集收农具',place:'liuxi',needs:{tool:1},reward:26,skill:'trade',text:'乔掌柜为农户收铁制工具1件，三日内送到柳溪集，报酬26文。每日最多一份，材料或货物自备；普通出售工具仍为21文。'},
  ferryParcel:{board:'liuxi',name:'沿岸护送货包',start:'liuxi',place:'dock',route:['ferry','dock'],energy:6,reward:12,xp:{escort:1,carry:1},cargo:'封好货包',text:'在柳溪集领封好的普通货包，沿旧渡口、青石码头顺序交接，三日内完成；步行不收船费、不耗精力，最终交付半小时、精力6，报酬12文。途中事情可忽略，没有必打战斗。'},

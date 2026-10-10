@@ -1,8 +1,9 @@
-import {progress} from './progression.js?v=1.0.48';
-import {attackFactor} from './condition.js?v=1.0.48';
-import {currentWeapon} from './equipment.js?v=1.0.48';
+import {activeArt} from './martial.js?v=1.0.49';
+import {progress} from './progression.js?v=1.0.49';
+import {attackFactor} from './condition.js?v=1.0.49';
+import {currentWeapon} from './equipment.js?v=1.0.49';
 export function battleBonus(s){return Math.min(2,Math.floor(progress(s.skills.battle||0).level/2))}
-export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:['inner','counter'].includes(id)?6:4}
+export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:['inner','counter','art'].includes(id)?6:4}
 export function heavyChance(s){
  const level=progress(s.skills[currentWeapon(s).skill]).level;
  const base=Math.min(0.95,0.75+Math.min(4,level-1)*0.03+(s.combat?.prepared?0.1:0));
@@ -12,7 +13,8 @@ export function strike(s,id,rng){
  const weapon=currentWeapon(s),prepared=s.combat?.prepared?2:0;
  const chance=id==='heavy'?heavyChance(s):1;
  if(id==='heavy'&&rng()>=chance)return {damage:0,hit:false};
- const base=8+battleBonus(s)+Math.min(4,progress(s.skills[weapon.skill]).level-1)+weapon.bonus+prepared+(['inner','counter'].includes(id)?2:0);
+ const art=activeArt(s),artBonus=id==='art'&&art?(s.art==='steadySword'?Math.min(2,progress(s.skills[s.art]).level): -2):0;
+ const base=8+artBonus+battleBonus(s)+Math.min(4,progress(s.skills[weapon.skill]).level-1)+weapon.bonus+prepared+(['inner','counter'].includes(id)?2:0);
  const guard=s.combat?.name==='持棍拦路人'&&!['heavy','counter'].includes(id)?2:0;return {damage:Math.max(1,Math.floor(base*(id==='heavy'?1.5:1)*attackFactor(s,combatCost(s,id)))-guard),hit:true};
 }
 
