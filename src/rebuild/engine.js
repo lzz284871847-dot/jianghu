@@ -1,17 +1,17 @@
-import {marketBlocker,marketHours} from './market.js?v=1.0.40';
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.40';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.40';
-import {travelMinutes} from './routes.js?v=1.0.40';
-import {combatCost,strike,assessmentBlocker} from './combat.js?v=1.0.40';
-import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.40';
-import {recipeBlockers} from './crafting.js?v=1.0.40';
-import {resources,resourceChance} from './resources.js?v=1.0.40';
-import {injury} from './condition.js?v=1.0.40';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.40';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.40';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.40';
-import {gain,maxXP,progress} from './progression.js?v=1.0.40';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.40';
+import {marketBlocker,marketHours} from './market.js?v=1.0.41';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.41';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.41';
+import {travelMinutes} from './routes.js?v=1.0.41';
+import {combatCost,strike,assessmentBlocker,counterBlocker} from './combat.js?v=1.0.41';
+import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.41';
+import {recipeBlockers} from './crafting.js?v=1.0.41';
+import {resources,resourceChance} from './resources.js?v=1.0.41';
+import {injury} from './condition.js?v=1.0.41';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.41';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.41';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.41';
+import {gain,maxXP,progress} from './progression.js?v=1.0.41';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.41';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,homeDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -101,18 +101,19 @@ export function choose(s,id){
  const e=s.events.find(e=>e.id===s.pending.id&&e.status==='open');if(!e){s.pending=null;return fail(s,'事情已经结束。');}const c=events[e.kind].choices.find(c=>c.id===id);if(!c)return fail(s,'没有这个选择。');if(c.coins<0&&s.coins<-c.coins)return fail(s,`这项选择需${-c.coins}文，铜钱不足；可以改选或离开。`);for(const [key,level] of Object.entries(c.requires||{}))if(progress(s.skills[key]).level<level)return fail(s,`需要${skills[key]}Lv${level}，当前Lv${progress(s.skills[key]).level}；可以改选或离开。`);if(c.minHp&&s.hp<c.minHp)return fail(s,'受伤太重，先休养；也可以改选其他处理方式。');for(const [key,n] of Object.entries(c.input||{}))if(s.bag[key]<n)return fail(s,`${items[key]}不足，需要${n}；可以改选或离开。`);return settle(s,c.label,Math.round((c.hours||0)*60),c.energy||0,()=>{e.status=id==='leave'?'ignored':'resolved';s.pending=null;for(const [key,n] of Object.entries(c.input||{}))s.bag[key]-=n;s.coins+=c.coins||0;if(c.input)s.result.push('材料消耗：'+Object.entries(c.input).map(([key,n])=>items[key]+' -'+n).join('、'),'当前库存：'+Object.keys(c.input).map(key=>items[key]+' '+s.bag[key]).join('、'));if(c.to)s.place=c.to;if(c.relation){const before=s.relations[c.relation];s.relations[c.relation]=Math.min(100,before+c.change);s.result.push(...relationshipChange(s,c.relation,before));}s.result.push(c.result)},c.skill?{[c.skill]:c.xp}:{});
 }
 export function fight(s,id,rng=()=>random(s)){
- if(s.dead||!s.combat)return fail(s,'当前没有战斗。');if(!['attack','heavy','guard','inner','flee'].includes(id))return fail(s,'未知战斗行动。');if(id==='inner'&&!s.learned)return fail(s,'尚未学会吐纳。');
+ if(s.dead||!s.combat)return fail(s,'当前没有战斗。');if(!['attack','heavy','guard','inner','counter','flee'].includes(id))return fail(s,'未知战斗行动。');if(id==='inner'&&!s.learned)return fail(s,'尚未学会吐纳。');
+ if(id==='counter'){const blocked=counterBlocker(s);if(blocked)return fail(s,blocked);}
  const cost=combatCost(s,id),w=currentWeapon(s);
- const xp=['attack','heavy'].includes(id)?{[w.skill]:1}:id==='inner'?{[w.skill]:1,inner:1}:{};
+ const xp=['attack','heavy','counter'].includes(id)?{[w.skill]:1}:id==='inner'?{[w.skill]:1,inner:1}:{};
  if(!s.combat.spar&&id!=='flee')xp.battle=1;
- const name=id==='attack'?w.attack:id==='heavy'?'重击':id==='guard'?'防守':id==='inner'?'运功出招':'撤离';
+ const name=id==='attack'?w.attack:id==='heavy'?'重击':id==='guard'?'防守':id==='inner'?'运功出招':id==='counter'?'拆招反击':'撤离';
  return settle(s,name,1,cost,()=>{
   const c=s.combat;
   if(id==='flee'){s.combat=null;s.result.push('你退开脱身，没有必要逞强。');return}
   if(id==='guard'){c.prepared=true;s.result.push('稳住架势：下一次出招基础伤害+2，重击基础命中率+10个百分点；连续防守不叠加。')}
   else{const prepared=!!c.prepared,result=strike(s,id,rng);delete c.prepared;if(prepared)s.result.push('用上守势后的出招机会，本次消耗架势。');if(result.hit){c.hp-=result.damage;s.result.push(`你造成${result.damage}点伤害。`)}else s.result.push('重击落空，没有伤到对方；精力已消耗，仍结算相关发力练习。')}
   if(c.hp<=0){s.combat=null;if(c.assessment){s.assessments[c.assessment]=s.day;s.result.push('基础'+skills[weapons[c.assessment].skill]+'考较通过，记录已保存。没有额外经验、工钱或装备奖励。');}if(!c.spar)s.coins+=8;s.result.push(c.spar?'切磋结束，师傅点头示意。':'拦路人逃走，你拾回8文铜钱。');return}
-  const incoming=Math.max(1,c.attack-(id==='guard'?5:0));s.hp=Math.max(0,s.hp-incoming);s.result.push(id==='guard'?`防守挡下${c.attack-incoming}点伤害，仍受伤${incoming}点。`:`对方造成${incoming}点伤害。`);
+  const incoming=Math.max(1,c.attack-(id==='guard'?5:id==='counter'?3:0));s.hp=Math.max(0,s.hp-incoming);s.result.push(id==='counter'?`拆招卸去${c.attack-incoming}点还击伤害，仍受伤${incoming}点。`:id==='guard'?`防守挡下${c.attack-incoming}点伤害，仍受伤${incoming}点。`:`对方造成${incoming}点伤害。`);
   if(c.spar&&s.hp<=25){s.combat=null;s.hp=Math.max(1,s.hp);s.result.push('师傅收手：到这里就好，回去养养伤。')}
   else if(s.hp===0){s.combat=null;s.dead=true;s.result.push('你伤重死去。这段人生结束，不会自动读档。')}
  },xp);

@@ -1,8 +1,8 @@
-import {progress} from './progression.js?v=1.0.40';
-import {attackFactor} from './condition.js?v=1.0.40';
-import {currentWeapon} from './equipment.js?v=1.0.40';
+import {progress} from './progression.js?v=1.0.41';
+import {attackFactor} from './condition.js?v=1.0.41';
+import {currentWeapon} from './equipment.js?v=1.0.41';
 export function battleBonus(s){return Math.min(2,Math.floor(progress(s.skills.battle||0).level/2))}
-export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:id==='inner'?6:4}
+export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:['inner','counter'].includes(id)?6:4}
 export function heavyChance(s){
  const level=progress(s.skills[currentWeapon(s).skill]).level;
  const base=Math.min(0.95,0.75+Math.min(4,level-1)*0.03+(s.combat?.prepared?0.1:0));
@@ -12,7 +12,7 @@ export function strike(s,id,rng){
  const weapon=currentWeapon(s),prepared=s.combat?.prepared?2:0;
  const chance=id==='heavy'?heavyChance(s):1;
  if(id==='heavy'&&rng()>=chance)return {damage:0,hit:false};
- const base=8+battleBonus(s)+Math.min(4,progress(s.skills[weapon.skill]).level-1)+weapon.bonus+prepared+(id==='inner'?2:0);
+ const base=8+battleBonus(s)+Math.min(4,progress(s.skills[weapon.skill]).level-1)+weapon.bonus+prepared+(['inner','counter'].includes(id)?2:0);
  return {damage:Math.floor(base*(id==='heavy'?1.5:1)*attackFactor(s,combatCost(s,id))),hit:true};
 }
 
@@ -23,5 +23,12 @@ export function assessmentBlocker(s){
  if(progress(s.skills[w.skill]).level<2)return '当前兵器对应的基础武学需达到Lv2。';
  if(s.hp<70)return '考较前气血至少70，先养好伤。';
  if(s.energy<40)return '考较前精力至少40，先歇息。';
+ return null;
+}
+
+export function counterBlocker(s){
+ if(progress(s.skills[currentWeapon(s).skill]).level<2)return '对应基础武学达到Lv2才能拆招反击。';
+ if(!s.combat?.prepared)return '先防守蓄势，才能拆招反击。';
+ if(s.energy<6)return '拆招反击需要精力6。';
  return null;
 }

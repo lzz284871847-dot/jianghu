@@ -1,4 +1,4 @@
-import {skills} from './content.js?v=1.0.40';
+import {skills} from './content.js?v=1.0.41';
 const caps=[100,200,400,600,800];
 export const maxXP=caps.reduce((a,b)=>a+b,0);
 export function progress(total){let xp=total,level=1;for(let i=0;i<caps.length-1&&xp>=caps[i];i++){xp-=caps[i];level++}return {level,xp,cap:caps[level-1],complete:total===maxXP}}
