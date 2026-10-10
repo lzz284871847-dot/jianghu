@@ -1,4 +1,4 @@
-import {progress} from './progression.js?v=1.0.55';
+import {progress} from './progression.js?v=1.0.56';
 export const arts={
  steadySword:{name:'平川剑法',weapon:'sword',basic:'sword',move:'稳进剑',fee:20,text:'稳妥进攻：精力6，基础伤害比普通出剑多1（本武艺Lv2后多2），本段还击减少1；仍受疲劳、伤势和对方棍架影响。'},
  shelterStaff:{name:'护身棍法',weapon:'staff',basic:'staff',move:'护身棍',fee:20,text:'守中带攻：精力6，基础伤害比普通挥棍少2，本段还击减少4（至少受伤1）；不会额外蓄势。'}

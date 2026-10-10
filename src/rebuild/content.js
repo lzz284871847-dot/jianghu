@@ -24,6 +24,9 @@ export const people={tutor:{gift:'food',name:'陆教习',role:'柳溪武馆教�
 };
 export const npcSchedules={tutor:{place:'liuxi',from:8,to:18,off:'liuxi'},qiao:{place:'liuxi',from:8,to:18,off:'liuxi'},boatman:{place:'ferry',from:6,to:18,off:'liuxi'},master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
+ lostPouch:{errand:true,name:'寻找失物',start:'town',place:'town',reward:24,text:'柳掌柜丢了账袋：先到城外小路问线索，再去竹林寻找，最后回镇交还或报告。三日内、每日一份；查问半小时/精力3，寻找1小时/精力8，交还半小时/精力2。65%找到，成功24文、关系+2，15%额外赠干粮1；未找到报告6文、关系+1。账袋属于失主，不进入背包。'},
+ herbalEscort:{errand:true,name:'护送采药人',start:'town',place:'village',reward:28,text:'在镇上约好到南山坡接采药人，三日内送回河湾村，每日一份。可绕平路1小时/精力0（20文、草药1），或守护陡坡45分钟/精力12（需气血50，有25%擦伤8点；28文、草药2）。回村交接半小时/精力2、护送经验+2；也可撤回后报告，只有6文路费，不增长护送技能。步行始终不耗精力。'},
+ neighbourDispute:{errand:true,name:'调解纠纷',start:'town',place:'dock',reward:18,text:'阿平与货主对卸货数量有争执。先到码头听双方说法（半小时/精力2），可直接劝和（半小时/精力4，10文、关系+1），或到镇上询问记账人（半小时/精力2）再回码头凭证词调解（半小时/精力4，18文、关系+3）。三日内、每日一份，实际核账与协商增长经商经验；随时退出，无罚款。'},
  smithBatch:{career:'smith',name:'工具批单',place:'forge',needs:{tool:3},reward:72,skill:'trade',text:'铁匠试作验收后开放，三日内交工具3件收72文；自备材料，每日最多一份。交货半小时、精力2，不因交付增加锻造经验。'},
  clinicBatch:{career:'healer',name:'诊所配药',place:'village',needs:{herb:3,wood:2},hours:1,energy:10,shift:[8,18],reward:28,skill:'medicine',text:'医者帮手验收后开放；自备草药3份、木料2份，在村里08:00–18:00内调制药膏3份交诊所，1小时、精力10、报酬28文、制药经验+2，每日最多一份。成品交给诊所，不进入背包。',result:'本次调制：普通药膏3份，已交给诊所，不进入背包。诊所支付28文，原料已经实际消耗。'},
  skilledLoading:{career:'boat',name:'熟手装船',place:'dock',hours:2,energy:16,reward:18,skill:'carry',shift:[6,18],text:'熟练船工确认后开放，青石码头06:00–18:00内做完2小时搬货，精力16、工钱18文、搬运经验+2；每日最多一份。'} ,

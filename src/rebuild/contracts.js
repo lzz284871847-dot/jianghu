@@ -1,6 +1,7 @@
-import {travelMinutes} from './routes.js?v=1.0.55';
-import {progress} from './progression.js?v=1.0.55';
-import {jobs,locations,items,skills,people} from './content.js?v=1.0.55';
+import {errandDestination,errandStatus} from './errands.js?v=1.0.56';
+import {travelMinutes} from './routes.js?v=1.0.56';
+import {progress} from './progression.js?v=1.0.56';
+import {jobs,locations,items,skills,people} from './content.js?v=1.0.56';
 // 普通招工常驻；采购按日轮换，不运行商人资产或店铺账目模拟。
 export function postedJobs(s){return Object.entries(jobs).filter(([,job])=>(!job.board||job.board===s.place)&&(job.boardDay===undefined||job.boardDay===(s.day-1)%3))}
 export function boardJobs(s){return postedJobs(s).filter(([,job])=>(job.board||'town')===s.place)}
@@ -10,7 +11,7 @@ export function jobMaterials(s,job){return Object.entries(job.needs||{}).map(([k
 
 export function isEscortJob(job){return !!(job.route||job.routes)}
 export function jobRoute(s){const job=jobs[s.job?.id];return job?.routes?.[s.job.routeKey]||job?.route||null}
-export function jobDestination(s){return jobRoute(s)?.[s.job.progress]||jobs[s.job?.id]?.place}
+export function jobDestination(s){return errandDestination(s)||jobRoute(s)?.[s.job.progress]||jobs[s.job?.id]?.place}
 export function escortStatus(s){const job=jobs[s.job?.id],route=jobRoute(s);if(!route)return '';return `${job.traveler?'行脚人与你同行（不是背包物品）':(job.cargo||'封好药包')+'随身保管（委托货物，不能出售或使用）'}；${job.routes?job.routeNames[s.job.routeKey]+'；':''}路程${s.job.progress}/${route.length}：${s.job.progress<route.length?'下一站'+locations[jobDestination(s)].name:'已走完，等待在'+locations[job.place].name+'交付'}。`}
 export function recordEscortStep(s,to){const route=jobRoute(s);if(route&&route[s.job.progress]===to){s.job.progress++;s.result.push('护送抵达交接点：'+locations[to].name+'。',escortStatus(s));return true}return false}
 export function routeOffer(s,job,key){const route=job.routes[key],minutes=route.reduce((n,to)=>n+travelMinutes(s,to),0);return `${job.routeNames[key]}：${[job.start,...route].map(p=>locations[p].name).join(' → ')}；按当前天气步行${minutes}分钟、精力0，另需交付30分钟/精力${job.energy}。${key==='short'?'竹林交接点30%概率被拦，可绕行半小时或撤离。':'没有本单安排的拦路风险；普通世界事件照常。'}`}
@@ -29,6 +30,7 @@ export function jobTimeLeft(s){return s.job?Math.max(0,(s.job.deadline-s.day+1)*
 export function jobDeadline(s){if(!s.job)return '';const left=jobTimeLeft(s);return `须在第${s.job.deadline}日结束前完成；剩余${Math.floor(left/60)}小时${left%60}分钟。`}
 // 界面与执行共用交付条件；开工不等于完成，需留足整段时间。
 export function jobDeliveryBlocker(s,job){
+ if(job.errand)return '需逐步处理：'+errandStatus(s);
  const work=jobWorkBlocker(s,job);if(work)return work;
  if(s.job&&jobMinutes(job)>=jobTimeLeft(s))return `本次需要${jobMinutes(job)}分钟，会到达或超过截止时刻；可放弃约定另作安排。`;
  if(isEscortJob(job)&&s.job.progress<jobRoute(s).length)return '护送路程尚未完成。'+escortStatus(s);

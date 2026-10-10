@@ -1,13 +1,13 @@
-import {events,locations,items,skills,jobs} from './content.js?v=1.0.55';
-import {gatherings,npcActivity,followups} from './continuity.js?v=1.0.55';
-import {sites,siteAt} from './sites.js?v=1.0.55';
-import {resources,resourceChance} from './resources.js?v=1.0.55';
-import {farmActions,farmBlocker} from './farming.js?v=1.0.55';
-import {currentWeapon} from './equipment.js?v=1.0.55';
-import {npcPlace} from './world.js?v=1.0.55';
-import {relationshipFee} from './relationships.js?v=1.0.55';
-import {jobDeliveryBlocker,jobMinutes,jobMaterials} from './contracts.js?v=1.0.55';
-import {artPracticeBlocker,activeArt} from './martial.js?v=1.0.55';
+import {events,locations,items,skills,jobs} from './content.js?v=1.0.56';
+import {gatherings,npcActivity,followups} from './continuity.js?v=1.0.56';
+import {sites,siteAt} from './sites.js?v=1.0.56';
+import {resources,resourceChance} from './resources.js?v=1.0.56';
+import {farmActions,farmBlocker} from './farming.js?v=1.0.56';
+import {currentWeapon} from './equipment.js?v=1.0.56';
+import {npcPlace} from './world.js?v=1.0.56';
+import {relationshipFee} from './relationships.js?v=1.0.56';
+import {jobDeliveryBlocker,jobMinutes,jobMaterials} from './contracts.js?v=1.0.56';
+import {artPracticeBlocker,activeArt} from './martial.js?v=1.0.56';
 // 全部只读：不推进时间、不抽随机数、不模拟操作，也不自动领取。
 export function localOutlook(s){
  if(s.dead)return ['这段人生已经结束，可导出记录。'];
