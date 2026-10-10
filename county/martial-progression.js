@@ -1,5 +1,5 @@
 import {MARTIAL_ARTS} from './martial-data.js?v=0.2.0';
-import {newCombat,resolve} from './combat-core.js?v=0.2.0';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=0.2.0';
 import {useMove,usableMoves} from './martial-moves.js?v=0.2.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{}});
@@ -20,12 +20,12 @@ export function martialMoveTurn(s,moveId,rng=()=>.5){
  m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);
  if(c.enemyHp<enemyHpBefore)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);
  if(!c.ended){
-  // Opponent responds even after a failed or out-of-range move.
-  const response=resolve(c,s,'guard',rng);
-  // 'guard' represents the player's existing stance during enemy response;
-  // restore its artificial cost, because the technique already paid its cost.
-  s.energy=Math.min(100,s.energy+3);
-  s.result=[...move.log,...response.log];
+  const enemy=intent(c);
+  const response=enemyResponse(c,s,enemy,rng);
+  c.round++;
+  c.history.push({round:c.round,move:moveId,enemyIntent:enemy,log:[...move.log,...response]});
+  if(c.history.length>30)c.history.shift();
+  s.result=[...move.log,...response];
  }else s.result=[...move.log];
  if(c.ended)s.combat=null;
  return {move,ended:c.ended||null,log:s.result};
