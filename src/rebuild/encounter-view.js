@@ -1,5 +1,5 @@
-import {items,skills,locations,people} from './content.js?v=1.0.38';
-import {maxXP} from './progression.js?v=1.0.38';
+import {items,skills,locations,people} from './content.js?v=1.0.39';
+import {maxXP,progress} from './progression.js?v=1.0.39';
 // 只读选择预览：奖励和成长仍由引擎在玩家确认后结算。
 export function choiceDetails(s,c){
  const lines=[];
@@ -7,6 +7,8 @@ export function choiceDetails(s,c){
  if(c.output)lines.push('获得：'+Object.entries(c.output).map(([k,n])=>`${items[k]}${n}`).join('、'));
  if(c.relation){const before=s.relations[c.relation],after=Math.min(100,before+c.change);lines.push(`关系：${people[c.relation].name} ${before} → ${after}（+${after-before}）`);}
  if(c.coins)lines.push(`铜钱：${c.coins>0?'+':''}${c.coins}文`);
+ if(c.coins<0&&s.coins<-c.coins)lines.push(`暂不能执行：需要${-c.coins}文，现有${s.coins}文`);
+ for(const [key,level] of Object.entries(c.requires||{})){const current=progress(s.skills[key]).level;lines.push(`需要${skills[key]}Lv${level}（当前Lv${current}）`);if(current<level)lines.push('暂不能执行：相关技能不足');}
  if(c.to&&c.to!==s.place)lines.push('结束地点：'+locations[c.to].name);
  const related=c.skill?[c.skill]:Object.keys(c.xp||{});
  if(related.length)lines.push('相关技能：'+related.map(k=>skills[k]+(s.skills[k]>=maxXP?'【已满，不增长】':'')).join('、'));
