@@ -1,6 +1,7 @@
+import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.2.0';
 import {command} from './commands.js?v=0.1.0';
 import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.1.0';
-import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker} from './engine.js?v=0.1.0';
+import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves} from './engine.js?v=0.2.0';
 import {date,progress,MAX} from './progression.js?v=0.1.0';
 import {npcPlace} from './world.js?v=0.1.0';
 import {save,load,importSave} from './storage.js?v=0.1.0';
@@ -14,7 +15,15 @@ const action=(id,label,preview)=>button(label,()=>act(state,id),state.dead||!!st
 function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hidden=false;const p=places[s.place],blocked=s.dead||s.pending||s.combat;$('status').textContent=`${s.name} · 气血 ${s.hp}/100 · 精力 ${s.energy}/100 · ${s.coins}文`;$('place').textContent=p.name;$('clock').textContent=date(s)+' · '+s.weather;$('place-text').textContent=p.text;$('facilities').textContent='设施与资源：'+p.facilities.join('、');
  $('command-input').disabled=!!blocked;$('command-form').querySelector('button').disabled=!!blocked;$('scene').replaceChildren();$('scene').hidden=!blocked;
  if(s.dead){$('scene').append(el('h3','这段人生结束'),el('p','不会自动读档。可在系统页导出经历，再开始新的人生。'));}
- else if(s.combat){$('scene').append(el('h3','与拦路人交手'),el('p','对手气血'+s.combat.hp+'；每次还击6点，防守减到1点；重击70%命中，疲劳伤害降低。撤离必定成功，精力最多2。'));for(const [id,label] of [['attack','出拳 · 精力4'],['heavy','重击 · 精力8'],['guard','防守 · 精力4'],['flee','撤离 · 精力最多2']])$('scene').append(button(label,()=>fight(s,id)));}
+ else if(s.combat){
+ if(Object.hasOwn(s.combat,'hp')){$('scene').append(el('h3','与拦路人交手'),el('p','对手气血'+s.combat.hp+'；每次还击6点，防守减到1点；重击70%命中，疲劳伤害降低。撤离必定成功，精力最多2。'));for(const [id,label] of [['attack','出拳 · 精力4'],['heavy','重击 · 精力8'],['guard','防守 · 精力4'],['flee','撤离 · 精力最多2']])$('scene').append(button(label,()=>fight(s,id)));}
+ else {
+  const c=s.combat;
+  $('scene').append(el('h3','战术交手 · '+(OPPONENTS[c.opponent]?.name||c.opponent)),el('p','对手气血 '+c.enemyHp+'/100 · 距离 '+DISTANCES[c.distance]+' · 架势 '+c.stance+' · 回合 '+c.round),el('p','撤退可能失败；精力耗尽或受伤都可能致命。'));
+  for(const m of usableMoves(s))$('scene').append(button(m.name+' · 精力'+m.energy,()=>martialAction(s,'move',m.id),s.energy<m.energy,'距离'+m.reach+' · 伤害'+m.damage));
+  for(const [id,name,energy] of [['guard','防守',3],['feint','虚招',6],['sidestep','闪身',5],['advance','逼近',4],['retreat','后撤',4],['flee','逃离',6]])$('scene').append(button(name+' · 精力'+energy,()=>martialAction(s,'turn',id),s.energy<energy||(id==='advance'&&c.distance===0)||(id==='retreat'&&c.distance===4)));
+ }
+ }
  else if(s.pending?.type==='bandit'){$('scene').append(el('h3','旧道上的拦路人'),el('p','实战可能受伤或死亡。可以绕开，没人要求你拼命。'),button('绕开 · 半小时 / 精力0',()=>choose(s,'avoid')),button('交手 · 对手气血28',()=>choose(s,'fight')));}
  else if(s.pending){const d=resources[s.pending.key];$('scene').append(el('h3',d.name),el('p',`${d.minutes}分钟 / 精力${cost(s,d.energy)}，${d.risk*100}%擦伤${d.damage}点气血；也可能没有收获。`),button('确认采集',()=>choose(s,'gather'),!!resourceBlocker(s,s.pending.key)),button('不参与，返回',()=>choose(s,'leave')));}
  $('actions').replaceChildren();if(!blocked){if(p.work)$('actions').append(action('work','做短工',`${s.place==='fields'||s.place==='dock'?'06':'07'}:00–18:00内完成；3小时 / 精力${cost(s,24)}，工钱12文`));if(['inn','village'].includes(s.place))$('actions').append(action('sleep','睡一觉',`8小时，精力恢复至100；${s.place==='inn'?'5文':'免费借宿'}`));if(s.place==='school')$('actions').append(action('train','练入门拳脚','2小时 / 精力18，拳脚经验+2'));if(s.place==='village'&&s.minute>=480&&s.minute+60<=1080)$('actions').append(action('doctor','医者治疗','1小时 / 诊金8文，气血最多恢复50'));$('actions').append(action('rest','歇息','2小时 / 精力0，恢复精力30、气血10'),action('wait','等半小时','只流逝时间，不恢复精力'));const bagShortcut=el('button','查看背包与当地交易');bagShortcut.onclick=()=>tab('bag');$('actions').append(bagShortcut);}
@@ -23,6 +32,18 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  $('resources').replaceChildren();for(const [key,d] of Object.entries(resources).filter(([,d])=>d.places.includes(s.place))){const n=s.nodes[s.place+':'+key],why=resourceBlocker(s,key),a=el('article','');a.append(el('h3',d.name),el('p',`剩余尝试${n.left}/${d.capacity}；第${n.refreshDay}日恢复。${d.minutes}分钟 / 精力${cost(s,d.energy)}；当前成功率${Math.round(chance(s,d)*100)}%。`,'muted'),el('p','成功获得：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、')+(d.tool?'；需要'+items[d.tool]+'（不消耗）':'')+(d.risk?`；${d.risk*100}%擦伤${d.damage}点气血`:''),'muted'));if(why)a.append(el('p',why,'muted'));a.append(button(d.risk?'查看风险并决定':d.name,()=>act(s,key),!!blocked||!!why));$('resources').append(a);}if(!$('resources').children.length)$('resources').append(el('p','这里没有开放的采集资源。','muted'));
  $('people').replaceChildren();for(const [key,n] of Object.entries(people).filter(([key])=>npcPlace(s,key)===s.place)){const row=el('article','');row.append(el('h3',n.name+' · '+n.role),el('p',(n.age+Math.floor((s.day-1)/360))+'岁；关系'+s.relations[key]+'/100。','muted'),button('与'+n.name+'交谈',()=>talk(s,key),!!blocked));$('people').append(row);}if(!$('people').children.length)$('people').append(el('p','熟悉的当地人此刻不在这里。','muted'));
  $('profile').replaceChildren(el('p',`${s.name} · ${s.gender} · ${s.age+Math.floor((s.day-1)/360)}岁 · ${s.background} · ${s.personality}`),el('p',talents[s.talent].name+'：'+talents[s.talent].text),el('p','起初所有技能为0，没有隐藏身份。'));$('skills').replaceChildren(...Object.entries(skills).map(([key,name])=>{const v=progress(s.skills[key]);return el('p',`${name} Lv${v.level}：${v.xp}/${v.cap}${s.skills[key]===MAX?'【完成】':''}`);}));
+ const martialBox=el('section','');martialBox.append(el('h3','武学 · 18门 / 54招'));
+ const known=s.martial?.known||{};
+ martialBox.append(el('p','已学 '+Object.keys(known).length+' 门；当前 '+(MARTIAL_ARTS[s.martial?.equipped]?.name||'未习武')+'。','muted'));
+ if(Object.keys(s.injuries||{}).length)martialBox.append(el('p','伤势：'+Object.entries(s.injuries).map(([id,n])=>(INJURIES[id]?.name||id)+'×'+n).join('、')));
+ for(const [id,art] of Object.entries(MARTIAL_ARTS)){
+  const row=el('article','');row.append(el('p',art.name+' · '+art.category+' · 第'+art.tier+'阶'+(known[id]?' · 已学':'')));
+  if(known[id]){row.append(button('使用',()=>martialAction(s,'equip',id),!!blocked||s.martial.equipped===id),button('练习 · 精力12',()=>martialAction(s,'train',id),!!blocked||s.energy<12));}
+  else if(['school','village'].includes(s.place))row.append(button('求学 · '+art.tier*8+'文',()=>martialAction(s,'learn',id),!!blocked||s.coins<art.tier*8));
+  martialBox.append(row);
+ }
+ if(!blocked&&['school','oldroad'].includes(s.place))martialBox.append(button('试与普通拳手交手',()=>martialAction(s,'challenge','brawler'),!known[s.martial?.equipped]));
+ $('skills').append(martialBox);
  $('inventory').replaceChildren(...Object.entries(items).filter(([key])=>s.bag[key]>0).map(([key,name])=>el('p',name+'×'+s.bag[key])));if(!$('inventory').children.length)$('inventory').append(el('p','目前没有物品。'));$('use-items').replaceChildren(action('eat','吃干粮','15分钟，精力最多+12、气血最多+5'),action('heal','使用常见药材','15分钟，气血最多+20'));
  $('market').replaceChildren();const m=markets[s.place];if(m){$('market').append(el('p',`营业${m.open/60}:00–${m.close/60}:00；每笔15分钟 / 精力1，不能完成则整笔取消。`));for(const type of ['buy','sell']){const grid=el('div','','grid');for(const [key,price] of Object.entries(m[type]))grid.append(button((type==='buy'?'买':'卖')+items[key]+' · '+price+'文',()=>trade(s,type,key),!!blocked||(type==='buy'?s.coins<price:s.bag[key]<1)));$('market').append(grid);}}else $('market').append(el('p','到县城街市或柳溪集交易。','muted'));
  $('recipes').replaceChildren();if(s.place==='workshop'){for(const [id,d] of Object.entries(recipes))$('recipes').append(el('p',d.name+'：'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+' → '+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、')),action(id,d.name,`${d.minutes}分钟 / 精力${d.energy}`));}else $('recipes').append(el('p','作坊街可以加工干粮与普通铁料。','muted'));
