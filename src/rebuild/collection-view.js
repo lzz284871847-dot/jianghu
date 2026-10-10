@@ -1,5 +1,5 @@
-import {items,skills,homePrice} from './content.js?v=1.0.39';
-import {skillLines} from './progression.js?v=1.0.39';
+import {items,skills,homePrice} from './content.js?v=1.0.40';
+import {skillLines} from './progression.js?v=1.0.40';
 // 只整理展示，不修改库存、技能或存档。
 const groups={恢复用品:['food','herb','salve'],兵器:['staff','sword'],工具:['tool','rod','trap'],原料与种子:['iron','wood','fish','ore','meat','seed','vegetable']};
 function node(doc,tag,value,className=''){const el=doc.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
