@@ -1,9 +1,9 @@
 // 发布时同步版本；只缓存本游戏的静态壳，不上传或缓存玩家存档。
-const VERSION='1.0.50';
+const VERSION='1.0.51';
 const BASE=new URL('./',self.registration.scope);
 const PREFIX=`jianghu-wanxiang-offline:${BASE.pathname}:`;
 const CACHE=PREFIX+VERSION;
-const FILES=['src/rebuild/martial.js','index.html','manifest.webmanifest',
+const FILES=['src/rebuild/continuity.js','src/rebuild/martial.js','index.html','manifest.webmanifest',
  'src/rebuild/app.js','src/rebuild/engine.js','src/rebuild/content.js',
  'src/rebuild/commands.js','src/rebuild/progression.js','src/rebuild/world.js',
  'src/rebuild/equipment.js','src/rebuild/discoveries.js','src/rebuild/condition.js',

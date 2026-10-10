@@ -1,5 +1,5 @@
-import {items,skills,locations,people} from './content.js?v=1.0.50';
-import {maxXP,progress} from './progression.js?v=1.0.50';
+import {items,skills,locations,people} from './content.js?v=1.0.51';
+import {maxXP,progress} from './progression.js?v=1.0.51';
 // 只读选择预览：奖励和成长仍由引擎在玩家确认后结算。
 export function choiceDetails(s,c){
  const lines=[];
@@ -17,6 +17,7 @@ export function choiceDetails(s,c){
  if(c.tool&&!s.bag[c.tool])lines.push(`暂不能执行：缺少${items[c.tool]}`);
  const missing=Object.entries(c.input||{}).filter(([k,n])=>s.bag[k]<n).map(([k])=>items[k]);
  if(missing.length)lines.push('暂不能执行：'+missing.join('、')+'不足');
+ if(c.minEnergy)lines.push('需要精力至少'+c.minEnergy+'（当前'+s.energy+'）');
  if(c.minHp&&s.hp<c.minHp)lines.push('暂不能执行：受伤太重，先休养');
  if(s.energy<(c.energy||0))lines.push('暂不能执行：精力不足，可改选或离开');
  return lines;

@@ -1,14 +1,15 @@
-import {locations,jobs,recipes,skills} from './content.js?v=1.0.50';
-import {currentWeapon} from './equipment.js?v=1.0.50';
-import {isEscortJob,boardJobs,dailyContract,jobDestination,escortStatus,jobDeliveryBlocker,jobDeadline} from './contracts.js?v=1.0.50';
-import {farmBlocker,farmStatus} from './farming.js?v=1.0.50';
-import {recipeBlockers} from './crafting.js?v=1.0.50';
-import {npcPlace} from './world.js?v=1.0.50';
+import {gatherings} from './continuity.js?v=1.0.51';
+import {locations,jobs,recipes,skills,events} from './content.js?v=1.0.51';
+import {currentWeapon} from './equipment.js?v=1.0.51';
+import {isEscortJob,boardJobs,dailyContract,jobDestination,escortStatus,jobDeliveryBlocker,jobDeadline} from './contracts.js?v=1.0.51';
+import {farmBlocker,farmStatus} from './farming.js?v=1.0.51';
+import {recipeBlockers} from './crafting.js?v=1.0.51';
+import {npcPlace} from './world.js?v=1.0.51';
 // 建议只读取实际状态，不执行行动、不替玩家做选择。
 export function todoSuggestions(s){
  if(s.dead)return [{text:'这段人生已经结束。可在系统页导出记录或创建新角色。'}];
  if(s.pending||s.combat)return [{text:'先处理眼前的事件或交手，也可以选择离开；待办不会替你决定。'}];
- const rows=[];
+ const rows=[];for(const e of s.events.filter(e=>e.status==='open'&&(!gatherings[e.kind]||e.expires-2===s.day&&s.minute<gatherings[e.kind].close))){rows.push({text:'当地消息：'+events[e.kind].title+'，可前往看看或忽略。',kind:'travel',key:events[e.kind].place,label:'列路线：'+locations[events[e.kind].place].name});}
  const at=(place,key,text,label)=>rows.push({text,kind:s.place===place?'act':'travel',key:s.place===place?key:place,label:s.place===place?label:'列路线：'+locations[place].name});
  if(s.plan.length)rows.push({text:`已有安排${s.plan.length}项，遇事、精力不足或跨日会暂停。`,kind:'plan',label:'继续已有安排'});
  if(s.energy<30)rows.push({text:'精力偏低，歇息2小时可恢复30；时间仍会流逝。',kind:'act',key:'rest',label:'歇息恢复精力'});
