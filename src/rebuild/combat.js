@@ -1,6 +1,6 @@
-import {progress} from './progression.js?v=1.0.41';
-import {attackFactor} from './condition.js?v=1.0.41';
-import {currentWeapon} from './equipment.js?v=1.0.41';
+import {progress} from './progression.js?v=1.0.42';
+import {attackFactor} from './condition.js?v=1.0.42';
+import {currentWeapon} from './equipment.js?v=1.0.42';
 export function battleBonus(s){return Math.min(2,Math.floor(progress(s.skills.battle||0).level/2))}
 export function combatCost(s,id){return id==='flee'?Math.min(3,s.energy):id==='heavy'?8:['inner','counter'].includes(id)?6:4}
 export function heavyChance(s){
@@ -13,7 +13,7 @@ export function strike(s,id,rng){
  const chance=id==='heavy'?heavyChance(s):1;
  if(id==='heavy'&&rng()>=chance)return {damage:0,hit:false};
  const base=8+battleBonus(s)+Math.min(4,progress(s.skills[weapon.skill]).level-1)+weapon.bonus+prepared+(['inner','counter'].includes(id)?2:0);
- return {damage:Math.floor(base*(id==='heavy'?1.5:1)*attackFactor(s,combatCost(s,id))),hit:true};
+ const guard=s.combat?.name==='持棍拦路人'&&!['heavy','counter'].includes(id)?2:0;return {damage:Math.max(1,Math.floor(base*(id==='heavy'?1.5:1)*attackFactor(s,combatCost(s,id)))-guard),hit:true};
 }
 
 // 普通基础考较，仅记录通过日期，不授予隐藏加成或额外奖励。
@@ -32,3 +32,7 @@ export function counterBlocker(s){
  if(s.energy<6)return '拆招反击需要精力6。';
  return null;
 }
+
+// 对手只有一项可见特点，不增加敌人技能或隐藏状态。
+export function banditForPlace(place){return place==='hill'?{name:'持棍拦路人',hp:40,attack:6,spar:false}:{name:'拦路人',hp:32,attack:8,spar:false}}
+export function opponentHint(name){return name==='持棍拦路人'?'棍架护身：普通与运功出招伤害减少2；重击或拆招反击可以破架，不受这项减伤。':'出手较急，没有护身棍架。'}
