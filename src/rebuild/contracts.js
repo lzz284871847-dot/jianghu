@@ -1,5 +1,5 @@
-import {progress} from './progression.js?v=1.0.42';
-import {jobs,locations,items,skills,people} from './content.js?v=1.0.42';
+import {progress} from './progression.js?v=1.0.43';
+import {jobs,locations,items,skills,people} from './content.js?v=1.0.43';
 // 普通招工常驻；采购按日轮换，不运行商人资产或店铺账目模拟。
 export function postedJobs(s){return Object.entries(jobs).filter(([,job])=>job.boardDay===undefined||job.boardDay===(s.day-1)%3)}
 export function dailyContract(s){return postedJobs(s).find(([,job])=>job.boardDay!==undefined)}

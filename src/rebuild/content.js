@@ -20,6 +20,7 @@ export const people={
 };
 export const npcSchedules={master:{place:'road',from:7,to:18,off:'inn'},merchant:{place:'town',from:8,to:20,off:'inn'},doctor:{place:'village',from:8,to:18,off:'inn'},artisan:{place:'forge',from:7,to:18,off:'inn'},porter:{place:'dock',from:6,to:18,off:'inn'}};
 export const jobs={
+ repairTools:{name:'农具修理',place:'forge',partner:'artisan',relation:5,requires:{forge:2},hours:1,energy:12,shift:[7,18],needs:{iron:1,wood:1},reward:18,xp:{forge:2,woodwork:1},text:'许铁匠介绍一份修理活：修整农具刃口、更换木柄。需锻造Lv2、关系5，自备铁料1、木料1；作坊提供锤具。一小时、精力12，07:00–18:00内完成，工钱18文，每日最多一份。修好的农具归委托人。',result:'本次完成：修复农具1件，已交还委托人，不进入背包。你修整刃口并加工木柄，收到18文工钱。'},
  artisanSupply:{name:'铁匠农具补货',place:'forge',partner:'artisan',relation:5,requires:{forge:2},needs:{tool:2},reward:44,skill:'trade',text:'许铁匠愿向熟悉的手艺人收购铁制工具2件，三日内送到作坊；需锻造Lv2、关系5。用现有库存交付也可以，报酬44文，每日最多一份。'},
  doctorSupply:{name:'医者药膏补货',place:'village',partner:'doctor',relation:5,requires:{medicine:2},needs:{salve:2},reward:16,skill:'trade',text:'沈医者向熟悉的制药人收普通药膏2份，三日内送到河湾村；需制药Lv2、关系5。报酬16文，每日最多一份，不预付材料。'},
  merchantSupply:{name:'商人干粮补货',place:'town',partner:'merchant',relation:5,requires:{cook:2},needs:{food:4},reward:18,skill:'trade',text:'柳掌柜向熟悉的厨人收干粮4份，三日内送到街市；需烹饪Lv2、关系5。报酬18文，每日最多一份，交货不会额外增加烹饪经验。'},
