@@ -1,7 +1,7 @@
-import {findRoute} from './routes.js?v=1.0.49';
-import {locations} from './content.js?v=1.0.49';
-import {command,parseCommand} from './commands.js?v=1.0.49';
-import {date} from './progression.js?v=1.0.49';
+import {findRoute} from './routes.js?v=1.0.50';
+import {locations} from './content.js?v=1.0.50';
+import {command,parseCommand} from './commands.js?v=1.0.50';
+import {date} from './progression.js?v=1.0.50';
 export const planLimit=8;
 function readPlan(input){
  const raw=String(input).split(/[；;、，,\n]+/).map(x=>x.trim()).filter(Boolean),steps=[];

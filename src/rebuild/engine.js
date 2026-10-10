@@ -1,18 +1,18 @@
-import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker,validMartial} from './martial.js?v=1.0.49';
-import {marketBlocker,marketHours,marketPrices} from './market.js?v=1.0.49';
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.49';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.49';
-import {travelMinutes} from './routes.js?v=1.0.49';
-import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.49';
-import {postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.49';
-import {recipeBlockers} from './crafting.js?v=1.0.49';
-import {resources,resourceChance} from './resources.js?v=1.0.49';
-import {injury} from './condition.js?v=1.0.49';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.49';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.49';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.49';
-import {gain,maxXP,progress} from './progression.js?v=1.0.49';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.49';
+import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker,validMartial} from './martial.js?v=1.0.50';
+import {marketBlocker,marketHours,marketPrices} from './market.js?v=1.0.50';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.50';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.50';
+import {travelMinutes} from './routes.js?v=1.0.50';
+import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.50';
+import {isEscortJob,jobRoute,postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.50';
+import {recipeBlockers} from './crafting.js?v=1.0.50';
+import {resources,resourceChance} from './resources.js?v=1.0.50';
+import {injury} from './condition.js?v=1.0.50';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.50';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.50';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.50';
+import {gain,maxXP,progress} from './progression.js?v=1.0.50';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.50';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',arts:{steadySword:false,shelterStaff:false},art:null,artPassed:{},learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,homeDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -28,7 +28,7 @@ function settle(s,name,minutes,cost,run,xp={}){
  s.journal=[{day:s.day,text:s.result.join('；')},...s.journal].slice(0,24);encounter(s);return true;
 }
 function signed(n){return (n>=0?'+':'')+n}
-export function travel(s,to){if(!available(s))return false;if(!locations[s.place].routes.includes(to))return fail(s,'这里没有直达的路。');return settle(s,'前往'+locations[to].name,travelMinutes(s,to),0,()=>{s.place=to;recordEscortStep(s,to)})}
+export function travel(s,to){if(!available(s))return false;if(!locations[s.place].routes.includes(to))return fail(s,'这里没有直达的路。');return settle(s,'前往'+locations[to].name,travelMinutes(s,to),0,()=>{s.place=to;const reached=recordEscortStep(s,to),job=jobs[s.job?.id];if(reached&&s.job.routeKey==='short'&&to===job.riskPlace&&random(s)<job.riskChance){s.pending={type:'bandit'};s.result.push('护送途中有人拦路。可绕行半小时，也可交手或撤离；不要求打赢。')}})}
 export function equip(s,key){if(!available(s))return false;if(!Object.hasOwn(weapons,key))return fail(s,'没有这类兵器。');if(key!=='unarmed'&&!s.bag[key])return fail(s,'背包里没有'+weapons[key].name+'。');if(s.weapon===key)return fail(s,'已经使用这件兵器。');return settle(s,'换用'+weapons[key].name,5,0,()=>{s.weapon=key;s.result.push(`当前兵器：${weapons[key].name}；练习和出招结算${skills[weapons[key].skill]}。`)})}
 export function talk(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');return settle(s,'与'+people[id].name+'交谈',30,1,()=>{s.result.push(people[id].line);if(s.talkDays[id]!==s.day){const old=s.relations[id];s.relations[id]=Math.min(100,old+1);s.talkDays[id]=s.day;s.result.push(...relationshipChange(s,id,old))}else s.result.push('今日已经交谈过，不重复增加关系。');if(id==='master'&&!s.learned){s.learned=true;s.result.push('周师傅教你基础吐纳，现在可以自行练习。')}if(id==='doctor'&&!s.learnedMedicine){s.learnedMedicine=true;s.result.push('沈医者教你基础制药：在河湾村用草药2、木料1调制普通药膏2。仅是常见药膏，没有神效。')}})}
 export function gift(s,id){if(!available(s))return false;if(!Object.hasOwn(people,id)||npcPlace(s,id)!==s.place)return fail(s,'此人目前不在这里。');if(s.giftDays[id]===s.day)return fail(s,'今日已赠礼，改日再来。');const key=people[id].gift;if(!s.bag[key])return fail(s,`${people[id].name}喜欢${items[key]}，你目前没有。`);return settle(s,'赠礼给'+people[id].name,15,1,()=>{s.bag[key]--;s.giftDays[id]=s.day;const before=s.relations[id];s.relations[id]=Math.min(100,before+2);s.result.push(...relationshipChange(s,id,before))})}
@@ -55,7 +55,7 @@ export function forgeLesson(s){
  if(s.place!=='forge')return fail(s,'请在07:00–18:00到作坊，请许铁匠指导基础锻造。');
  return instruction(s,'artisan','forgeLessonDay','forge',forgeLessonFee(s),'许铁匠用练习用废铁教你看火色、落锤和检查缺口；学费包含练习用料，没有成品带走。');
 }
-export {prices,salePrices} from './market.js?v=1.0.49';
+export {prices,salePrices} from './market.js?v=1.0.50';
 export function trade(s,type,key,quantity=1){
  if(!available(s))return false;
  if(!['buy','sell'].includes(type)||!Number.isInteger(quantity)||quantity<1||quantity>20)return fail(s,'每笔买卖数量需为1–20的整数。');
@@ -66,7 +66,7 @@ export function trade(s,type,key,quantity=1){
  if(type==='sell'&&s.bag[key]<quantity)return fail(s,`没有足够可出售的${items[key]}，需要${quantity}，现有${s.bag[key]}；整笔未成交。`);
  return settle(s,(type==='buy'?'购买':'出售')+items[key]+(quantity===1?'':'×'+quantity),marketHours.minutes,1,()=>{s.coins+=type==='buy'?-total:total;s.bag[key]+=type==='buy'?quantity:-quantity;s.result.push(`本笔成交：${items[key]}×${quantity}，单价${price}文，总价${total}文。`);},type==='sell'?{trade:1}:{});
 }
-export function acceptJob(s,id){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||![jobs[id].board||'town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(!postedJobs(s).some(([key])=>key===id))return fail(s,'今日未刊出这份采购，去街市看看其他约定。');if(jobs[id].start&&s.place!==jobs[id].start)return fail(s,'请到'+locations[jobs[id].start].name+'领取委托货物。');const skillBlock=jobEntryBlocker(s,jobs[id]);if(skillBlock)return fail(s,skillBlock);if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');s.job={id,deadline:s.day+2,...(jobs[id].route?{progress:0}:{})};s.result=[`接下：${jobs[id].name}。三日内完成；也可以放弃，没有强制主线。`,...(jobs[id].route?[escortStatus(s)]:[])];return true}
+export function acceptJob(s,id,routeKey){if(!available(s))return false;if(!Object.hasOwn(jobs,id)||![jobs[id].board||'town',jobs[id].place].includes(s.place))return fail(s,'请到街市或委托地点接活。');if(!postedJobs(s).some(([key])=>key===id))return fail(s,'今日未刊出这份采购，去街市看看其他约定。');if(jobs[id].start&&s.place!==jobs[id].start)return fail(s,'请到'+locations[jobs[id].start].name+'接下这份约定。');const skillBlock=jobEntryBlocker(s,jobs[id]);if(skillBlock)return fail(s,skillBlock);if(s.job)return fail(s,'先完成或放弃手里的约定。');if(s.jobsDone[id]===s.day)return fail(s,'这份活今天已经做过了，明日再看看。');if(jobs[id].routes&&!Object.hasOwn(jobs[id].routes,routeKey))return fail(s,'请先选择竹林短路或河岸长路，不替你决定。');s.job={id,deadline:s.day+(jobs[id].days??2),...(isEscortJob(jobs[id])?{progress:0}:{}),...(jobs[id].routes?{routeKey}:{})};s.result=[`接下：${jobs[id].name}。${jobs[id].days===0?'今日结束前':'三日内'}完成；也可以放弃，没有强制主线。`,...(isEscortJob(jobs[id])?[escortStatus(s)]:[])];return true}
 export function abandonJob(s){if(!available(s))return false;s.job=null;s.result=['你放下了这份约定，可以另作打算。'];return true}
 export function act(s,id,rng=()=>random(s)){
  if(!available(s))return false;
@@ -77,7 +77,7 @@ export function act(s,id,rng=()=>random(s)){
  if(id==='forgeLesson')return forgeLesson(s);
  if(id==='deliver'){
   if(!s.job)return fail(s,'没有待完成的约定。');const job=jobs[s.job.id],blocked=jobDeliveryBlocker(s,job);if(blocked)return fail(s,blocked);
-  return settle(s,'完成：'+job.name,jobMinutes(job),job.energy||2,()=>{for(const [k,n] of Object.entries(job.needs||{}))s.bag[k]-=n;s.coins+=job.reward;s.jobsDone[s.job.id]=s.day;s.job=null;s.result.push(job.result||(job.hours?'你完成约定的活计，雇主支付工钱；用料和成品都归雇主。':'对方收下交付，这份活就此结束。'));if(job.hours&&job.needs)s.result.push('材料消耗：'+Object.entries(job.needs).map(([key,n])=>items[key]+' -'+n).join('、'),'当前库存：'+Object.keys(job.needs).map(key=>items[key]+' '+s.bag[key]).join('、'))},job.xp||{[job.skill]:job.hours?2:1});
+  return settle(s,'完成：'+job.name,jobMinutes(job),job.energy||2,()=>{for(const [k,n] of Object.entries(job.needs||{}))s.bag[k]-=n;s.coins+=job.reward;if(job.relationReward){const r=job.relationReward,before=s.relations[r.person];s.relations[r.person]=Math.min(100,before+r.amount);s.result.push(...relationshipChange(s,r.person,before));}s.jobsDone[s.job.id]=s.day;s.job=null;s.result.push(job.result||(job.hours?'你完成约定的活计，雇主支付工钱；用料和成品都归雇主。':'对方收下交付，这份活就此结束。'));if(job.hours&&job.needs)s.result.push('材料消耗：'+Object.entries(job.needs).map(([key,n])=>items[key]+' -'+n).join('、'),'当前库存：'+Object.keys(job.needs).map(key=>items[key]+' '+s.bag[key]).join('、'))},job.xp||{[job.skill]:job.hours?2:1});
  }
  if(Object.hasOwn(waitingActions,id)){const a=waitingActions[id];return settle(s,a.name,a.minutes,0,()=>{s.result.push('你留在原地等候。等候不恢复精力或气血，也不增长技能；周围的人仍照自己的安排活动。')});}
  if(id==='rest')return settle(s,'歇息',120,0,()=>{s.energy=Math.min(100,s.energy+30);s.hp=Math.min(100,s.hp+10)});
@@ -138,7 +138,9 @@ export function restore(raw){
  if(!integer(s.discoveryDay,0,s.day))throw Error('偶遇记录无效');if(s.discoveryResolution&&(!Object.hasOwn(discoveries,s.discoveryResolution.kind)||!integer(s.discoveryResolution.expires,s.day+1,s.day+1)))throw Error('偶遇后续无效');if(!integer(s.forgeLessonDay,0,s.day))throw Error('锻造请教记录无效');if(!integer(s.lessonDay,0,s.day))throw Error('请教记录无效');if(!['晴','雨'].includes(s.weather)||!Array.isArray(s.events)||s.events.length>12||!Array.isArray(s.news)||!Array.isArray(s.journal)||!Array.isArray(s.result))throw Error('世界记录无效');
  if(s.events.some(e=>!Object.hasOwn(events,e.kind)||e.id!==`${e.kind}-${e.expires-2}`||!['open','ignored','resolved'].includes(e.status)||!integer(e.expires,3,s.day+2)))throw Error('事件记录无效');
  if(s.job&&(!Object.hasOwn(jobs,s.job.id)||!integer(s.job.deadline,s.day,s.day+2)))throw Error('委托无效');
- if(s.job&&jobs[s.job.id].route&&!integer(s.job.progress,0,jobs[s.job.id].route.length))throw Error('护送进度无效');
+ if(s.job&&jobs[s.job.id].routes&&!Object.hasOwn(jobs[s.job.id].routes,s.job.routeKey))throw Error('护送路线无效');
+ if(s.job?.routeKey!==undefined&&!jobs[s.job.id].routes)throw Error('护送路线无效');
+ if(s.job&&isEscortJob(jobs[s.job.id])&&!integer(s.job.progress,0,jobRoute(s).length))throw Error('护送进度无效');
  if(!validMartial(s))throw Error('武艺记录无效');
  if(s.combat&&(!['周师傅','陆教习','拦路人','持棍拦路人'].includes(s.combat.name)||!integer(s.combat.hp,1,s.combat.name==='陆教习'?50:45)||!integer(s.combat.attack,1,8)||s.combat.spar!==['周师傅','陆教习'].includes(s.combat.name)))throw Error('战斗无效');
  if(!integer(s.homeDay,0,s.day))throw Error('住所记录无效');

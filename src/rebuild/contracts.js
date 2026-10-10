@@ -1,5 +1,6 @@
-import {progress} from './progression.js?v=1.0.49';
-import {jobs,locations,items,skills,people} from './content.js?v=1.0.49';
+import {travelMinutes} from './routes.js?v=1.0.50';
+import {progress} from './progression.js?v=1.0.50';
+import {jobs,locations,items,skills,people} from './content.js?v=1.0.50';
 // 普通招工常驻；采购按日轮换，不运行商人资产或店铺账目模拟。
 export function postedJobs(s){return Object.entries(jobs).filter(([,job])=>(!job.board||job.board===s.place)&&(job.boardDay===undefined||job.boardDay===(s.day-1)%3))}
 export function boardJobs(s){return postedJobs(s).filter(([,job])=>(job.board||'town')===s.place)}
@@ -7,9 +8,12 @@ export function dailyContract(s){return postedJobs(s).find(([,job])=>job.boardDa
 export function procurementNews(s){const [,job]=dailyContract(s);return `【可靠消息】青石镇今日采购：${job.name}，到${locations[job.place].name}交货，报酬${job.reward}文。无人接手时由买家另找货源。`}
 export function jobMaterials(s,job){return Object.entries(job.needs||{}).map(([key,n])=>`${items[key]}×${n}（现有${s.bag[key]}）`).join('、')}
 
-export function jobDestination(s){const job=jobs[s.job?.id];return job?.route?.[s.job.progress]||job?.place}
-export function escortStatus(s){const job=jobs[s.job?.id];if(!job?.route)return '';return `${job.cargo||'封好药包'}随身保管（委托货物，不能出售或使用）；路程${s.job.progress}/${job.route.length}：${s.job.progress<job.route.length?'下一站'+locations[jobDestination(s)].name:'已走完，等待在'+locations[job.place].name+'交付'}。`}
-export function recordEscortStep(s,to){const job=jobs[s.job?.id];if(job?.route&&job.route[s.job.progress]===to){s.job.progress++;s.result.push('护送抵达交接点：'+locations[to].name+'。',escortStatus(s));}}
+export function isEscortJob(job){return !!(job.route||job.routes)}
+export function jobRoute(s){const job=jobs[s.job?.id];return job?.routes?.[s.job.routeKey]||job?.route||null}
+export function jobDestination(s){return jobRoute(s)?.[s.job.progress]||jobs[s.job?.id]?.place}
+export function escortStatus(s){const job=jobs[s.job?.id],route=jobRoute(s);if(!route)return '';return `${job.traveler?'行脚人与你同行（不是背包物品）':(job.cargo||'封好药包')+'随身保管（委托货物，不能出售或使用）'}；${job.routes?job.routeNames[s.job.routeKey]+'；':''}路程${s.job.progress}/${route.length}：${s.job.progress<route.length?'下一站'+locations[jobDestination(s)].name:'已走完，等待在'+locations[job.place].name+'交付'}。`}
+export function recordEscortStep(s,to){const route=jobRoute(s);if(route&&route[s.job.progress]===to){s.job.progress++;s.result.push('护送抵达交接点：'+locations[to].name+'。',escortStatus(s));return true}return false}
+export function routeOffer(s,job,key){const route=job.routes[key],minutes=route.reduce((n,to)=>n+travelMinutes(s,to),0);return `${job.routeNames[key]}：${[job.start,...route].map(p=>locations[p].name).join(' → ')}；按当前天气步行${minutes}分钟、精力0，另需交付30分钟/精力${job.energy}。${key==='short'?'竹林交接点30%概率被拦，可绕行半小时或撤离。':'没有本单安排的拦路风险；普通世界事件照常。'}`}
 
 export function jobSkillBlocker(s,job){for(const [key,level] of Object.entries(job.requires||{}))if(progress(s.skills[key]).level<level)return `需要${skills[key]} Lv${level}，当前Lv${progress(s.skills[key]).level}。`;return null}
 export function jobWorkBlocker(s,job){
@@ -27,7 +31,7 @@ export function jobDeadline(s){if(!s.job)return '';const left=jobTimeLeft(s);ret
 export function jobDeliveryBlocker(s,job){
  const work=jobWorkBlocker(s,job);if(work)return work;
  if(s.job&&jobMinutes(job)>=jobTimeLeft(s))return `本次需要${jobMinutes(job)}分钟，会到达或超过截止时刻；可放弃约定另作安排。`;
- if(job.route&&s.job.progress<job.route.length)return '护送路程尚未完成。'+escortStatus(s);
+ if(isEscortJob(job)&&s.job.progress<jobRoute(s).length)return '护送路程尚未完成。'+escortStatus(s);
  if(s.place!==job.place)return '请前往'+locations[job.place].name+'完成约定。';
  for(const [k,n] of Object.entries(job.needs||{}))if(s.bag[k]<n)return `${items[k]}不足，需要${n}。`;
  if(s.energy<(job.energy||2))return '精力不足，请歇息或睡觉。';
@@ -35,6 +39,7 @@ export function jobDeliveryBlocker(s,job){
 }
 
 export function jobEntryBlocker(s,job){
+ if(job.days===0&&s.minute+jobMinutes(job)>=1440)return '今日已没有足够时间完成交付，不接这份急单。';
  const skill=jobSkillBlocker(s,job);if(skill)return skill;
  if(job.partner&&s.relations[job.partner]<job.relation)return `需与${people[job.partner].name}关系${job.relation}，当前${s.relations[job.partner]}/100。`;
  return null;
