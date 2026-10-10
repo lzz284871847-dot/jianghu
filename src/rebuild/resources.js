@@ -1,4 +1,4 @@
-import {progress} from './progression.js?v=1.0.52';
+import {progress} from './progression.js?v=1.0.53';
 // 采集数据：工具可重复使用，精简版不模拟耐久、矿场经营或动物种群。
 export const resources={
  gather:{name:'采药',hours:2,energy:16,skill:'herb',chance:0.62,output:{herb:1},success:'采到草药×1。',failure:'找了两小时，这次没有合适的药材。'},

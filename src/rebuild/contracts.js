@@ -1,6 +1,6 @@
-import {travelMinutes} from './routes.js?v=1.0.52';
-import {progress} from './progression.js?v=1.0.52';
-import {jobs,locations,items,skills,people} from './content.js?v=1.0.52';
+import {travelMinutes} from './routes.js?v=1.0.53';
+import {progress} from './progression.js?v=1.0.53';
+import {jobs,locations,items,skills,people} from './content.js?v=1.0.53';
 // 普通招工常驻；采购按日轮换，不运行商人资产或店铺账目模拟。
 export function postedJobs(s){return Object.entries(jobs).filter(([,job])=>(!job.board||job.board===s.place)&&(job.boardDay===undefined||job.boardDay===(s.day-1)%3))}
 export function boardJobs(s){return postedJobs(s).filter(([,job])=>(job.board||'town')===s.place)}
@@ -15,7 +15,7 @@ export function escortStatus(s){const job=jobs[s.job?.id],route=jobRoute(s);if(!
 export function recordEscortStep(s,to){const route=jobRoute(s);if(route&&route[s.job.progress]===to){s.job.progress++;s.result.push('护送抵达交接点：'+locations[to].name+'。',escortStatus(s));return true}return false}
 export function routeOffer(s,job,key){const route=job.routes[key],minutes=route.reduce((n,to)=>n+travelMinutes(s,to),0);return `${job.routeNames[key]}：${[job.start,...route].map(p=>locations[p].name).join(' → ')}；按当前天气步行${minutes}分钟、精力0，另需交付30分钟/精力${job.energy}。${key==='short'?'竹林交接点30%概率被拦，可绕行半小时或撤离。':'没有本单安排的拦路风险；普通世界事件照常。'}`}
 
-export function jobSkillBlocker(s,job){for(const [key,level] of Object.entries(job.requires||{}))if(progress(s.skills[key]).level<level)return `需要${skills[key]} Lv${level}，当前Lv${progress(s.skills[key]).level}。`;return null}
+export function jobSkillBlocker(s,job){if(job.career&&!s.career.passed[job.career])return '需要先完成对应职业小目标验收。';for(const [key,level] of Object.entries(job.requires||{}))if(progress(s.skills[key]).level<level)return `需要${skills[key]} Lv${level}，当前Lv${progress(s.skills[key]).level}。`;return null}
 export function jobWorkBlocker(s,job){
  const skill=jobSkillBlocker(s,job);if(skill)return skill;
  if(!job.hours)return null;

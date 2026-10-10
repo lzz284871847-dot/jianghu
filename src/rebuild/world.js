@@ -1,8 +1,8 @@
-import {continuityDay,npcActivity,gatherings} from './continuity.js?v=1.0.52';
-import {farmStatus} from './farming.js?v=1.0.52';
-import {procurementNews} from './contracts.js?v=1.0.52';
-import {discoveries} from './discoveries.js?v=1.0.52';
-import {events,people,locations,npcSchedules} from './content.js?v=1.0.52';
+import {continuityDay,npcActivity,gatherings} from './continuity.js?v=1.0.53';
+import {farmStatus} from './farming.js?v=1.0.53';
+import {procurementNews} from './contracts.js?v=1.0.53';
+import {discoveries} from './discoveries.js?v=1.0.53';
+import {events,people,locations,npcSchedules} from './content.js?v=1.0.53';
 export function random(s){let x=s.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;s.seed=x>>>0;return s.seed/4294967296}
 export function npcPlace(s,id){const schedule=npcActivity(s,id)||npcSchedules[id];if(!Object.hasOwn(npcSchedules,id))return null;const h=Math.floor(s.minute/60);return h>=schedule.from&&h<schedule.to?schedule.place:schedule.off}
 export function npcScheduleText(id,s){if(s&&npcActivity(s,id))return npcActivity(s,id).text;if(!Object.hasOwn(npcSchedules,id))return '去向未知';const schedule=npcSchedules[id],hour=h=>String(h).padStart(2,'0')+':00';return `${hour(schedule.from)}–${hour(schedule.to)} ${locations[schedule.place].name}；其余时间 ${locations[schedule.off].name}`}
