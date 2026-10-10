@@ -46,7 +46,8 @@ export const events={
  duel:{title:'两位过路武者争执',place:'bamboo',text:'两人争论一场比试的胜负，语气越来越重。几名行脚人站在远处观望。',choices:[{id:'watch',label:'站远些看一会儿',hours:0.5,energy:2,result:'两人短暂交手后被同伴劝开，各自离去。你看了热闹，没有卷进去。'},{id:'leave',label:'绕路离开',hours:0.25,result:'你绕开争执，不必替陌生人分出高下。'}],after:'竹林里争执的两位武者已被同伴劝开。'},
  herbs:{title:'医者晾药遇雨',place:'village',text:'一阵急雨将至，沈医者正匆忙往屋里收药。',choices:[{id:'help',label:'帮她收药',hours:0.5,energy:4,relation:'doctor',change:3,result:'药材及时收进屋里。沈医者请你坐下避雨。'},{id:'leave',label:'先走自己的路',result:'沈医者喊邻人帮忙，你继续自己的事。'}],after:'河湾村的药材及时收进屋里，没有淋坏。'},
  fair:{title:'临时小集',place:'dock',text:'一艘货船带来了小摊贩。码头有人卖旧器物，也有人只来看热闹。',choices:[{id:'browse',label:'逛一逛，了解行情',hours:1,energy:4,skill:'trade',xp:1,result:'你比较了几家的价钱，记住了常见货物的行情。没有买下任何东西。'},{id:'leave',label:'不逛了',result:'小集还在继续，你有自己的安排。'}],after:'码头的小集散了，船上的商贩去了下一站。'},
- rain:{title:'山道落石',place:'hill',text:'几块碎石挡住了旧道，过路人正在商量清理。',choices:[{id:'help',label:'一起清理',hours:1,energy:12,skill:'carry',xp:1,coins:6,result:'你们把碎石搬到路边，旧道重新可以通行。同行商人凑了6文酬谢你。'},{id:'leave',label:'绕开，不参与',hours:0.5,result:'你从旁边绕过，其他行人继续清理。'}],after:'南山坡的落石已由过路人清理。'}
+ rain:{title:'山道落石',place:'hill',text:'几块碎石挡住了旧道，过路人正在商量清理。',choices:[{id:'help',label:'一起清理',hours:1,energy:12,skill:'carry',xp:1,coins:6,result:'你们把碎石搬到路边，旧道重新可以通行。同行商人凑了6文酬谢你。'},{id:'leave',label:'绕开，不参与',hours:0.5,result:'你从旁边绕过，其他行人继续清理。'}],after:'南山坡的落石已由过路人清理。'},
+ dockMeal:{title:'船工的伙食委托',place:'dock',text:'一批船工等着开饭，领工愿付18文请熟悉烹饪的人用自备鲜鱼1、木料1做两份饭食，码头提供灶具。也可以直接交干粮2份，收12文。两条路线任选其一，饭食交给船工，不留在你的背包。',choices:[{id:'cook',label:'现做两份饭食，收18文',requires:{cook:2},input:{fish:1,wood:1},hours:1,energy:8,minHp:25,skill:'cook',xp:2,coins:18,result:'本次制作：鱼饭2份，已交给船工，不进入背包。领工付你18文；灶具留在码头。'},{id:'deliver',label:'交干粮2份，收12文',input:{food:2},hours:0.5,energy:2,skill:'trade',xp:1,coins:12,result:'你交出干粮2份，领工验收后付了12文。没有进行烹饪，因此不增长烹饪经验。'},{id:'leave',label:'不接这份伙食委托',result:'你没有接下委托，领工继续找人准备伙食。'}],after:'码头领工后来请附近饭摊备好伙食，船工吃过饭继续装货。'}
 };
 
 // 等候只推进游戏时间；与恢复精力的歇息分开。
