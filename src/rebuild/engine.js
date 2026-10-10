@@ -1,21 +1,21 @@
-import {careers,newCareer,recordCareer,careerBlocker,validCareer} from './careers.js?v=1.0.53';
-import {sites,siteAt,siteBlocker,validSites} from './sites.js?v=1.0.53';
-import {rememberHelp,gatheringBlocker,validEchoes} from './continuity.js?v=1.0.53';
-import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker,validMartial} from './martial.js?v=1.0.53';
-import {marketBlocker,marketHours,marketPrices} from './market.js?v=1.0.53';
-import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.53';
-import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.53';
-import {travelMinutes} from './routes.js?v=1.0.53';
-import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.53';
-import {isEscortJob,jobRoute,postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.53';
-import {recipeBlockers} from './crafting.js?v=1.0.53';
-import {resources,resourceChance} from './resources.js?v=1.0.53';
-import {injury} from './condition.js?v=1.0.53';
-import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.53';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.53';
-import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.53';
-import {gain,maxXP,progress} from './progression.js?v=1.0.53';
-import {advance,encounter,random,npcPlace} from './world.js?v=1.0.53';
+import {careers,newCareer,recordCareer,careerBlocker,validCareer} from './careers.js?v=1.0.54';
+import {sites,siteAt,siteBlocker,validSites} from './sites.js?v=1.0.54';
+import {rememberHelp,gatheringBlocker,validEchoes} from './continuity.js?v=1.0.54';
+import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker,validMartial} from './martial.js?v=1.0.54';
+import {marketBlocker,marketHours,marketPrices} from './market.js?v=1.0.54';
+import {relationshipFee,relationshipChange} from './relationships.js?v=1.0.54';
+import {farmActions,farmBlocker,farmStatus,validPlot} from './farming.js?v=1.0.54';
+import {travelMinutes} from './routes.js?v=1.0.54';
+import {combatCost,strike,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.54';
+import {isEscortJob,jobRoute,postedJobs,recordEscortStep,escortStatus,jobEntryBlocker,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.54';
+import {recipeBlockers} from './crafting.js?v=1.0.54';
+import {resources,resourceChance} from './resources.js?v=1.0.54';
+import {injury} from './condition.js?v=1.0.54';
+import {discoveries,discoveryForRoll} from './discoveries.js?v=1.0.54';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.54';
+import {locations,skills,items,people,jobs,recipes,events,actionNames,waitingActions,homePrice} from './content.js?v=1.0.54';
+import {gain,maxXP,progress} from './progression.js?v=1.0.54';
+import {advance,encounter,random,npcPlace} from './world.js?v=1.0.54';
 export const KEY='jianghu-wanxiang-lite-v1';
 export function fresh(profile={}){return {version:1,name:String(profile.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(profile.age)||18))),gender:profile.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(profile.background)?profile.background:'农家',personality:['谨慎','随和','勤奋'].includes(profile.personality)?profile.personality:'谨慎',day:1,minute:480,place:'town',hp:100,energy:100,coins:30,dead:false,weapon:'unarmed',arts:{steadySword:false,shelterStaff:false},art:null,artPassed:{},learned:false,learnedMedicine:false,seed:823471,skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},giftDays:{},lessonDay:0,homeDay:0,assessments:{},forgeLessonDay:0,discoveryDay:0,discoveryResolution:null,jobsDone:{},plot:null,plan:[],job:null,combat:null,pending:null,career:newCareer(),sites:{},echoes:{},events:[],weather:'晴',news:[],result:['你只是一个初到青石镇的普通人。先找一份活，或出去走走。'],journal:[]}}
 function fail(s,text){s.result=[text];return false}
@@ -58,7 +58,7 @@ export function forgeLesson(s){
  if(s.place!=='forge')return fail(s,'请在07:00–18:00到作坊，请许铁匠指导基础锻造。');
  return instruction(s,'artisan','forgeLessonDay','forge',forgeLessonFee(s),'许铁匠用练习用废铁教你看火色、落锤和检查缺口；学费包含练习用料，没有成品带走。');
 }
-export {prices,salePrices} from './market.js?v=1.0.53';
+export {prices,salePrices} from './market.js?v=1.0.54';
 export function trade(s,type,key,quantity=1){
  if(!available(s))return false;
  if(!['buy','sell'].includes(type)||!Number.isInteger(quantity)||quantity<1||quantity>20)return fail(s,'每笔买卖数量需为1–20的整数。');

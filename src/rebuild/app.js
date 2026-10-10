@@ -1,30 +1,31 @@
-import {careers,careerProgress,careerBlocker} from './careers.js?v=1.0.53';
-import {sites,siteAt,siteBlocker} from './sites.js?v=1.0.53';
-import {npcActivity,gatherings} from './continuity.js?v=1.0.53';
-import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker} from './martial.js?v=1.0.53';
-import {marketStatus,marketFor,marketPrices} from './market.js?v=1.0.53';
-import {resources,resourceChance} from './resources.js?v=1.0.53';
-import {choiceDetails} from './encounter-view.js?v=1.0.53';
-import {relationshipSummary,relationshipBenefit} from './relationships.js?v=1.0.53';
-import {todoSuggestions} from './todos.js?v=1.0.53';
-import {contactsView} from './contacts-view.js?v=1.0.53';
-import {loadSaveFile,importSummary,saveFileName,persistImportedSave} from './save-files.js?v=1.0.53';
-import {inventoryView,skillsView,housingStatus} from './collection-view.js?v=1.0.53';
-import {farmStatus} from './farming.js?v=1.0.53';
-import {findRoute} from './routes.js?v=1.0.53';
-import {combatCost,heavyChance,battleBonus,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.53';
-import {isEscortJob,routeOffer,boardJobs,dailyContract,jobMaterials,jobDestination,escortStatus,jobEntryBlocker,jobDeadline,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.53';
-import {setupOffline} from './offline.js?v=1.0.53';
-import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.53';
-import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.53';
-import {conditionText} from './condition.js?v=1.0.53';
-import {discoveries} from './discoveries.js?v=1.0.53';
-import {weapons,currentWeapon} from './equipment.js?v=1.0.53';
-import {command} from './commands.js?v=1.0.53';
-import {locations,skills,items,people,jobs,events,recipes,actionNames,waitingActions,homePrice} from './content.js?v=1.0.53';
-import {date,progress} from './progression.js?v=1.0.53';
-import {nearbyPeople,npcPlace} from './world.js?v=1.0.53';
-import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,forgeLesson,forgeLessonFee,treatmentFee,trade,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.53';
+import {localOutlook,tomorrowOutlook,actionPreview} from './outlook.js?v=1.0.54';
+import {careers,careerProgress,careerBlocker} from './careers.js?v=1.0.54';
+import {sites,siteAt,siteBlocker} from './sites.js?v=1.0.54';
+import {npcActivity,gatherings} from './continuity.js?v=1.0.54';
+import {arts,activeArt,learnArtBlocker,artPracticeBlocker,artMoveBlocker,artAssessmentBlocker} from './martial.js?v=1.0.54';
+import {marketStatus,marketFor,marketPrices} from './market.js?v=1.0.54';
+import {resources,resourceChance} from './resources.js?v=1.0.54';
+import {choiceDetails} from './encounter-view.js?v=1.0.54';
+import {relationshipSummary,relationshipBenefit} from './relationships.js?v=1.0.54';
+import {todoSuggestions} from './todos.js?v=1.0.54';
+import {contactsView} from './contacts-view.js?v=1.0.54';
+import {loadSaveFile,importSummary,saveFileName,persistImportedSave} from './save-files.js?v=1.0.54';
+import {inventoryView,skillsView,housingStatus} from './collection-view.js?v=1.0.54';
+import {farmStatus} from './farming.js?v=1.0.54';
+import {findRoute} from './routes.js?v=1.0.54';
+import {combatCost,heavyChance,battleBonus,assessmentBlocker,counterBlocker,banditForPlace,opponentHint} from './combat.js?v=1.0.54';
+import {isEscortJob,routeOffer,boardJobs,dailyContract,jobMaterials,jobDestination,escortStatus,jobEntryBlocker,jobDeadline,jobDeliveryBlocker,jobMinutes} from './contracts.js?v=1.0.54';
+import {setupOffline} from './offline.js?v=1.0.54';
+import {recipeBlockers,recipeMaterials,recipeOutput,recipePractice,recipesAt} from './crafting.js?v=1.0.54';
+import {isPlanInput,setPlan,runPlan,clearPlan,skipStep,planTravel} from './planner.js?v=1.0.54';
+import {conditionText} from './condition.js?v=1.0.54';
+import {discoveries} from './discoveries.js?v=1.0.54';
+import {weapons,currentWeapon} from './equipment.js?v=1.0.54';
+import {command} from './commands.js?v=1.0.54';
+import {locations,skills,items,people,jobs,events,recipes,actionNames,waitingActions,homePrice} from './content.js?v=1.0.54';
+import {date,progress} from './progression.js?v=1.0.54';
+import {nearbyPeople,npcPlace} from './world.js?v=1.0.54';
+import {KEY,fresh,restore,travel,equip,talk,gift,lesson,lessonFee,forgeLesson,forgeLessonFee,treatmentFee,trade,acceptJob,abandonJob,act,choose,fight} from './engine.js?v=1.0.54';
 const $=id=>document.getElementById(id);let state=null;let currentView='world';let shopQuantity=1;
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el}
 function button(label,fn,className=''){const b=text('button',label,className);b.type='button';b.onclick=()=>{fn();save(true)};return b}
@@ -50,7 +51,7 @@ function renderMartial(s,blocked){
 function render(){
  if(!state)return;const s=state;const market=marketFor(s);const weapon=currentWeapon(s);$('setup').hidden=true;$('game').hidden=false;$('bottom-nav').hidden=false;$('quick-name').textContent=s.name+' · '+locations[s.place].name;syncViews();$('hero-name').textContent=s.name+' · '+s.background;$('hero-detail').textContent=`${s.gender} · ${s.age+Math.floor((s.day-1)/360)}岁 · ${s.personality} · ${s.dead?'人生已结束':'一介普通人'}`;
  $('weapon-detail').textContent=`当前兵器：${weapon.name} · 对应武学：${skills[weapon.skill]} · 基础伤害加成：${weapon.bonus}；对应武学Lv2解锁拆招反击，需先防守。`;$('stats').replaceChildren(...[`气血 ${s.hp}/100`,conditionText(s),`精力 ${s.energy}/100`,`铜钱 ${s.coins}文`].map(x=>text('span',x,'pill')));
- $('place-name').textContent=locations[s.place].name;$('place-tag').textContent=locations[s.place].tag;$('place-text').textContent=locations[s.place].text+(s.place==='village'?' '+farmStatus(s):'');$('clock').textContent=date(s)+' · '+s.weather;
+ $('place-name').textContent=locations[s.place].name;$('place-tag').textContent=locations[s.place].tag;$('place-text').textContent=locations[s.place].text+(s.place==='village'?' '+farmStatus(s):'');$('clock').textContent=date(s)+' · '+s.weather;$('local-outlook').replaceChildren(...localOutlook(s).map(line=>text('p',line,'muted')));$('tomorrow-outlook').replaceChildren(...tomorrowOutlook(s).map(line=>text('p',line,'muted')));
  $('result').replaceChildren(...s.result.map(x=>text('p',x)));
  $('map').replaceChildren();for(const [id,loc] of Object.entries(locations)){const route=findRoute(s,id),direct=locations[s.place].routes.includes(id);const b=button(loc.name,()=>direct?travel(s,id):planTravel(s,id),'map-place'+(id===s.place?' current':''));b.disabled=s.dead||!!s.pending||!!s.combat||id===s.place||!route;b.append(text('small',id===s.place?'你在这里':direct?`邻近 · ${route.minutes}分钟`:`列远行计划 · ${route.steps.length}段 / 预计${route.minutes}分钟`));$('map').append(b)}
 
@@ -59,7 +60,7 @@ function render(){
  $('quick-todos').replaceChildren();for(const todo of todoSuggestions(s)){const row=text('div','','person');row.append(text('p',todo.text));if(todo.kind){const b=button(todo.label,()=>{if(todo.kind==='travel')return planTravel(s,todo.key);if(todo.kind==='act')return act(s,todo.key);if(todo.kind==='plan')return runPlan(s,()=>save());return acceptJob(s,todo.key)});b.disabled=!!blocked||todo.kind==='travel'&&s.plan.length>0;row.append(b)}$('quick-todos').append(row);}
  $('contacts').replaceChildren(...contactsView(s,to=>{planTravel(s,to);save(true)}));
  $('plan-card').hidden=!s.plan.length;$('plan-list').replaceChildren(...s.plan.map((step,i)=>text('p',`${i+1}. ${step}`)));$('plan-controls').replaceChildren();if(s.plan.length){const run=button('执行计划',()=>runPlan(s,()=>save()));run.disabled=!!blocked;$('plan-controls').append(run,button('跳过第一项',()=>skipStep(s),'quiet'),button('清空计划',()=>clearPlan(s),'quiet'));}
- $('actions').replaceChildren();if(!blocked){const key=siteAt(s);if(key)$('actions').append(button(s.sites[key]?'再次查看：'+sites[key].name:'查看附近旧址 · 1小时 / 精力4',()=>act(s,s.sites[key]?'visitSite':'surveySite')));const records=document.createElement('details');records.append(text('summary','探索记录'));for(const [key,record] of Object.entries(s.sites)){const def=sites[key];records.append(text('p',def.name+' · '+locations[def.place].name+' · 已处理'+record.done.length+'/2项','muted'));if(def.place!==s.place)records.append(button('列路线：'+def.name,()=>planTravel(s,def.place)));}if(!Object.keys(s.sites).length)records.append(text('p','尚未记录旧址。在南山坡、竹林或旧渡口可查看附近旧址。','muted'));$('actions').append(records);}if(!blocked){const info=document.createElement('details');info.append(text('summary','近期活动与去向'));for(const [kind,def] of Object.entries(gatherings)){const days=(def.offset-s.day%7+7)%7;info.append(text('p',def.name+'：'+(days===0?'今日':'还有'+days+'日')+'，至'+Math.floor(def.close/60)+'点。','muted'));}const activity=npcActivity(s);if(activity)info.append(text('p',activity.text,'muted'));$('actions').append(info);}if(!blocked){if(market){const shopButton=text('button','逛街市 · 买卖物品');shopButton.type='button';shopButton.onclick=()=>switchView('bag');$('actions').append(shopButton)}const ids=[...locations[s.place].actions.filter(id=>!recipes[id]),'rest','eat','heal',...(s.place==='town'&&s.homeDay?['sleep']:[]),...(s.bag.salve?['useSalve']:[]),...(s.learned?['inner']:[]),...(activeArt(s)?['practiceArt']:[]),...(nearbyPeople(s).some(n=>n.id==='master')?['spar']:[]),...(nearbyPeople(s).some(n=>n.id==='doctor')?['treat']:[]),...(s.job?['deliver']:[])];for(const id of [...new Set(ids)]){const b=button(id==='train'?`练习${skills[weapon.skill]} · 2小时 / 精力18`:id==='treat'?`医者治疗 · ${treatmentFee(s)}文`:labels[id]||actionNames[id],()=>act(s,id));if(resources[id]){const r=resources[id];b.append(text('small',`收获概率约${Math.round(resourceChance(s,r)*1000)/10}%${s.energy-r.energy<20?' · 疲劳降低收获与成长':''}${r.tool&&!s.bag[r.tool]?' · 缺少'+items[r.tool]:''}${s.hp<25?' · 伤重需休养':''}`));}$('actions').append(b);}}
+ $('actions').replaceChildren();if(!blocked){const key=siteAt(s);if(key)$('actions').append(button(s.sites[key]?'再次查看：'+sites[key].name:'查看附近旧址 · 1小时 / 精力4',()=>act(s,s.sites[key]?'visitSite':'surveySite')));const records=document.createElement('details');records.append(text('summary','探索记录'));for(const [key,record] of Object.entries(s.sites)){const def=sites[key];records.append(text('p',def.name+' · '+locations[def.place].name+' · 已处理'+record.done.length+'/2项','muted'));if(def.place!==s.place)records.append(button('列路线：'+def.name,()=>planTravel(s,def.place)));}if(!Object.keys(s.sites).length)records.append(text('p','尚未记录旧址。在南山坡、竹林或旧渡口可查看附近旧址。','muted'));$('actions').append(records);}if(!blocked){const info=document.createElement('details');info.append(text('summary','近期活动与去向'));for(const [kind,def] of Object.entries(gatherings)){const days=(def.offset-s.day%7+7)%7;info.append(text('p',def.name+'：'+(days===0?'今日':'还有'+days+'日')+'，至'+Math.floor(def.close/60)+'点。','muted'));}const activity=npcActivity(s);if(activity)info.append(text('p',activity.text,'muted'));$('actions').append(info);}if(!blocked){if(market){const shopButton=text('button','逛街市 · 买卖物品');shopButton.type='button';shopButton.onclick=()=>switchView('bag');$('actions').append(shopButton)}const ids=[...locations[s.place].actions.filter(id=>!recipes[id]),'rest','eat','heal',...(s.place==='town'&&s.homeDay?['sleep']:[]),...(s.bag.salve?['useSalve']:[]),...(s.learned?['inner']:[]),...(activeArt(s)?['practiceArt']:[]),...(nearbyPeople(s).some(n=>n.id==='master')?['spar']:[]),...(nearbyPeople(s).some(n=>n.id==='doctor')?['treat']:[]),...(s.job?['deliver']:[])];for(const id of [...new Set(ids)]){const b=button(id==='train'?`练习${skills[weapon.skill]} · 2小时 / 精力18`:id==='treat'?`医者治疗 · ${treatmentFee(s)}文`:labels[id]||actionNames[id],()=>act(s,id));const preview=actionPreview(s,id);if(preview)b.append(text('small',preview));$('actions').append(b);}}
  if(!blocked){const waitMenu=document.createElement('details');waitMenu.append(text('summary','原地等候'),text('p','只推进时间，精力消耗0；不恢复精力或气血。等候时，NPC与世界仍继续活动。','muted'));for(const [id,a] of Object.entries(waitingActions))waitMenu.append(button(a.name+' · 精力0',()=>act(s,id)));$('actions').append(waitMenu);}
  if(!blocked&&s.place==='town'){const home=document.createElement('details');home.append(text('summary','镇上住所'),text('p',housingStatus(s),'muted'));if(!s.homeDay){const buy=button(`购买镇上旧屋 · ${homePrice}文 / 1小时`,()=>act(s,'buyHome'));buy.disabled=s.coins<homePrice;home.append(buy);}$('actions').append(home);}
  const localRecipes=recipesAt(s.place);$('workbench').hidden=!localRecipes.length||!!blocked;$('workbench-title').textContent=s.place==='village'?'村中药炉':'作坊配方';$('workbench-hint').textContent=s.place==='village'?'先向沈医者学习基础制药，查看材料与产出再动手。使用现成药膏不增加制药经验。':'查看材料和产出再动手。制作兵器不会自动装备，也不增加对应武学经验。';$('recipe-list').replaceChildren();if(localRecipes.length&&!blocked)for(const [id,r] of localRecipes){const card=text('div','','person'),missing=recipeBlockers(s,r);card.append(text('h3',r.name),text('p','产出：'+recipeOutput(r)),text('p','材料：'+recipeMaterials(s,r)),text('p',`耗时${r.hours}小时 · 精力${r.energy}${r.level?` · 需要${skills[r.skill]} Lv${r.level}`:''}`,'muted'),text('p',recipePractice(s,r),'muted'));if(missing.length)card.append(text('p',missing.join('；'),'muted'));else if(s.energy-r.energy<20)card.append(text('p','疲劳提示：本次有20%概率失误；失误仍消耗材料，练习经验减半。','muted'));const b=button(r.name,()=>act(s,id));b.disabled=missing.length>0;card.append(b);$('recipe-list').append(card);}
