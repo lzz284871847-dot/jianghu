@@ -1,7 +1,7 @@
 // Run: node --test county/martial-regression.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fresh,restore,martialAction,act} from './engine.js';
+import {fresh,restore,martialAction,act,choose} from './engine.js';
 import {advance} from './world.js';
 import {catalogCheck} from './martial-data.js';
 import {combatCatalogValid} from './combat-core.js';
@@ -48,5 +48,20 @@ test('tactical combat accepts basic strike and heavy',()=>{
  assert.equal(martialAction(s,'challenge','brawler'),true);
  assert.equal(martialAction(s,'turn','strike',()=>0.5),true);
  assert.equal(s.combat?.round,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('roadside fight uses tactical rules for trained character',()=>{
+ const s=fresh();s.place='school';assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ s.place='oldroad';s.pending={type:'bandit'};
+ assert.equal(choose(s,'fight'),true);
+ assert.equal(s.combat.opponent,'brawler');
+ assert.equal(s.pending,null);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('untrained roadside encounter remains playable and saveable',()=>{
+ const s=fresh();s.place='oldroad';s.pending={type:'bandit'};
+ assert.equal(choose(s,'fight'),true);
+ assert.equal(s.combat.hp,28);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
