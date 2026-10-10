@@ -8,6 +8,24 @@ export function newCombat(opponent='brawler',martial='qinghe_fist'){
 }
 export function intent(c){const type=OPPONENTS[c.opponent].style;if(c.enemyEnergy<18)return 'guard';if(c.distance>=3)return type==='kite'?'retreat':'advance';if(c.playerGuard>0)return type==='adapt'||type==='counter'?'feint':'strike';return ({rush:'heavy',cautious:'guard',reach:'strike',tempo:'strike',pressure:'heavy',defend:'guard',counter:'guard',kite:'retreat',adapt:c.round%3===0?'feint':'strike'})[type]||'strike';}
 export function legal(c,action){return ACTIONS.includes(action)&&!(action==='retreat'&&c.distance===4)&&!(action==='advance'&&c.distance===0);}
+export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5){
+ const log=[],action='';
+ 
+  if(enemy==='advance')c.distance=clamp(c.distance-1,0,4);
+  else if(enemy==='retreat')c.distance=clamp(c.distance+1,0,4);
+  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';}
+  else if(enemy==='feint'){c.playerGuard=0;c.enemyStance='游走';}
+  else if(c.distance<= (['reach'].includes(OPPONENTS[c.opponent].style)?3:2)){
+   const hit=clamp(.72-(action==='sidestep'?.24:0)-(action==='guard'?.12:0),.12,.9);
+   if(rng()<hit){const damage=Math.max(1,(enemy==='heavy'?17:10)-c.playerGuard);player.hp=Math.max(0,player.hp-damage);log.push('对手命中，损失气血'+damage+'。');
+    if(damage>=12&&rng()<.2){player.injuries??={};player.injuries.bruise=clamp((player.injuries.bruise||0)+1,1,5);log.push('新增擦伤瘀伤。');}
+   }else log.push('避开对手攻击。');
+  }
+
+ if(player.hp===0){player.dead=true;c.ended='death';log.push('角色死亡，不能自动复活。');}
+ c.enemyEnergy=Math.max(0,c.enemyEnergy-(enemy==='heavy'?10:4));
+ return log;
+}
 export function resolve(c,player,action,rng=()=>.5){
  if(!legal(c,action))throw Error('当前距离无法执行此行动');
  if(player.dead||player.hp<=0)throw Error('角色已经死亡');
@@ -35,20 +53,9 @@ export function resolve(c,player,action,rng=()=>.5){
   else log.push(inReach?'攻击未能命中。':'兵器距离不足，攻击落空。');
  }
  if(c.enemyHp<=0){c.ended='victory';log.push('对手失去继续战斗的能力。');}
- if(!c.ended){
-  if(enemy==='advance')c.distance=clamp(c.distance-1,0,4);
-  else if(enemy==='retreat')c.distance=clamp(c.distance+1,0,4);
-  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';}
-  else if(enemy==='feint'){c.playerGuard=0;c.enemyStance='游走';}
-  else if(c.distance<= (['reach'].includes(OPPONENTS[c.opponent].style)?3:2)){
-   const hit=clamp(.72-(action==='sidestep'?.24:0)-(action==='guard'?.12:0),.12,.9);
-   if(rng()<hit){const damage=Math.max(1,(enemy==='heavy'?17:10)-c.playerGuard);player.hp=Math.max(0,player.hp-damage);log.push('对手命中，损失气血'+damage+'。');
-    if(damage>=12&&rng()<.2){player.injuries??={};player.injuries.bruise=clamp((player.injuries.bruise||0)+1,1,5);log.push('新增擦伤瘀伤。');}
-   }else log.push('避开对手攻击。');
-  }
- }
+ if(!c.ended)log.push(...enemyResponse(c,player,enemy,rng));
  if(player.hp===0){player.dead=true;c.ended='death';log.push('角色死亡，不能自动复活。');}
- if(c.enemyEnergy>0)c.enemyEnergy=Math.max(0,c.enemyEnergy-(enemy==='heavy'?10:4));
+
  const result={round:c.round,action,enemyIntent:enemy,distanceBefore,distanceAfter:c.distance,hpDelta:player.hp-before.hp,energyDelta:player.energy-before.energy,enemyHpDelta:c.enemyHp-before.enemyHp,ended:c.ended||null,log};
  c.history.push(result);if(c.history.length>30)c.history.shift();return result;
 }
