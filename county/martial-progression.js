@@ -15,19 +15,19 @@ export function martialTurn(s,action,rng){if(!s.combat)throw Error('当前没有
 // Move turns resolve the chosen technique and an actual enemy response in one transaction.
 export function martialMoveTurn(s,moveId,rng=()=>.5){
  if(!s.combat)throw Error('当前没有战斗');
- const c=s.combat,enemyHpBefore=c.enemyHp;
- const move=useMove(s,c,moveId,rng),m=ensureMartial(s),id=c.martial;
+ const c=s.combat,id=c.martial,m=ensureMartial(s),enemyHpBefore=c.enemyHp;
+ const move=useMove(s,c,moveId,rng);
  m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);
  if(c.enemyHp<enemyHpBefore)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);
- if(!c.ended){
-  const enemy=intent(c);
-  const response=enemyResponse(c,s,enemy,rng);
-  c.round++;
-  c.history.push({round:c.round,move:moveId,enemyIntent:enemy,log:[...move.log,...response]});
-  if(c.history.length>30)c.history.shift();
-  s.result=[...move.log,...response];
- }else s.result=[...move.log];
+ c.round++;
+ const enemy=c.ended?null:intent(c);
+ const response=c.ended?[]:enemyResponse(c,s,enemy,rng);
+ const log=[...move.log,...response];
+ c.history.push({round:c.round,move:moveId,enemyIntent:enemy,log});
+ if(c.history.length>30)c.history.shift();
+ s.result=log;
  if(c.ended)s.combat=null;
- return {move,ended:c.ended||null,log:s.result};
+ return {move,ended:c.ended||null,log};
 }
+
 export {usableMoves};
