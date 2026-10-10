@@ -1,10 +1,10 @@
 import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.2.0';
-import {command} from './commands.js?v=0.1.0';
+import {command} from './commands.js?v=0.2.0';
 import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.1.0';
 import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves} from './engine.js?v=0.2.0';
 import {date,progress,MAX} from './progression.js?v=0.1.0';
-import {npcPlace} from './world.js?v=0.1.0';
-import {save,load,importSave} from './storage.js?v=0.1.0';
+import {npcPlace} from './world.js?v=0.2.0';
+import {save,load,importSave} from './storage.js?v=0.2.0';
 const $=id=>document.getElementById(id);let state=null,view='world';
 const el=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;};
 function button(label,fn,disabled=false,preview=''){const b=el('button',label);b.type='button';b.disabled=disabled;b.onclick=()=>{try{fn();persist();render();feedback();if(state.pending||state.combat||state.dead){tab('world');$('scene').scrollIntoView({block:'start'});}}catch(e){$('save-status').textContent='行动未完成：'+e.message;}};if(preview)b.append(el('small',preview));return b;}
@@ -13,7 +13,7 @@ function tab(key){view=key;for(const s of document.querySelectorAll('.view'))s.h
 function feedback(){if(!state)return;$('feedback-title').textContent=state.result[0];$('feedback-lines').replaceChildren(...state.result.slice(1).map(t=>el('p',t)));$('feedback').hidden=false;}
 const action=(id,label,preview)=>button(label,()=>act(state,id),state.dead||!!state.pending||!!state.combat,preview);
 function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hidden=false;const p=places[s.place],blocked=s.dead||s.pending||s.combat;$('status').textContent=`${s.name} · 气血 ${s.hp}/100 · 精力 ${s.energy}/100 · ${s.coins}文`;$('place').textContent=p.name;$('clock').textContent=date(s)+' · '+s.weather;$('place-text').textContent=p.text;$('facilities').textContent='设施与资源：'+p.facilities.join('、');
- $('command-input').disabled=!!blocked;$('command-form').querySelector('button').disabled=!!blocked;$('scene').replaceChildren();$('scene').hidden=!blocked;
+ $('command-input').disabled=!!blocked;$('command-form').querySelector('button').disabled=!!blocked;$('scene').replaceChildren();$('scene').hidden=!(s.dead||s.pending||s.combat);
  if(s.dead){$('scene').append(el('h3','这段人生结束'),el('p','不会自动读档。可在系统页导出经历，再开始新的人生。'));}
  else if(s.combat){
  if(Object.hasOwn(s.combat,'hp')){$('scene').append(el('h3','与拦路人交手'),el('p','对手气血'+s.combat.hp+'；每次还击6点，防守减到1点；重击70%命中，疲劳伤害降低。撤离必定成功，精力最多2。'));for(const [id,label] of [['attack','出拳 · 精力4'],['heavy','重击 · 精力8'],['guard','防守 · 精力4'],['flee','撤离 · 精力最多2']])$('scene').append(button(label,()=>fight(s,id)));}
@@ -21,7 +21,7 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
   const c=s.combat;
   $('scene').append(el('h3','战术交手 · '+(OPPONENTS[c.opponent]?.name||c.opponent)),el('p','对手气血 '+c.enemyHp+'/100 · 距离 '+DISTANCES[c.distance]+' · 架势 '+c.stance+' · 回合 '+c.round),el('p','撤退可能失败；精力耗尽或受伤都可能致命。'));
   for(const m of usableMoves(s))$('scene').append(button(m.name+' · 精力'+m.energy,()=>martialAction(s,'move',m.id),s.energy<m.energy,'距离'+m.reach+' · 伤害'+m.damage));
-  for(const [id,name,energy] of [['guard','防守',3],['feint','虚招',6],['sidestep','闪身',5],['advance','逼近',4],['retreat','后撤',4],['flee','逃离',6]])$('scene').append(button(name+' · 精力'+energy,()=>martialAction(s,'turn',id),s.energy<energy||(id==='advance'&&c.distance===0)||(id==='retreat'&&c.distance===4)));
+  for(const [id,name,energy] of [['strike','出拳',5],['heavy','重击',11],['guard','防守',3],['feint','虚招',6],['sidestep','闪身',5],['advance','逼近',4],['retreat','后撤',4],['flee','逃离',6]])$('scene').append(button(name+' · 精力'+energy,()=>martialAction(s,'turn',id),s.energy<energy||(id==='advance'&&c.distance===0)||(id==='retreat'&&c.distance===4)));
  }
  }
  else if(s.pending?.type==='bandit'){$('scene').append(el('h3','旧道上的拦路人'),el('p','实战可能受伤或死亡。可以绕开，没人要求你拼命。'),button('绕开 · 半小时 / 精力0',()=>choose(s,'avoid')),button('交手 · 对手气血28',()=>choose(s,'fight')));}
