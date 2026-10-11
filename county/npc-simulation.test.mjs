@@ -695,3 +695,15 @@ test('family hardship accelerates career reconsideration without guaranteed pay'
  assert.equal(s.commerce.budget[shop],budget);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('voluntary household contributions improve trust without minting goods',async()=>{
+ const {familySupport}=await import('./npc-households.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01,h=s.npcWorld.households.chen;
+ p.food=4;p.coins=55;h.food=0;h.coins=0;h.trust=50;
+ const food=p.food+h.food,coins=p.coins+h.coins;
+ familySupport(s,p,2);
+ assert.equal(p.food+h.food,food);assert.equal(p.coins+h.coins,coins);
+ assert.equal(h.trust,52);
+ assert.ok(p.history.some(x=>x.includes('贡献')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
