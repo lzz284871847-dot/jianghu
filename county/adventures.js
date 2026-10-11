@@ -1,13 +1,14 @@
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.1.0';
-import {people,items} from './content.js?v=5.1.0';
-import {gain} from './progression.js?v=5.1.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.1.0';
-import {EQUIPMENT} from './equipment.js?v=5.1.0';
-export const makeAdventures=()=>({quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.2.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.2.0';
+import {people,items} from './content.js?v=5.2.0';
+import {gain} from './progression.js?v=5.2.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.2.0';
+import {EQUIPMENT} from './equipment.js?v=5.2.0';
+export const makeAdventures=(day=1)=>({feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==11)return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==12||!feedbackValid(s))return false;
  if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty'].includes(v)))return false;
  if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
  const o=a.org;if(!obj(o)||Object.keys(o).length!==3||!['none','school','caravan'].includes(o.id)||!obj(o.rep)||Object.keys(o.rep).length!==2||!['school','caravan'].every(id=>num(o.rep[id],100))||!num(o.aidDay,s.day))return false;
@@ -23,7 +24,7 @@ const paid=(s,id,n)=>{const p=s.npcWorld.individuals[id];return p.coins>=n&&s.co
 function reward(s,id,n){s.npcWorld.individuals[id].coins-=n;s.coins+=n;}
 function fee(s,id,n){const p=s.npcWorld.individuals[id];if(s.coins<n||p.coins>1000000-n)return false;s.coins-=n;p.coins+=n;return true;}
 function finish(s,success){const a=s.adventures,q=a.quest;(success?a.done:a.failed).push(q.id);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
-export function expireAdventures(s){const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
+export function expireAdventures(s){expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
 export function recordAdventureVictory(s,c){if(c.ended==='victory'&&!c.practice&&s.adventures&&!s.adventures.victories.includes(c.opponent))s.adventures.victories.push(c.opponent);}
 export const practiceFee=s=>s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3?3:4;
 const trained=(s,tier)=>Object.keys(s.martial.known).filter(id=>MARTIAL_ARTS[id].tier===tier&&s.martial.practice[id]>=120).length;
@@ -33,6 +34,7 @@ function xp(s,key,n){const line=gain(s,key,n);if(line)s.result.push(line);}
 export function adventureAction(s,id,{advance,rng}){
  if(s.dead||s.pending||s.combat)return fail(s,'先处理眼前交手或选择；死亡后不能继续。');
  expireAdventures(s);const a=s.adventures,[kind,key]=String(id).split(':');
+ if(kind==='followup'||kind==='event')return feedbackAction(s,String(id),{present,transact,advance});
  if(kind==='retry'){
   const d=QUESTS[key];if(!d||key==='parcel'||a.quest||!a.failed.includes(key)||a.done.includes(key))return fail(s,'此委托不能重新约定；失物与已完成委托不重复开放。');
   if(key==='rescue'&&a.milestones.length<2)return fail(s,'救援仍需完成县境成长第二阶段。');
@@ -108,7 +110,8 @@ export function adventureAction(s,id,{advance,rng}){
 }
 
 export function adventureDialogue(s,id){
- const a=s.adventures;if(!a)return null;
+ const a=s.adventures;if(!a)return null;const follow=feedbackDialogue(s,id);if(follow)return follow;
+ if(a.failed.includes(id==='doctor'?'medicine':id==='boatman'?'escort':'none'))return '上次委托未完成，当事人记得失约；可以说清经过，也可重新约定。';
  if(id==='doctor'&&a.done.includes('rescue'))return '南山采药人已得到救助，诊所记着你实际帮过的忙。';
  if(id==='doctor'&&a.done.includes('medicine'))return '你交来的两份药材已用于诊所，这趟急单已经结清。';
  if(id==='merchant'&&a.done.includes('parcel'))return '竹林货包已归还，柳掌柜认得这次帮忙的人。';
