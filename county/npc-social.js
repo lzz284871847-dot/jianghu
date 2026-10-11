@@ -45,7 +45,8 @@ export function socialDay(s,day){
    event(b,day,right.name+'因'+left.name+'较容易获得活计而心生不满。');
    notes.push('码头工人因谋生机会发生竞争。');
   }else if(b.kind==='employer'&&right.unemployedDays>=3&&day%4===0){
-   b.trust=Math.max(0,b.trust-2);event(b,day,'连续停工使雇佣关系承压。');
+   b.trust=Math.max(0,b.trust-2);b.resentment=Math.min(100,b.resentment+1);
+   event(b,day,'连续停工使雇佣关系承压。');
   }else if(b.kind==='mentor'&&right.careerSkills.craft>=20&&b.trust<90&&day%8===0){
    b.trust++;event(b,day,'学徒技艺进步，师徒信任增加。');
   }
