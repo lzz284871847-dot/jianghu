@@ -1,11 +1,11 @@
-export const VERSION='0.3.0';
+export const VERSION='0.4.0';
 const place=(name,area,routes,minutes,text,facilities,work=false)=>({name,area,routes,minutes,text,facilities,work});
 export const places={
  county:place('青河县城','县城与近郊',['market','inn','workshop','school','road','village','dock'],15,'你站在县城街口。县衙告示写着本县道路与危险地带，出城由自己决定。',['县衙告示','街边短工'],true),
  market:place('县城街市','县城与近郊',['county'],15,'粮铺与杂货摊08:00–20:00营业。普通材料按标价收购，不承诺贸易利润。',['粮铺','杂货铺']),
  inn:place('长安客栈','县城与近郊',['county'],15,'一晚5文；手头紧也可到河湾村免费借宿。',['住宿','食物']),
  workshop:place('作坊街','县城与近郊',['county'],15,'铁匠炉与公用灶07:00–18:00开放。可先加工普通原料。',['铁匠铺','公用灶','作坊短工'],true),
- school:place('县城武馆','县城与近郊',['county'],15,'08:00–18:00可练习入门拳脚。完整武学与战斗成长将在下一系统批次制作。',['基础练习']),
+ school:place('县城武馆','县城与近郊',['county'],15,'08:00–18:00可练习入门拳脚。武馆提供分阶武学教学和战术挑战，交手可能受伤。',['基础练习']),
  road:place('城郊官道','县城与近郊',['county','liuxi','foot'],45,'官道连接县城与柳溪集，路远但普通往来不强迫战斗。北向邻县暂未开放。',['邻县出口（未开放）']),
  village:place('河湾村','河谷与水路',['county','fields','dock','foot'],30,'村里能借宿、采常见药材，医者08:00–18:00坐诊。',['药铺','免费借宿']),
  fields:place('河湾田地','河谷与水路',['village'],15,'农户允许帮忙分拣余菜；也可以做田间短工，工钱来自实际劳动。',['农户短工','余菜分拣'],true),
