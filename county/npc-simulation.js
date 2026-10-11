@@ -1,3 +1,4 @@
+import {makeSocial,socialValid,socialDay} from './npc-social.js?v=2.0.0';
 import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=1.9.0';
 import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.9.0';
 import {people,places} from './content.js?v=1.9.0';
@@ -18,11 +19,11 @@ export function makeNPCWorld(day=1){
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
  for(const [id,name,place,role,age] of ordinary)individuals[id]=makePerson(id,name,place,role,age,'ordinary');
  for(const person of Object.values(individuals)){person.lastDay=day;person.age+=Math.floor((day-1)/360);}
- return {individuals,households:makeHouseholds(),background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
+ return {individuals,households:makeHouseholds(),social:makeSocial(day),background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
 }
 export function npcWorldValid(s){
  const root=s.npcWorld;if(!root||typeof root!=='object'||Array.isArray(root)||!bounded(root.lastDay,s.day)||root.lastDay<1||!root.individuals||typeof root.individuals!=='object'||Array.isArray(root.individuals))return false;
- if(!householdsValid(s))return false;
+ if(!householdsValid(s)||!socialValid(s))return false;
  const canonical=makeNPCWorld();
  if(Object.keys(root.individuals).length!==Object.keys(canonical.individuals).length)return false;
  for(const [id,p] of Object.entries(root.individuals)){
@@ -54,6 +55,7 @@ export function tickNPCs(s,day){
   if(p.hunger>=60&&p.history[0]?.includes('缺粮'))notes.push(p.name+'近日缺粮，正在寻求活计。');
  }
  notes.push(...familyResponsibility(s,day));
+ notes.push(...socialDay(s,day));
  s.npcWorld.lastDay=day;
  return notes.slice(0,2);
 }
