@@ -564,3 +564,13 @@ test('broken master-apprentice trust prevents training costs and skill gains',as
  assert.equal(apprentice.careerSkills.craft,skill+1);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('employer resentment prevents hiring even when trust is high',async()=>{
+ const {npcApplyShop}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ const bond=s.npcWorld.social.bonds['merchant:shopassistant'];
+ p.occupation='carrier';p.level='ordinary';bond.trust=80;bond.resentment=70;
+ assert.equal(npcApplyShop(s,p,2),false);
+ assert.equal(p.occupation,'carrier');
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
