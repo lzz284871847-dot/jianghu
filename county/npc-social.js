@@ -1,4 +1,4 @@
-import {alive} from './npc-mortality.js?v=4.14.0';
+import {alive} from './npc-mortality.js?v=4.15.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -99,4 +99,9 @@ export function ambitionDay(s,p,day,applyShop){
   p.workDays>=20&&p.careerSkills[o.ambition]>=40;
  if(!o.achievedDay&&reached){o.achievedDay=day;record('凭实际劳动与积累达成志向：'+AMBITIONS[o.ambition]+'。');return true;}
  return false;
+}
+
+export function socialSummary(s){
+ const labels={friend:'朋友',competitor:'谋生竞争',employer:'雇佣',mentor:'手艺师徒',neighbor:'邻里'};
+ return Object.entries(BONDS).map(([id,b])=>{const v=s.npcWorld.social.bonds[id];return s.npcWorld.individuals[b.a].name+'与'+s.npcWorld.individuals[b.b].name+' · '+labels[b.kind]+' · 信任'+v.trust+'/100 · 隔阂'+v.resentment+'/100'+(v.history.length?' · 最近：'+v.history[0]:' · 尚无新的共同经历');});
 }
