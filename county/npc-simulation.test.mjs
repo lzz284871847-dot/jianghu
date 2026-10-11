@@ -364,3 +364,39 @@ test('daily family aid is not multiplied by repeated same-day ticks',()=>{
  assert.equal(JSON.stringify(s.npcWorld),snapshot);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('injured family member receives an actual transfer, raising trust but preserving total coins',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),a=s.npcWorld.individuals.dockhand01,b=s.npcWorld.individuals.dockhand02,h=s.npcWorld.households.dock;
+ a.injuryDays=3;a.coins=0;b.coins=30;
+ const total=a.coins+b.coins+h.coins;
+ const notes=familyResponsibility(s,2);
+ assert.equal(a.coins,3);assert.equal(b.coins,27);
+ assert.equal(a.coins+b.coins+h.coins,total);assert.equal(h.trust,52);
+ assert.ok(notes.some(x=>x.includes('接济')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('repeated hardship without family funds reduces trust, not money',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),a=s.npcWorld.individuals.farmhand01,b=s.npcWorld.individuals.farmhand02,h=s.npcWorld.households.chen;
+ a.hunger=80;a.coins=0;b.coins=0;
+ for(let day=2;day<=4;day++)familyResponsibility(s,day);
+ assert.equal(h.trust,49);assert.equal(h.hardshipDays,3);
+ assert.equal(a.coins+b.coins+h.coins,0);
+});
+test('recovering household hardship progresses toward stability',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),h=s.npcWorld.households.chen;h.hardshipDays=3;
+ familyResponsibility(s,2);
+ assert.equal(h.hardshipDays,2);
+ assert.equal(h.trust,50);
+});
+test('1.8.0 household saves migrate relationship fields safely',()=>{
+ const s=fresh();
+ for(const h of Object.values(s.npcWorld.households)){delete h.trust;delete h.hardshipDays;}
+ const restored=restore(JSON.stringify(s));
+ assert.equal(restored.npcWorld.households.chen.trust,50);
+ assert.equal(restored.npcWorld.households.chen.hardshipDays,0);
+ restored.npcWorld.households.chen.trust=150;
+ assert.throws(()=>restore(JSON.stringify(restored)),/NPC人生记录无效/);
+});

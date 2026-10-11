@@ -6,7 +6,7 @@ export const HOUSEHOLD_MEMBERS=Object.freeze({
   market:['merchant','shopassistant'],
   liuxi:['stallholder','fisher']
 });
-export const makeHouseholds=()=>Object.fromEntries(Object.keys(HOUSEHOLD_MEMBERS).map(id=>[id,{coins:0,food:0}]));
+export const makeHouseholds=()=>Object.fromEntries(Object.keys(HOUSEHOLD_MEMBERS).map(id=>[id,{coins:0,food:0,trust:50,hardshipDays:0}]));
 const integer=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
 export function householdsValid(s){
  const h=s.npcWorld?.households;
@@ -14,7 +14,7 @@ export function householdsValid(s){
  Object.keys(h).length===Object.keys(HOUSEHOLD_MEMBERS).length&&
  Object.keys(HOUSEHOLD_MEMBERS).every(id=>{
   const v=h[id];return v&&typeof v==='object'&&!Array.isArray(v)&&
-  Object.keys(v).length===2&&integer(v.coins,1000000)&&integer(v.food,100);
+  Object.keys(v).length===4&&integer(v.coins,1000000)&&integer(v.food,100)&&integer(v.trust,100)&&integer(v.hardshipDays,100000);
  });
 }
 export function familyOf(id){return Object.keys(HOUSEHOLD_MEMBERS).find(k=>HOUSEHOLD_MEMBERS[k].includes(id))??null;}
@@ -25,12 +25,40 @@ export function familySupport(s,p,day){
  if(p.food>=3&&household.food<90){p.food--;household.food++;}
  if(p.coins>=50&&household.coins<=999990){p.coins-=5;household.coins+=5;}
  if(p.food===0&&household.food>0){
-  household.food--;p.food++;p.hunger=Math.max(0,p.hunger-12);
+  household.food--;p.food++;p.hunger=Math.max(0,p.hunger-12);household.trust=Math.min(100,household.trust+1);
   p.history=['第'+day+'日从家中领取一份口粮。',...p.history].slice(0,8);return true;
  }
  if(p.food===0&&p.coins<4&&household.coins>=4){
-  household.coins-=4;p.coins+=4;
+  household.coins-=4;p.coins+=4;household.trust=Math.min(100,household.trust+1);
   p.history=['第'+day+'日得到家中接济4文。',...p.history].slice(0,8);return true;
  }
  return false;
+}
+
+/** A relative can pay another relative's recovery or food costs, never mint currency. */
+export function familyResponsibility(s,day){
+ const notes=[];
+ for(const [family,ids] of Object.entries(HOUSEHOLD_MEMBERS)){
+  const h=s.npcWorld.households[family],members=ids.map(id=>s.npcWorld.individuals[id]);
+  const needy=members.find(p=>p.injuryDays>=2||p.hunger>=55||p.unemployedDays>=4);
+  if(!needy){h.hardshipDays=Math.max(0,h.hardshipDays-1);continue;}
+  h.hardshipDays=Math.min(100000,h.hardshipDays+1);
+  const donor=members.find(p=>p!==needy&&p.coins>=12);
+  if(donor&&needy.coins<12){
+   const amount=Math.min(3,donor.coins-9,12-needy.coins);
+   if(amount>0){
+    donor.coins-=amount;needy.coins+=amount;
+    h.trust=Math.min(100,h.trust+2);h.hardshipDays=Math.max(0,h.hardshipDays-1);
+    donor.history=['第'+day+'日接济家人'+needy.name+amount+'文。',...donor.history].slice(0,8);
+    needy.history=['第'+day+'日得到'+donor.name+'帮助'+amount+'文。',...needy.history].slice(0,8);
+    notes.push(donor.name+'接济家人'+needy.name+'，缓解生活困难。');
+    continue;
+   }
+  }
+  if(h.hardshipDays>=3&&h.hardshipDays%3===0){
+   h.trust=Math.max(0,h.trust-1);
+   notes.push(family+'家庭连续面临困难，成员之间的压力有所增加。');
+  }
+ }
+ return notes.slice(0,2);
 }
