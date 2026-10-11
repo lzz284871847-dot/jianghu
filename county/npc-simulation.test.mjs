@@ -669,3 +669,29 @@ test('career reconsideration prevents an immediate return to hauling',async()=>{
  assert.ok(p.unemployedDays>=8);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('prolonged hardship draws on finite household savings',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),h=s.npcWorld.households.chen;
+ const needy=s.npcWorld.individuals.farmhand01,relative=s.npcWorld.individuals.farmhand02;
+ needy.injuryDays=3;needy.food=1;needy.coins=1;relative.food=1;relative.coins=0;
+ h.coins=9;h.hardshipDays=4;h.trust=50;
+ const total=needy.coins+relative.coins+h.coins;
+ familyResponsibility(s,2);
+ assert.equal(needy.coins,4);assert.equal(h.coins,6);
+ assert.equal(needy.coins+relative.coins+h.coins,total);
+ assert.ok(needy.history.some(x=>x.includes('动用积蓄')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('family hardship accelerates career reconsideration without guaranteed pay',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='carrier';p.level='ordinary';p.unemployedDays=4;p.coins=10;p.energy=10;p.hunger=90;
+ s.npcWorld.households.dock.hardshipDays=5;
+ const shop=p.home==='liuxi'?'liuxi':'market',budget=s.commerce.budget[shop];
+ npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');assert.equal(p.coins,10);
+ assert.equal(s.commerce.budget[shop],budget);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});

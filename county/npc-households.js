@@ -64,6 +64,13 @@ export function familyResponsibility(s,day){
     continue;
    }
   }
+  if(h.hardshipDays>=5&&h.trust>=40&&h.coins>=6&&needy.coins<6){
+   // A household chooses to spend its existing reserve during prolonged hardship.
+   h.coins-=3;needy.coins+=3;h.trust=Math.min(100,h.trust+1);
+   needy.history=['第'+day+'日家中动用积蓄3文，帮助渡过长期困境。',...needy.history].slice(0,8);
+   notes.push(needy.name+'得到家庭积蓄支持，家中储备相应减少。');
+   continue;
+  }
   if(h.hardshipDays>=3&&h.hardshipDays%3===0){
    const loss=h.hardshipDays>=9?2:1;
    h.trust=Math.max(0,h.trust-loss);

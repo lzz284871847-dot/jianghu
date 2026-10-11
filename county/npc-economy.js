@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=2.6.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.6.0';
-import {MARKET_LIMIT} from './commerce.js?v=2.6.0';
-import {districtStatus} from './society.js?v=2.6.0';
+import {bondBetween} from './npc-social.js?v=2.7.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.7.0';
+import {MARKET_LIMIT} from './commerce.js?v=2.7.0';
+import {districtStatus} from './society.js?v=2.7.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -150,7 +150,7 @@ export function npcCareerDay(s,p,day){
  const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
  const searchAfter=familyHardship>=3?1:3;
  if(['original','carrier'].includes(p.occupation)&&p.unemployedDays>=searchAfter&&npcApplyShop(s,p,day))return false;
- const prolongedSearch=p.unemployedDays>=7&&p.coins<=20;
+ const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=20;
  if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
   p.occupation='original';
   remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
