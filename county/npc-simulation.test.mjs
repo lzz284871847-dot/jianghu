@@ -574,3 +574,17 @@ test('employer resentment prevents hiring even when trust is high',async()=>{
  assert.equal(p.occupation,'carrier');
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('stable employment gradually repairs a strained employer relationship',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['merchant:shopassistant'];
+ const worker=s.npcWorld.individuals.shopassistant;
+ worker.unemployedDays=0;bond.trust=35;bond.resentment=72;
+ s.day=6;for(const node of Object.values(s.nodes))node.refreshDay=7;
+ socialDay(s,6);
+ assert.equal(bond.trust,36);assert.equal(bond.resentment,70);
+ assert.ok(bond.history.some(x=>x.includes('消除旧怨')));
+ const snapshot=JSON.stringify(s.npcWorld.social);
+ socialDay(s,6);assert.equal(JSON.stringify(s.npcWorld.social),snapshot);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
