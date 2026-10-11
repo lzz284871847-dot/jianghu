@@ -12,7 +12,7 @@ test('purchase decrements merchant stock and failed shortage leaves player uncha
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 test('merchant acquisition respects finite capacity and does not confiscate items',()=>{
- const s=fresh();s.place='market';s.bag.iron=40;
+ const s=fresh();s.place='market';s.bag.iron=40;s.commerce.budget.market=300;
  assert.equal(trade(s,'sell','iron',20),true);assert.equal(stockAt(s,'market','iron'),20);
  const before={coins:s.coins,iron:s.bag.iron,time:s.minute};
  assert.equal(trade(s,'sell','iron',11),false);
@@ -58,10 +58,10 @@ test('households clear stalled merchant acquisitions and bring limited sales cas
  assert.equal(trade(s,'sell','iron',20),true);
  advance(s,1440-s.minute);
  assert.equal(stockAt(s,'market','iron'),19);
- assert.equal(s.commerce.budget.market,27);
+ assert.equal(s.commerce.budget.market,28);
  advance(s,1440);
  assert.equal(stockAt(s,'market','iron'),18);
- assert.equal(s.commerce.budget.market,58);
+ assert.equal(s.commerce.budget.market,60);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 test('0.5.0 saves without merchant budgets migrate; invalid bank notes rejected',()=>{
