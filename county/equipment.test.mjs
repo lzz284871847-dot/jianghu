@@ -38,7 +38,7 @@ test('craft requires location and materials, equip affects combat, durability ru
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 test('advanced gear needs smith trust; armor reduces incoming damage',()=>{
- const s=fresh();s.place='workshop';s.coins=500;s.bag.iron=100;s.bag.wood=100;
+ const s=fresh();s.place='workshop';s.coins=500;s.bag.iron=100;s.bag.wood=100;s.bag.fine_ore=4;
  assert.equal(equipmentAction(s,'craft','steel_blade'),false);
  s.relations.smith=8;
  assert.equal(equipmentAction(s,'craft','steel_blade'),true);
@@ -69,5 +69,38 @@ test('unmatched weapons do not buff fists and named weapon moves respect affinit
  const before=s.equipment.owned.iron_sword;
  assert.equal(martialAction(s,'move','basic_sword_1',()=>.1),true);
  assert.equal(s.equipment.owned.iron_sword,before-1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('rare ore nodes migrate and deeper layers require mining mastery',async()=>{
+ const {resourceBlocker,act,choose}=await import('./engine.js');
+ const old=fresh();for(const key of ['fine_ore','cold_ore','meteor_ore'])delete old.bag[key];
+ for(const k of Object.keys(old.nodes))if(k.endsWith(':fine_ore')||k.endsWith(':cold_ore')||k.endsWith(':meteor_ore'))delete old.nodes[k];
+ const migrated=restore(JSON.stringify(old));
+ for(const k of ['fine_ore','cold_ore','meteor_ore'])assert.equal(migrated.bag[k],0);
+ assert.doesNotThrow(()=>restore(JSON.stringify(migrated)));
+ migrated.place='mine';migrated.bag.pick=1;
+ assert.match(resourceBlocker(migrated,'fine_ore'),/提高采矿经验/);
+ migrated.skills.mining=150;
+ assert.equal(resourceBlocker(migrated,'fine_ore'),null);
+ assert.equal(act(migrated,'fine_ore',()=>0),true);
+ assert.equal(migrated.pending.type,'resource');
+ assert.equal(choose(migrated,'gather',()=>0),true);
+ assert.equal(migrated.bag.fine_ore,1);
+ assert.equal(resourceBlocker(migrated,'cold_ore')?.includes('提高采矿经验'),true);
+ assert.doesNotThrow(()=>restore(JSON.stringify(migrated)));
+});
+test('higher tier crafting cannot bypass rare ore with cash and iron alone',()=>{
+ const s=fresh();s.place='workshop';s.coins=5000;s.relations.smith=100;
+ s.bag.iron=100;s.bag.wood=100;
+ assert.equal(equipmentAction(s,'craft','steel_blade'),false);
+ s.bag.fine_ore=2;
+ assert.equal(equipmentAction(s,'craft','steel_blade'),true);
+ assert.equal(equipmentAction(s,'craft','master_blade'),false);
+ s.bag.cold_ore=2;
+ assert.equal(equipmentAction(s,'craft','master_blade'),true);
+ assert.equal(equipmentAction(s,'craft','heirloom_sword'),false);
+ s.bag.meteor_ore=2;
+ assert.equal(equipmentAction(s,'craft','heirloom_sword'),true);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
