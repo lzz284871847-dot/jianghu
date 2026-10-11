@@ -1,14 +1,14 @@
-import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=1.6.0';
-import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=1.6.0';
-import {gain,progress,MAX} from './progression.js?v=1.6.0';
-import {advance,random,npcPlace} from './world.js?v=1.6.0';
-import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=1.6.0';
-import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=1.6.0';
-import {injuryValid,treatInjury} from './injury.js?v=1.6.0';
-import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=1.6.0';
-import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=1.6.0';
-import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=1.6.0';
-import {makeSociety,societyValid,districtStatus} from './society.js?v=1.6.0';
+import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=1.7.0';
+import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=1.7.0';
+import {gain,progress,MAX} from './progression.js?v=1.7.0';
+import {advance,random,npcPlace} from './world.js?v=1.7.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=1.7.0';
+import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=1.7.0';
+import {injuryValid,treatInjury} from './injury.js?v=1.7.0';
+import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=1.7.0';
+import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=1.7.0';
+import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=1.7.0';
+import {makeSociety,societyValid,districtStatus} from './society.js?v=1.7.0';
 export const KEY='jianghu-qinghe-county-v1';
 export function fresh(p={}){return {version:'county-1',name:String(p.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(p.age)||18))),gender:p.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(p.background)?p.background:'农家',personality:['谨慎','随和','勤奋'].includes(p.personality)?p.personality:'谨慎',talent:Object.hasOwn(talents,p.talent)?p.talent:'ordinary',day:1,minute:480,place:'county',weather:'晴',coins:30,hp:100,energy:100,dead:false,martial:makeMartial(),equipment:makeEquipment(),livelihood:makeLivelihood(),commerce:makeCommerce(),society:makeSociety(),npcWorld:makeNPCWorld(),injuries:{},injuryRecovery:{},seed:823471,bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},nodes:Object.fromEntries(Object.entries(nodeDefs).map(([k,n])=>[k,{left:n.capacity,refreshDay:3}])),encounterDay:0,pending:null,combat:null,news:[],journal:[],result:['你是初到青河县的普通人。可以找活、认识当地人，也可以自行出门。']};}
 const fail=(s,t)=>{s.result=[t];return false;},sign=n=>(n>=0?'+':'')+n;
