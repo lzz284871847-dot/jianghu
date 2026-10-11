@@ -489,3 +489,28 @@ test('household sharing cannot take the last food unit from another member',asyn
  familyResponsibility(s,2);
  assert.equal(needy.food,0);assert.equal(donor.food,1);
 });
+
+test('unresolved household hardship escalates strain and records lasting memories',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),needy=s.npcWorld.individuals.farmhand01,relative=s.npcWorld.individuals.farmhand02;
+ needy.food=0;needy.hunger=70;needy.coins=0;needy.injuryDays=3;
+ relative.food=1;relative.coins=9;
+ const h=s.npcWorld.households.chen;h.food=0;h.coins=0;h.hardshipDays=7;
+ const original=h.trust;
+ familyResponsibility(s,2);
+ assert.equal(h.hardshipDays,8);assert.equal(h.trust,original);
+ familyResponsibility(s,3);
+ assert.equal(h.hardshipDays,9);assert.equal(h.trust,original-2);
+ assert.ok(needy.history.some(x=>x.includes('生计困难')));
+ assert.ok(relative.history.some(x=>x.includes('生计困难')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('household trust never drops below zero under prolonged distress',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01,relative=s.npcWorld.individuals.farmhand02;
+ p.food=0;p.hunger=70;p.coins=0;p.injuryDays=3;relative.food=1;relative.coins=9;
+ const h=s.npcWorld.households.chen;h.trust=1;h.hardshipDays=8;
+ familyResponsibility(s,2);
+ assert.equal(h.trust,0);
+ assert.ok(h.hardshipDays>=9);
+});
