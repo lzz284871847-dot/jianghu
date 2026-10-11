@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=2.4.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.4.0';
-import {MARKET_LIMIT} from './commerce.js?v=2.4.0';
-import {districtStatus} from './society.js?v=2.4.0';
+import {bondBetween} from './npc-social.js?v=2.5.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.5.0';
+import {MARKET_LIMIT} from './commerce.js?v=2.5.0';
+import {districtStatus} from './society.js?v=2.5.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -128,7 +128,11 @@ export function npcCareerDay(s,p,day){
  }else if(p.occupation==='carrier'){
   // Career conversion has the same finite merchant payroll as normal carters.
   const shop=p.home==='liuxi'?'liuxi':'market',pay=3;
-  if(p.injuryDays===0&&p.energy>=22&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
+  const rivalId=p.id==='dockhand01'?'carter':p.id==='carter'?'dockhand01':null;
+  const rivalry=rivalId?s.npcWorld.social.bonds[bondBetween(s,p.id,rivalId)]:null;
+  const refusesSharedRoute=rivalry&&rivalry.resentment>=70&&day%2===0;
+  if(refusesSharedRoute){remember(p,'第'+day+'日因与同行积怨过深，避开共同搬运的短工。');}
+  if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=22&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
    s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=22;p.workDays++;train(p,'carry');
    if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
    if(p.workDays%10===0)remember(p,'第'+day+'日做搬运短工，得到'+pay+'文。');

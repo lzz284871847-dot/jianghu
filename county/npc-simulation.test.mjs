@@ -615,3 +615,34 @@ test('friends reconcile after recovery without creating money or food',async()=>
  socialDay(s,7);assert.equal(JSON.stringify(s.npcWorld.social),snapshot);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('employed competitors gradually reconcile without transferring resources',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['dockhand01:carter'];
+ const left=s.npcWorld.individuals.dockhand01,right=s.npcWorld.individuals.carter;
+ left.unemployedDays=0;right.unemployedDays=0;bond.trust=42;bond.resentment=9;
+ const before=[left.coins,right.coins,left.food,right.food];
+ s.day=6;for(const node of Object.values(s.nodes))node.refreshDay=7;
+ socialDay(s,6);
+ assert.equal(bond.trust,43);assert.equal(bond.resentment,8);
+ assert.ok(bond.history.some(x=>x.includes('谋生竞争暂时缓和')));
+ assert.deepEqual([left.coins,right.coins,left.food,right.food],before);
+ const snapshot=JSON.stringify(s.npcWorld.social);
+ socialDay(s,6);assert.equal(JSON.stringify(s.npcWorld.social),snapshot);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('bitter rival carriers decline an otherwise payable shift without consuming payroll',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ const bond=s.npcWorld.social.bonds['dockhand01:carter'];
+ p.occupation='carrier';p.energy=90;p.hunger=0;p.injuryDays=0;
+ bond.resentment=70;
+ const shop=p.home==='liuxi'?'liuxi':'market';
+ s.commerce.budget[shop]=100;
+ const before=[p.coins,p.workDays,s.commerce.budget[shop]];
+ npcCareerDay(s,p,2);
+ assert.deepEqual([p.coins,p.workDays,s.commerce.budget[shop]],before);
+ assert.ok(p.history.some(x=>x.includes('避开共同搬运')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
