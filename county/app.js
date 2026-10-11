@@ -1,10 +1,11 @@
-import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.2.1';
-import {command} from './commands.js?v=0.2.1';
-import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.2.1';
-import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves} from './engine.js?v=0.2.1';
-import {date,progress,MAX} from './progression.js?v=0.2.1';
-import {npcPlace} from './world.js?v=0.2.1';
-import {save,load,importSave} from './storage.js?v=0.2.1';
+import {EQUIPMENT,equipmentBonuses,craftFailureChance,equipmentWorkCost} from './equipment.js?v=0.3.0';
+import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.3.0';
+import {command} from './commands.js?v=0.3.0';
+import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.3.0';
+import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves,equipmentAction} from './engine.js?v=0.3.0';
+import {date,progress,MAX} from './progression.js?v=0.3.0';
+import {npcPlace} from './world.js?v=0.3.0';
+import {save,load,importSave} from './storage.js?v=0.3.0';
 const $=id=>document.getElementById(id);let state=null,view='world';
 const el=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;};
 function button(label,fn,disabled=false,preview=''){const b=el('button',label);b.type='button';b.disabled=disabled;b.onclick=()=>{try{fn();persist();render();feedback();if(state.pending||state.combat||state.dead){tab('world');$('scene').scrollIntoView({block:'start'});}}catch(e){$('save-status').textContent='行动未完成：'+e.message;}};if(preview)b.append(el('small',preview));return b;}
@@ -45,6 +46,15 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  if(!blocked&&['school','oldroad'].includes(s.place)){const foes=s.place==='school'?Object.entries(OPPONENTS):Object.entries(OPPONENTS).filter(([id])=>['brawler','skirmisher','chief'].includes(id));martialBox.append(el('h3','实战挑战 · 可撤退但不保证成功'),el('p','高手有不同战术，战斗可能重伤或死亡；挑战不会自动恢复状态。','muted'));for(const [id,foe] of foes)martialBox.append(button('挑战 · '+foe.name,()=>martialAction(s,'challenge',id),!known[s.martial?.equipped]));}
  $('skills').append(martialBox);
  $('inventory').replaceChildren(...Object.entries(items).filter(([key])=>s.bag[key]>0).map(([key,name])=>el('p',name+'×'+s.bag[key])));if(!$('inventory').children.length)$('inventory').append(el('p','目前没有物品。'));$('use-items').replaceChildren(action('eat','吃干粮','15分钟，精力最多+12、气血最多+5'),action('heal','使用常见药材','15分钟，气血最多+20'));
+ const eq=s.equipment||{owned:{},equipped:{weapon:null,armor:null}},boost=equipmentBonuses(s);
+ $('equipment').replaceChildren(el('p','武器：'+(EQUIPMENT[eq.equipped.weapon]?.name||'空')+' · 护具：'+(EQUIPMENT[eq.equipped.armor]?.name||'空')),el('p','战斗加成：攻击 +'+boost.attack+'，防御 +'+boost.defense,'muted'));
+ for(const [id,item] of Object.entries(EQUIPMENT)){
+  const row=el('article',''),owned=Object.hasOwn(eq.owned,id),active=eq.equipped[item.slot]===id,need=Object.entries(item.materials).map(([k,n])=>items[k]+'×'+n).join('、');
+  row.append(el('p',item.name+' · '+item.tier+'阶 · '+(item.slot==='weapon'?'兵器':'防具')+' · 攻'+item.attack+'/防'+item.defense+(item.slot==='weapon'?' · 适配'+item.kind:'')+(owned?' · '+(eq.quality?.[id]===2?'精良':'普通')+' · 耐久'+eq.owned[id]+'/'+item.durability:'')),el('p','打造：'+need+'，'+item.fee+'文 · '+equipmentWorkCost(item,'craft').minutes+'分钟/精力'+equipmentWorkCost(item,'craft').energy+' · 失败率'+Math.round(craftFailureChance(item)*100)+'%'+(item.tier>=3?' · 铁匠关系'+((item.tier-2)*8):''),'muted'));
+  if(owned){row.append(button(active?'卸下':'穿戴',()=>equipmentAction(s,active?'unequip':'equip',id),!!blocked||(!active&&eq.owned[id]===0)));if(eq.owned[id]<item.durability)row.append(button('修理 · '+equipmentWorkCost(item,'repair').minutes+'分钟/精力'+equipmentWorkCost(item,'repair').energy,()=>equipmentAction(s,'repair',id),!!blocked||s.place!=='workshop'));}
+  else if(s.place==='workshop')row.append(button('打造',()=>equipmentAction(s,'craft',id),!!blocked));
+  $('equipment').append(row);
+ }
  $('market').replaceChildren();const m=markets[s.place];if(m){$('market').append(el('p',`营业${m.open/60}:00–${m.close/60}:00；每笔15分钟 / 精力1，不能完成则整笔取消。`));for(const type of ['buy','sell']){const grid=el('div','','grid');for(const [key,price] of Object.entries(m[type]))grid.append(button((type==='buy'?'买':'卖')+items[key]+' · '+price+'文',()=>trade(s,type,key),!!blocked||(type==='buy'?s.coins<price:s.bag[key]<1)));$('market').append(grid);}}else $('market').append(el('p','到县城街市或柳溪集交易。','muted'));
  $('recipes').replaceChildren();if(s.place==='workshop'){for(const [id,d] of Object.entries(recipes))$('recipes').append(el('p',d.name+'：'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+' → '+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、')),action(id,d.name,`${d.minutes}分钟 / 精力${d.energy}`));}else $('recipes').append(el('p','作坊街可以加工干粮与普通铁料。','muted'));
  $('news').replaceChildren(...(s.news.length?s.news:['尚未跨日；世界新闻将在一天结束后出现。']).map(t=>el('p',t)));const tasks=s.dead?['人生已结束，可导出记录。']:['可到县城或码头做白天短工；也可继续探索。'];if(!s.dead){for(const [key,d] of Object.entries(resources))if(!d.tool||s.bag[d.tool]){const next=d.places.find(place=>s.nodes[place+':'+key].left>0);if(next)tasks.push('可去'+places[next].name+d.name+'，是否参与由你决定。');}if(s.energy<30)tasks.unshift('精力偏低，先歇息或去河湾村借宿。');if(s.hp<50)tasks.unshift('伤势需要恢复，可使用药材或找沈医者。');if(s.bag.ore>=2&&s.bag.wood)tasks.push('原料够用，可去作坊炼制铁料。');} $('tomorrow').replaceChildren(...tasks.map(t=>el('p',t)));$('journal').replaceChildren(...s.journal.map(j=>el('p','第'+j.day+'日：'+j.text)));for(const v of document.querySelectorAll('.view'))v.hidden=v.id!==view;
@@ -54,6 +64,6 @@ $('create').onsubmit=e=>{e.preventDefault();const p=Object.fromEntries(new FormD
 for(const b of $('tabs').children)b.onclick=()=>tab(b.dataset.tab);$('dismiss').onclick=()=>{$('feedback').hidden=true;};$('save').onclick=()=>{persist();};
 $('new').onclick=()=>{if(!confirm('开始新的人生将替换青河县当前存档。需要时先导出。'))return;try{localStorage.removeItem(KEY);state=null;$('game').hidden=true;$('setup').hidden=false;}catch(e){$('save-status').textContent='无法清除存档：'+e.message;}};
 $('export').onclick=()=>{if(!state)return;const url=URL.createObjectURL(new Blob([JSON.stringify(state)],{type:'application/json'})),a=el('a','');a.href=url;a.download='qinghe-day'+state.day+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>150000)throw Error('存档过大。');const raw=await f.text();const {restore}=await import('./engine.js?v=0.2.1'),candidate=restore(raw);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`))return;state=importSave(raw,state);view='world';render();tab('world');$('save-status').textContent='导入成功。';}catch(err){$('save-status').textContent='导入未完成：'+err.message;}finally{e.target.value='';}};
+$('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>150000)throw Error('存档过大。');const raw=await f.text();const {restore}=await import('./engine.js?v=0.3.0'),candidate=restore(raw);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`))return;state=importSave(raw,state);view='world';render();tab('world');$('save-status').textContent='导入成功。';}catch(err){$('save-status').textContent='导入未完成：'+err.message;}finally{e.target.value='';}};
 try{state=load();if(state){render();tab('world');}}catch(e){$('startup-error').textContent='存档未能读取，原始记录没有被覆盖：'+e.message;}
 if(globalThis.navigator?.serviceWorker)navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{const worker=reg.installing||reg.waiting||reg.active;if(!worker){$('offline').textContent='离线文件尚未就绪。';return;}const status=()=>{$('offline').textContent=worker.state==='activated'?'青河县离线文件已就绪。':worker.state==='redundant'?'离线准备失败，可继续联网玩。':'正在准备青河县离线文件，首次请保持联网。';};worker.addEventListener('statechange',status);status();}).catch(()=>{$('offline').textContent='离线准备失败，可继续联网玩。';});else $('offline').textContent='此浏览器可联网玩，未提供离线缓存。';
