@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {fresh,restore,martialAction,act,choose} from './engine.js';
 import {advance} from './world.js';
 import {catalogCheck} from './martial-data.js';
-import {combatCatalogValid} from './combat-core.js';
+import {combatCatalogValid,newCombat,intent,resolve} from './combat-core.js';
 import {moveCatalogValid} from './martial-moves.js';
 
 test('complete martial catalogue',()=>{
@@ -116,4 +116,20 @@ test('breathing techniques restore stamina while exposed to enemy pressure',()=>
  assert.equal(s.energy,31);
  assert.equal(s.combat.playerGuard,4);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('reach fighters strike at distance three while ordinary brawlers approach',()=>{
+ const spear=newCombat('spearman','qinghe_fist');spear.distance=3;
+ const brawler=newCombat('brawler','qinghe_fist');brawler.distance=3;
+ assert.equal(intent(spear),'strike');assert.equal(intent(brawler),'advance');
+ const player=fresh();
+ resolve(spear,player,'guard',()=>0.1);
+ assert.equal(spear.distance,3);
+ assert.ok(player.hp<100);
+ assert.doesNotThrow(()=>restore(JSON.stringify(player)));
+});
+test('skirmishers withdraw when crowded but close in when out of range',()=>{
+ const c=newCombat('skirmisher','qinghe_fist');c.distance=1;
+ assert.equal(intent(c),'retreat');
+ c.distance=4;assert.equal(intent(c),'advance');
 });
