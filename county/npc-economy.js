@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.5.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.5.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.5.0';
-import {districtStatus} from './society.js?v=3.5.0';
+import {bondBetween} from './npc-social.js?v=3.6.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.6.0';
+import {MARKET_LIMIT} from './commerce.js?v=3.6.0';
+import {districtStatus} from './society.js?v=3.6.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -158,9 +158,11 @@ export function npcCareerDay(s,p,day){
  const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
  const familyTrust=familyId?s.npcWorld.households[familyId]?.trust??50:50;
  const searchAfter=familyHardship>=3||familyTrust>=80?1:3;
+ // An injured worker can seek less strenuous shop work, but cannot earn wages without being hired.
+ const injuryJobSearch=p.injuryDays>0&&p.unemployedDays>=1;
  // Repeated unemployment and a real injury lead to more urgent job searches, not free wages.
  const recoverySearch=p.injuryDays>=2&&p.unemployedDays>=2;
- if(['original','carrier'].includes(p.occupation)&&(p.unemployedDays>=searchAfter||recoverySearch)&&npcApplyShop(s,p,day))return false;
+ if(['original','carrier'].includes(p.occupation)&&(p.unemployedDays>=searchAfter||recoverySearch||injuryJobSearch)&&npcApplyShop(s,p,day))return false;
  const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=(familyHardship>=5?35:20);
  if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
   p.occupation='original';
