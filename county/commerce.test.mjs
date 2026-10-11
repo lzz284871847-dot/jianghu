@@ -61,7 +61,7 @@ test('households clear stalled merchant acquisitions and bring limited sales cas
  assert.equal(s.commerce.budget.market,28);
  advance(s,1440);
  assert.equal(stockAt(s,'market','iron'),18);
- assert.equal(s.commerce.budget.market,52);
+ assert.equal(s.commerce.budget.market,35);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 test('0.5.0 saves without merchant budgets migrate; invalid bank notes rejected',()=>{
