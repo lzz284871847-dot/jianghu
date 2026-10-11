@@ -1,4 +1,4 @@
-import {alive} from './npc-mortality.js?v=4.12.0';
+import {alive} from './npc-mortality.js?v=4.12.1';
 // Stable household links and accountable mutual aid; no new goods or cash are minted.
 export const HOUSEHOLD_MEMBERS=Object.freeze({
   chen:['farmhand01','farmhand02'],

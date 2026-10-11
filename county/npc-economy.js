@@ -1,9 +1,9 @@
-import {alive} from './npc-mortality.js?v=4.12.0';
-import {familyOf} from './npc-households.js?v=4.12.0';
-import {bondBetween} from './npc-social.js?v=4.12.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.12.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.12.0';
-import {districtStatus} from './society.js?v=4.12.0';
+import {alive} from './npc-mortality.js?v=4.12.1';
+import {familyOf} from './npc-households.js?v=4.12.1';
+import {bondBetween} from './npc-social.js?v=4.12.1';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.12.1';
+import {MARKET_LIMIT} from './commerce.js?v=4.12.1';
+import {districtStatus} from './society.js?v=4.12.1';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},

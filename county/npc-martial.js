@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=4.12.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=4.12.0';
-import {canLearn,learn,train} from './martial-progression.js?v=4.12.0';
-import {people} from './content.js?v=4.12.0';
+import {alive} from './npc-mortality.js?v=4.12.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=4.12.1';
+import {canLearn,learn,train} from './martial-progression.js?v=4.12.1';
+import {people} from './content.js?v=4.12.1';
 export const NPC_ART='qinghe_fist';
 export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day,otherArts:{},teacherTrust:0});
 const obj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
