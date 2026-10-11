@@ -1,5 +1,5 @@
-import {travelBusy} from './npc-journeys.js?v=4.28.0';
-import {alive} from './npc-mortality.js?v=4.28.0';
+import {travelBusy} from './npc-journeys.js?v=4.29.0';
+import {alive} from './npc-mortality.js?v=4.29.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -35,25 +35,11 @@ export function socialValid(s){
  });
 }
 export function bondBetween(s,a,b){
- return Object.entries({...BONDS,...recordedSpecs(s)}).find(([,x])=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a))?.[0]??null;
+ return Object.entries(BONDS).find(([,x])=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a))?.[0]??null;
 }
 function event(b,day,text){
  b.history=[text,...b.history].slice(0,6);b.lastEventDay=day;
 }
-// New kinship trust follows recorded help, never retrospective save migration.
-export function recordFamilyBond(s,a,b,day,text){
- const match=Object.entries(kinSpecs(s)).find(([,x])=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a));
- if(!match)return false;
- const [id,spec]=match,children=siblings(s);
- if(spec.bornDay>day||![a,b].every(id=>{const p=s.npcWorld.individuals[id]??children.find(c=>c.id===id);return !!p&&alive(p)&&!travelBusy(s,id);}))return false;
- const bonds=s.npcWorld.social.bonds;
- const v=bonds[id]??={kind:spec.kind,trust:50,resentment:0,lastEventDay:0,history:[]};
- const entry='第'+day+'日'+text;
- if(v.lastEventDay===day&&v.history.includes(entry))return false;
- if(v.lastEventDay!==day){v.trust=Math.min(100,v.trust+1);v.resentment=Math.max(0,v.resentment-1);}
- event(v,day,entry);return true;
-}
-export const recordSiblingBond=(s,a,b,day,text)=>siblings(s).some(c=>c.id===a)&&siblings(s).some(c=>c.id===b)&&recordFamilyBond(s,a,b,day,text);
 export function socialDay(s,day){
  if(s.npcWorld.social.lastDay>=day)return [];
  const notes=[];
@@ -132,5 +118,5 @@ export function ambitionDay(s,p,day,applyShop){
 export function socialSummary(s){
  const labels={friend:'朋友',competitor:'谋生竞争',employer:'雇佣',mentor:'手艺师徒',neighbor:'邻里',sibling:'兄弟姐妹',parentchild:'亲子'};
  const name=id=>s.npcWorld.individuals[id]?.name??'陈家孩子'+(siblings(s).findIndex(c=>c.id===id)+1);
- return Object.entries({...BONDS,...recordedSpecs(s)}).map(([id,b])=>{const v=s.npcWorld.social.bonds[id];return name(b.a)+'与'+name(b.b)+' · '+labels[b.kind]+' · 信任'+v.trust+'/100 · 隔阂'+v.resentment+'/100'+(v.history.length?' · 最近：'+v.history[0]:' · 尚无新的共同经历');});
+ return Object.entries(BONDS).map(([id,b])=>{const v=s.npcWorld.social.bonds[id];return name(b.a)+'与'+name(b.b)+' · '+labels[b.kind]+' · 信任'+v.trust+'/100 · 隔阂'+v.resentment+'/100'+(v.history.length?' · 最近：'+v.history[0]:' · 尚无新的共同经历');});
 }

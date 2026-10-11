@@ -1,9 +1,8 @@
-import {alive} from './npc-mortality.js?v=4.28.0';
-import {familyOf} from './npc-households.js?v=4.28.0';
-import {bondBetween} from './npc-social.js?v=4.28.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.28.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.28.0';
-import {districtStatus} from './society.js?v=4.28.0';
+import {alive} from './npc-mortality.js?v=4.29.0';
+import {bondBetween} from './npc-social.js?v=4.29.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.29.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.29.0';
+import {districtStatus} from './society.js?v=4.29.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -182,30 +181,25 @@ export function npcCareerDay(s,p,day){
    return false;
   }
  }
- const familyId=familyOf(p.id);
- const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
- const familyTrust=familyId?s.npcWorld.households[familyId]?.trust??50:50;
- const searchAfter=familyHardship>=3||familyTrust>=80?1:3;
+ const searchAfter=3;
  // An injured worker can seek less strenuous shop work, but cannot earn wages without being hired.
  const injuryJobSearch=p.injuryDays>0&&p.unemployedDays>=1;
  // Repeated unemployment and a real injury lead to more urgent job searches, not free wages.
  const recoverySearch=p.injuryDays>=2&&p.unemployedDays>=2;
  if(['original','carrier'].includes(p.occupation)&&(p.unemployedDays>=searchAfter||recoverySearch||injuryJobSearch)&&npcApplyShop(s,p,day))return false;
- const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=(familyHardship>=5?35:20);
+ const prolongedSearch=p.unemployedDays>=7&&p.coins<=20;
  if(p.occupation==='farmer'&&prolongedSearch){p.occupation='carrier';remember(p,'第'+day+'日家中农事连续无法变现，暂转运输短工谋生。');return false;}
  if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
   p.occupation='original';
   remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
   return false;
  }
- // Repeated failure in carriage work makes a worker more reluctant to switch back; family hardship can override some hesitation.
- // A stable work history earns patience for the original trade, unless family hardship is acute.
- const establishedWorker=p.workDays>=20&&familyHardship<5;
- const reconsiderDays=familyHardship>=5?3:Math.min(12,5+p.history.filter(x=>/搬运短工长期无着/.test(x)).length*2+(establishedWorker?3:0));
+ // Repeated failure and a stable work history affect willingness to change jobs.
+ const establishedWorker=p.workDays>=20;
+ const reconsiderDays=Math.min(12,5+p.history.filter(x=>/搬运短工长期无着/.test(x)).length*2+(establishedWorker?3:0));
  const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<reconsiderDays;});
  // Recent injury makes a recovered worker hesitate before returning to heavy carriage work.
- // Severe household hardship shortens (but never erases) the caution after a carriage injury.
- const injuryCautionDays=familyHardship>=5?3:7;
+ const injuryCautionDays=7;
  const recentInjury=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运时(?:扭伤|受伤)/);return match&&day-Number(match[1])<injuryCautionDays;});
  if(p.occupation==='original'&&p.level==='ordinary'&&p.injuryDays===0&&!recentlyReconsidered&&!recentInjury&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
@@ -214,22 +208,7 @@ export function npcCareerDay(s,p,day){
  return false;
 }
 
-// All named residents retire against their own earned reserves, without pensions.
+// Legacy retirement schema only; automatic retirement has been removed.
 export const makeRetirement=(day=1)=>({active:false,retiredDay:0,lastDay:day});
 export const retirementValid=(r,day)=>!!r&&typeof r==='object'&&!Array.isArray(r)&&Object.keys(r).length===3&&typeof r.active==='boolean'&&
  Number.isSafeInteger(r.lastDay)&&r.lastDay>=1&&r.lastDay<=day&&Number.isSafeInteger(r.retiredDay)&&r.retiredDay>=0&&r.retiredDay<=r.lastDay&&(!r.active||r.retiredDay>0);
-export const retirementSummary=p=>p.retirement.active?'退养中，使用自己的钱粮':p.retirement.retiredDay?'曾退养，现重新谋生':'尚未退养';
-export function npcRetirementDay(s,p,age,day){
- const r=p.retirement;if(!alive(p)||r.lastDay>=day)return false;r.lastDay=day;
- if(r.active){
-  if(p.coins>=30&&p.hunger<40)return false;
-  r.active=false;
-  // An old employer/family farm slot may have been taken while this person rested.
-  // Return as a job seeker rather than silently evicting the replacement employee.
-  p.occupation='carrier';
-  p.unemployedDays=0;remember(p,'第'+day+'日退养钱粮不足，重新谋生；旧有技艺与经历保留，商铺职位须重新应聘。');return true;
- }
- if(age<65||p.workDays<20||p.coins<120||p.food<2||p.hunger>=40||p.injuryDays||p.life?.sickDays||p.life?.restDay===day)return false;
- r.active=true;r.retiredDay=r.retiredDay||day;
- remember(p,'第'+day+'日凭自己的积蓄开始退养，停止劳作并让出岗位，日常仍消耗真实钱粮。');return true;
-}

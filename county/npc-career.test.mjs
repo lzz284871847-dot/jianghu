@@ -56,10 +56,10 @@ test('world advancement autonomously promotes and restore neither duplicates wag
  advance(restored,1440);assert.equal(restored.npcWorld.individuals.shopassistant.coins,p.coins+5);
 });
 
-test('resident cards expose career rank, unemployment and accountable household savings',async()=>{
+test('resident cards expose career rank and unemployment without household accounting',async()=>{
  const {readFile}=await import('node:fs/promises');
  const source=await readFile(new URL('./app.js',import.meta.url),'utf8');
  assert.ok(source.includes("职业成长'+npcCareer(n).label"));
  assert.ok(source.includes("失业日数'+n.unemployedDays"));
- assert.ok(source.includes("s.npcWorld.households[familyOf(n.id)].coins"));
+ assert.ok(!source.includes("家庭储蓄"));
 });
