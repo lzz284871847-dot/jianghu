@@ -219,3 +219,23 @@ test('successful retreat leaves injuries and gives no victory bonus',()=>{
  assert.ok(s.result.some(x=>x.includes('未获得胜利奖励')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('repeated victories against the same opponent give no extra insight that day',()=>{
+ const s=fresh();s.place='school';
+ assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ function victory(){
+  assert.equal(martialAction(s,'challenge','brawler'),true);
+  s.combat.distance=1;s.combat.enemyHp=1;
+  assert.equal(martialAction(s,'turn','strike',()=>0.1),true);
+  assert.equal(s.combat,null);
+ }
+ victory();
+ assert.equal(s.martial.insight.qinghe_fist,2);
+ victory();
+ assert.equal(s.martial.insight.qinghe_fist,2);
+ assert.ok(s.result.some(x=>x.includes('再战无额外领悟')));
+ s.day++;
+ victory();
+ assert.equal(s.martial.insight.qinghe_fist,4);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
