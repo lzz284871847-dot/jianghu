@@ -50,7 +50,7 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  $('equipment').replaceChildren(el('p','武器：'+(EQUIPMENT[eq.equipped.weapon]?.name||'空')+' · 护具：'+(EQUIPMENT[eq.equipped.armor]?.name||'空')),el('p','战斗加成：攻击 +'+boost.attack+'，防御 +'+boost.defense,'muted'));
  for(const [id,item] of Object.entries(EQUIPMENT)){
   const row=el('article',''),owned=Object.hasOwn(eq.owned,id),active=eq.equipped[item.slot]===id,need=Object.entries(item.materials).map(([k,n])=>items[k]+'×'+n).join('、');
-  row.append(el('p',item.name+' · '+item.tier+'阶 · '+(item.slot==='weapon'?'兵器':'防具')+' · 攻'+item.attack+'/防'+item.defense+(owned?' · 耐久'+eq.owned[id]+'/'+item.durability:'')),el('p','打造：'+need+'，'+item.fee+'文'+(item.tier>=3?' · 铁匠关系'+((item.tier-2)*8):''),'muted'));
+  row.append(el('p',item.name+' · '+item.tier+'阶 · '+(item.slot==='weapon'?'兵器':'防具')+' · 攻'+item.attack+'/防'+item.defense+(item.slot==='weapon'?' · 适配'+item.kind:'')+(owned?' · 耐久'+eq.owned[id]+'/'+item.durability:'')),el('p','打造：'+need+'，'+item.fee+'文'+(item.tier>=3?' · 铁匠关系'+((item.tier-2)*8):''),'muted'));
   if(owned){row.append(button(active?'卸下':'穿戴',()=>equipmentAction(s,active?'unequip':'equip',id),!!blocked||(!active&&eq.owned[id]===0)));if(eq.owned[id]<item.durability)row.append(button('修理',()=>equipmentAction(s,'repair',id),!!blocked||s.place!=='workshop'));}
   else if(s.place==='workshop')row.append(button('打造',()=>equipmentAction(s,'craft',id),!!blocked));
   $('equipment').append(row);
