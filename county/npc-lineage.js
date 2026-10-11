@@ -1,10 +1,10 @@
-import {travelBusy} from './npc-journeys.js?v=4.27.0';
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.27.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay,recordSiblingBond} from './npc-social.js?v=4.27.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.27.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.27.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.27.0';
-import {familyOf} from './npc-households.js?v=4.27.0';
+import {travelBusy} from './npc-journeys.js?v=4.28.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.28.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay,recordSiblingBond,recordFamilyBond} from './npc-social.js?v=4.28.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.28.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.28.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.28.0';
+import {familyOf} from './npc-households.js?v=4.28.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -40,10 +40,10 @@ function ready(s){
  const ps=parents(s),bond=s.npcWorld.social.bonds[UNION_ID];
  return ps.length===2&&bond.trust>=70&&bond.resentment<20&&ps.every(p=>!travelBusy(s,p.id)&&p.age>=18&&p.age<=55&&p.hunger<40&&p.injuryDays===0&&p.workDays>=20)&&ps.reduce((n,p)=>n+p.coins,0)>=60;
 }
-function feed(s,c){
+function feed(s,c,day){
  if(c.livelihood.food>0){c.livelihood.food--;return true;}
  if(travelBusy(s,c.id))return false;
- for(const p of parents(s))if(!travelBusy(s,p.id)&&p.food>0){p.food--;return true;}
+ for(const p of parents(s))if(!travelBusy(s,p.id)&&p.food>0){p.food--;recordFamilyBond(s,p.id,c.id,day,p.name+'分出口粮1份供养子女。');return true;}
  for(const id of ['farmhand01','shopassistant']){const h=s.npcWorld.households[familyOf(id)];if(!travelBusy(s,id)&&h.food>0){h.food--;return true;}}
  return false;
 }
@@ -112,15 +112,15 @@ export function lineageDay(s,day){
    for(const key of Object.keys(v))v[key]=worker[key];
    const needy=ps.find(p=>!travelBusy(s,p.id)&&(p.age>=60||p.injuryDays>=2||p.unemployedDays>=4||p.hunger>=55)&&(p.coins<12||p.food===0));
    if(!travelBusy(s,c.id)&&needy&&c.hunger<40){
-    if(v.food>=2&&needy.food===0){v.food--;needy.food++;record(needy,day,'成年子女分来一份口粮赡养。');}
-    if(v.coins>=15&&needy.coins<12){const aid=Math.min(3,12-needy.coins);v.coins-=aid;needy.coins+=aid;record(needy,day,'成年子女接济'+aid+'文赡养。');}
+    if(v.food>=2&&needy.food===0){v.food--;needy.food++;record(needy,day,'成年子女分来一份口粮赡养。');recordFamilyBond(s,c.id,needy.id,day,'成年子女分出口粮1份赡养'+needy.name+'。');}
+    if(v.coins>=15&&needy.coins<12){const aid=Math.min(3,12-needy.coins);v.coins-=aid;needy.coins+=aid;record(needy,day,'成年子女接济'+aid+'文赡养。');recordFamilyBond(s,c.id,needy.id,day,'成年子女接济'+aid+'文赡养'+needy.name+'。');}
    }
   }
-  c.hunger=feed(s,c)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
+  c.hunger=feed(s,c,day)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
   const canTeach=p=>!travelBusy(s,p.id)&&!p.life.sickDays&&p.life.restDay!==day&&!p.injuryDays&&p.energy>=20&&p.hunger<40;
   const teacher=ps.find(canTeach);
   if(!health.resting&&!v.injuryDays&&!travelBusy(s,c.id)&&age>=6&&age<16&&c.hunger<40&&c.learning<500&&day%3===0){
-   if(teacher){teacher.energy-=2;c.learning++;}
+   if(teacher){teacher.energy-=2;c.learning++;recordFamilyBond(s,teacher.id,c.id,day,teacher.name+'耗费精力2教导子女，学习积累增加1。');}
    else if(!ps.length){
     const sibling=l.children.find(x=>x!==c&&alive(x)&&childAge(x,day)>=16&&x.learning>=20&&canTeach({...x.livelihood,id:x.id,life:x.life,hunger:x.hunger}));
     if(sibling){
