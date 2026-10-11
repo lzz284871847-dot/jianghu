@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=4.22.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=4.22.0';
-import {places} from './content.js?v=4.22.0';
-import {train} from './martial-progression.js?v=4.22.0';
+import {alive} from './npc-mortality.js?v=4.23.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=4.23.0';
+import {places} from './content.js?v=4.23.0';
+import {train} from './martial-progression.js?v=4.23.0';
 export const makeJourneys=(day=1)=>({lastDay:day,records:{}});
 export const travelling=(s,id)=>{const v=s.npcWorld.journeys?.records[id];return !!v&&v.departedDay>v.returnedDay;};
 export const travelBusy=(s,id)=>travelling(s,id)||s.npcWorld.journeys?.records[id]?.returnedDay===s.day;
@@ -35,7 +35,7 @@ export function journeyDepartures(s,day){
  if(day%30)return [];const notes=[];
  for(const p of namedResidents(s)){
   const old=s.npcWorld.journeys.records[p.id],home=p.home||'market';
-  if(!alive(p)||travelBusy(s,p.id)||old&&day-old.departedDay<60||old?.completed>=100000||p.id===s.npcWorld.school.holder||p.id===s.npcWorld.clinic.holder||p.outlook.temperament!=='enterprising'||p.age<18||p.age>=60||p.retirement.active||p.life.sickDays||p.life.restDay===day||p.injuryDays||p.hunger>=40||p.energy<50||p.food<3||p.coins<80||p.workDays<40||p.study.practice<120||p.study.experience<6||!(home==='county'||places[home].routes.includes('county')))continue;
+  if(!alive(p)||travelBusy(s,p.id)||old&&day-old.departedDay<60||old?.completed>=100000||p.id===s.npcWorld.villageSchool.holder||p.id===s.npcWorld.school.holder||p.id===s.npcWorld.clinic.holder||p.outlook.temperament!=='enterprising'||p.age<18||p.age>=60||p.retirement.active||p.life.sickDays||p.life.restDay===day||p.injuryDays||p.hunger>=40||p.energy<50||p.food<3||p.coins<80||p.workDays<40||p.study.practice<120||p.study.experience<6||!(home==='county'||places[home].routes.includes('county')))continue;
   s.npcWorld.journeys.records[p.id]={departedDay:day,returnedDay:old?.returnedDay||0,completed:old?.completed||0,home};if(!p.source)p.place='road';record(p,day,'自行带现有口粮沿县城官道赴柳溪集游历，预计两日后归来；暂停原岗位，步行精力消耗0。');notes.push(p.name+'带上自己的口粮出门，沿官道短途游历。');
  }
  return notes;
