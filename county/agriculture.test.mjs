@@ -37,3 +37,12 @@ test('a rain-hit harvest produces a shortage report and less grain',()=>{
  assert.ok(!dryNews.some(x=>x.includes('收成偏低')));
  assert.ok(stockAt(wet,'market','grain')<stockAt(dry,'market','grain'));
 });
+
+test('rain-shortage explanation remains in the limited world-news feed',async()=>{
+ const {dailyCommerce}=await import('./commerce.js');
+ const s=fresh();s.day=3;s.weather='雨';s.commerce.lastDay=2;
+ const news=dailyCommerce(s);
+ assert.ok(news.some(line=>line.includes('收成偏低')),news.join(' / '));
+ assert.equal(news.length<=2,true);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
