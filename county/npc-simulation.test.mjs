@@ -27,7 +27,8 @@ test('residents consume their own food and change state when world advances',()=
 test('grain shortage affects an NPC without forcing player to trigger the event',()=>{
  const s=fresh(),p=s.npcWorld.individuals.farmhand01;
  s.commerce.stock.market.grain=0;
- for(let i=0;i<7;i++)advance(s,1440);
+ for(let day=2;day<=8;day++){s.day=day;s.commerce.stock.market.grain=0;tickNPCs(s,day);}
+ for(const node of Object.values(s.nodes))node.refreshDay=9;
  assert.ok(p.hunger>=60);
  assert.ok(p.history.some(t=>t.includes('缺粮')));
  assert.ok(npcWorldValid(s));
