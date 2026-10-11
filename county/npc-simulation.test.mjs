@@ -467,3 +467,25 @@ test('without household hardship an unemployed NPC still waits three days',async
  assert.equal(p.occupation,'original');
  assert.equal(p.unemployedDays,2);
 });
+
+test('hungry household member receives existing food without creating supplies',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),needy=s.npcWorld.individuals.farmhand01,donor=s.npcWorld.individuals.farmhand02;
+ needy.food=0;needy.hunger=70;needy.coins=0;donor.food=3;
+ const total=needy.food+donor.food+s.npcWorld.households.chen.food;
+ const coins=needy.coins+donor.coins+s.npcWorld.households.chen.coins;
+ const notes=familyResponsibility(s,2);
+ assert.equal(needy.food,1);assert.equal(donor.food,2);
+ assert.equal(needy.hunger,58);
+ assert.equal(needy.food+donor.food+s.npcWorld.households.chen.food,total);
+ assert.equal(needy.coins+donor.coins+s.npcWorld.households.chen.coins,coins);
+ assert.ok(notes.some(x=>x.includes('分粮')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('household sharing cannot take the last food unit from another member',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),needy=s.npcWorld.individuals.farmhand01,donor=s.npcWorld.individuals.farmhand02;
+ needy.food=0;needy.hunger=70;needy.coins=20;donor.food=1;
+ familyResponsibility(s,2);
+ assert.equal(needy.food,0);assert.equal(donor.food,1);
+});
