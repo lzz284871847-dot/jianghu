@@ -1,25 +1,25 @@
-import {makeVillageSchool,villageTeacher,villageCanTeach} from './npc-village-school.js?v=4.29.0';
-import {makeJourneys,travelBusy} from './npc-journeys.js?v=4.29.0';
-import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=4.29.0';
-import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.29.0';
-import {makeRetirement} from './npc-economy.js?v=4.29.0';
-import {makeStudy,makeMentor} from './npc-martial.js?v=4.29.0';
-import {makeLife} from './npc-mortality.js?v=4.29.0';
-import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=4.29.0';
-import {makeContracts} from './npc-contracts.js?v=4.29.0';
-import {makeSocial,makeOutlook} from './npc-social.js?v=4.29.0';
-import {makeHouseholds} from './npc-households.js?v=4.29.0';
-import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=4.29.0';
-import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=4.29.0';
-import {gain,progress,MAX} from './progression.js?v=4.29.0';
-import {advance,random,npcPlace} from './world.js?v=4.29.0';
-import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=4.29.0';
-import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=4.29.0';
-import {injuryValid,treatInjury} from './injury.js?v=4.29.0';
-import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=4.29.0';
-import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=4.29.0';
-import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=4.29.0';
-import {makeSociety,societyValid,districtStatus} from './society.js?v=4.29.0';
+import {makeVillageSchool,villageTeacher,villageCanTeach} from './npc-village-school.js?v=4.30.0';
+import {makeJourneys,travelBusy} from './npc-journeys.js?v=4.30.0';
+import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=4.30.0';
+import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.30.0';
+import {makeRetirement} from './npc-economy.js?v=4.30.0';
+import {makeStudy,makeMentor} from './npc-martial.js?v=4.30.0';
+import {makeLife} from './npc-mortality.js?v=4.30.0';
+import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=4.30.0';
+import {makeContracts} from './npc-contracts.js?v=4.30.0';
+import {makeSocial,makeOutlook} from './npc-social.js?v=4.30.0';
+import {makeHouseholds} from './npc-households.js?v=4.30.0';
+import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=4.30.0';
+import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=4.30.0';
+import {gain,progress,MAX} from './progression.js?v=4.30.0';
+import {advance,random,npcPlace} from './world.js?v=4.30.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=4.30.0';
+import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=4.30.0';
+import {injuryValid,treatInjury} from './injury.js?v=4.30.0';
+import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=4.30.0';
+import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=4.30.0';
+import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=4.30.0';
+import {makeSociety,societyValid,districtStatus} from './society.js?v=4.30.0';
 export const KEY='jianghu-qinghe-county-v1';
 export function fresh(p={}){return {version:'county-1',name:String(p.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(p.age)||18))),gender:p.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(p.background)?p.background:'农家',personality:['谨慎','随和','勤奋'].includes(p.personality)?p.personality:'谨慎',talent:Object.hasOwn(talents,p.talent)?p.talent:'ordinary',day:1,minute:480,place:'county',weather:'晴',coins:30,hp:100,energy:100,dead:false,martial:makeMartial(),equipment:makeEquipment(),livelihood:makeLivelihood(),commerce:makeCommerce(),society:makeSociety(),npcWorld:makeNPCWorld(),injuries:{},injuryRecovery:{},seed:823471,bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},nodes:Object.fromEntries(Object.entries(nodeDefs).map(([k,n])=>[k,{left:n.capacity,refreshDay:3}])),encounterDay:0,pending:null,combat:null,news:[],journal:[],result:['你是初到青河县的普通人。可以找活、认识当地人，也可以自行出门。']};}
 const fail=(s,t)=>{s.result=[t];return false;},sign=n=>(n>=0?'+':'')+n;
@@ -58,6 +58,16 @@ export function martialAction(s,kind,id,rng=()=>random(s)){
  if(kind==='learn'){const village=MARTIAL_ARTS[id]?.source==='village',teacher=village?villageTeacher(s):schoolTeacher(s);if(!teacher||teacher.life.deathDay)return fail(s,'授艺者已故或岗位空缺；已学武艺仍可自行练习。');if(teacher.retirement.active)return fail(s,'授艺者已退养，不能授课；已学武艺仍可自行练习。');if(teacher.life.sickDays||teacher.life.restDay===s.day||teacher.injuryDays||travelBusy(s,teacher.id))return fail(s,'授艺者正在休养或外出，今日不能授课。');if(village?!villageCanTeach(s,id):!schoolCanTeach(s,id))return fail(s,'现任教习尚不能教授这门武艺。');const successor=teacher.id!==(village?'farmer':'master'),fee=(MARTIAL_ARTS[id]?.tier||1)*8;if(successor&&(teacher.energy<20||teacher.coins>1000000-fee))return fail(s,'现任教习暂时无法授课。');if(!learnArt(s,id))return false;if(successor){teacher.coins+=fee;teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);saveSchoolTeacher(teacher);}advance(s,60);s.result.push('求学耗时1小时。');return true;}
  if(kind==='equip')return equipArt(s,id);
  if(kind==='train'){if(!trainArt(s,id))return false;advance(s,120);s.result.push('练习耗时2小时。');return true;}
+ if(kind==='practice'){
+  const teacher=schoolTeacher(s);
+  if(s.place!=='school'||s.minute<480||s.minute+30>1080)return fail(s,'陪练需在县城武馆08:00–18:00内完成准备，共半小时。');
+  if(!s.martial.known[s.martial.equipped]||MARTIAL_ARTS[s.martial.equipped].category!=='拳掌')return fail(s,'陪练只用已学会并选用的拳掌武学，不使用利器。');
+  if(s.hp<60||s.energy<30||Object.keys(s.injuries).length)return fail(s,'陪练需气血至少60、精力至少30且无伤势。');
+  if(!teacher||teacher.life.deathDay||teacher.life.sickDays||teacher.life.restDay===s.day||teacher.injuryDays||travelBusy(s,teacher.id)||teacher.energy<10||teacher.coins>999996)return fail(s,'教习正在休养、外出或精力不足，暂不能安排陪练。');
+  if(s.coins<4)return fail(s,'陪练费用4文，钱不足则不开始。');
+  s.coins-=4;teacher.coins+=4;teacher.energy-=10;teacher.workDays=Math.min(100000,teacher.workDays+1);saveSchoolTeacher(teacher);
+  advance(s,30);beginMartialCombat(s,'brawler');s.combat.practice=true;s.result=['武馆拳掌陪练开始：付4文、准备半小时。','气血降至40、对方气血降至40或满12回合即收手；可随时停止。','会耗费真实精力、气血与装备耐久，可能擦伤；没有实战胜利奖励。'];return true;
+ }
  if(kind==='challenge'){
   if(s.place!=='school'&&s.place!=='oldroad')return fail(s,'请到武馆或旧道寻找交手对象。');
   try{beginMartialCombat(s,id);return true;}catch(e){return fail(s,e.message);}
@@ -80,6 +90,7 @@ export function restore(raw){const s=JSON.parse(raw),int=(n,a,b)=>Number.isSafeI
  if(!obj(s.combat)||!['oldroad','school'].includes(s.place))throw Error('战斗无效。');
  if(Object.hasOwn(s.combat,'hp')){if(!int(s.combat.hp,1,28)||s.place!=='oldroad')throw Error('旧战斗无效。');}
  else if(!Object.hasOwn(OPPONENTS,s.combat.opponent)||!Object.hasOwn(MARTIAL_ARTS,s.combat.martial)||!int(s.combat.round,0,10000)||!int(s.combat.distance,0,4)||!STANCES.includes(s.combat.stance)||!STANCES.includes(s.combat.enemyStance)||!int(s.combat.enemyHp,1,100)||!int(s.combat.enemyEnergy,0,100)||!int(s.combat.playerGuard,0,30)||!int(s.combat.enemyGuard,0,30)||!int(s.combat.exits,0,10)||!Array.isArray(s.combat.history)||s.combat.history.length>30)throw Error('战斗记录无效。');
+ if(s.combat.practice!==undefined&&(s.combat.practice!==true||s.place!=='school'||s.combat.opponent!=='brawler'||MARTIAL_ARTS[s.combat.martial]?.category!=='拳掌'||!int(s.combat.round,0,11)||s.hp<=40||s.combat.enemyHp<=40))throw Error('陪练记录无效。');
  }
  if(s.martial===undefined)s.martial=makeMartial();if(s.injuries===undefined)s.injuries={};if(s.injuryRecovery===undefined)s.injuryRecovery={};if(s.martial!==undefined){const m=s.martial;if(!obj(m)||!Object.hasOwn(MARTIAL_ARTS,m.equipped))throw Error('武学记录无效。');for(const k of ['known','practice','insight','experience','mastery'])if(!obj(m[k])||Object.entries(m[k]).some(([id,v])=>!Object.hasOwn(MARTIAL_ARTS,id)||(k==='known'?v!==true:!int(v,0,2400))))throw Error('武学成长无效。');if(Object.keys(m.known).some(id=>!['practice','insight','experience','mastery'].every(k=>Object.hasOwn(m[k],id))))throw Error('武学数据缺失。');}
  if(s.martial.rewardDays===undefined)s.martial.rewardDays={};if(!obj(s.martial.rewardDays)||Object.entries(s.martial.rewardDays).some(([opponent,day])=>!Object.hasOwn(OPPONENTS,opponent)||!int(day,1,s.day)))throw Error('战斗奖励记录无效。');

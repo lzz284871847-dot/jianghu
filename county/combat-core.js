@@ -1,6 +1,6 @@
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=4.29.0';
-import {injuryEffects} from './injury.js?v=4.29.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=4.29.0';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=4.30.0';
+import {injuryEffects} from './injury.js?v=4.30.0';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=4.30.0';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);
@@ -15,11 +15,11 @@ export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5,action=''){
  
   if(enemy==='advance')c.distance=clamp(c.distance-1,0,4);
   else if(enemy==='retreat')c.distance=clamp(c.distance+1,0,4);
-  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';if(['counter','adapt'].includes(OPPONENTS[c.opponent].style)&&action==='heavy'&&c.distance<=2&&rng()<.7){const damage=Math.max(1,12-c.playerGuard);const dealt=Math.max(1,damage-equipmentBonuses(player).defense);player.hp=Math.max(0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手看穿重击破绽，守中反击造成'+dealt+'点伤害。');}}
+  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';if(['counter','adapt'].includes(OPPONENTS[c.opponent].style)&&action==='heavy'&&c.distance<=2&&rng()<.7){const damage=Math.max(1,12-c.playerGuard);const dealt=Math.min(Math.max(1,damage-equipmentBonuses(player).defense),Math.max(0,player.hp-(c.practice?40:0)));player.hp=Math.max(c.practice?40:0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手看穿重击破绽，守中反击造成'+dealt+'点伤害。');}}
   else if(enemy==='feint'){c.playerGuard=0;c.enemyStance='游走';}
   else if(c.distance<= (['reach'].includes(OPPONENTS[c.opponent].style)?3:2)){
    const hit=clamp(.72-(action==='sidestep'?.24:0)-(action==='guard'?.12:0),.12,.9);
-   if(rng()<hit){const damage=Math.max(1,(enemy==='heavy'?17:10)-c.playerGuard);const dealt=Math.max(1,damage-equipmentBonuses(player).defense);player.hp=Math.max(0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手命中，损失气血'+dealt+'。');
+   if(rng()<hit){const damage=Math.max(1,(enemy==='heavy'?17:10)-c.playerGuard);const dealt=Math.min(Math.max(1,damage-equipmentBonuses(player).defense),Math.max(0,player.hp-(c.practice?40:0)));player.hp=Math.max(c.practice?40:0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手命中，损失气血'+dealt+'。');
     if(damage>=12&&rng()<.2){player.injuries??={};player.injuries.bruise=clamp((player.injuries.bruise||0)+1,1,5);log.push('新增擦伤瘀伤。');}
    }else log.push('避开对手攻击。');
   }
@@ -32,6 +32,7 @@ export function resolve(c,player,action,rng=()=>.5){
  if(!legal(c,action))throw Error('当前距离无法执行此行动');
  if(player.dead||player.hp<=0)throw Error('角色已经死亡');
  const energy={strike:5,heavy:11,guard:3,feint:6,sidestep:5,advance:4,retreat:4,flee:6}[action];
+ if(c.practice&&action==='flee'){c.ended='escaped';return {round:c.round,action,ended:'escaped',log:['你示意收手，陪练立即停止。'],distanceAfter:c.distance};}
  if(player.energy<energy)throw Error('精力不足');
  const enemy=intent(c),before={hp:player.hp,energy:player.energy,enemyHp:c.enemyHp};
  const log=[],injuries=player.injuries||{},effects=injuryEffects(player);
