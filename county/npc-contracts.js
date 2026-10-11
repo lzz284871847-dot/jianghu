@@ -1,4 +1,5 @@
-import {alive} from './npc-mortality.js?v=4.18.0';
+import {travelBusy} from './npc-journeys.js?v=4.19.0';
+import {alive} from './npc-mortality.js?v=4.19.0';
 // Deterministic, bounded social contracts. No virtual money is created.
 export const CONTRACT_VERSION=1;
 const integer=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
@@ -8,7 +9,7 @@ export function contractsValid(root,day){
 }
 export function openLoan(s,ledger,lenderId,borrowerId,amount,dueDay){
  const people=s.npcWorld.individuals,lender=people[lenderId],borrower=people[borrowerId];
- if(!lender||!borrower||!alive(lender)||!alive(borrower)||lender===borrower||!integer(amount,1000000)||amount===0||!integer(dueDay,1000000)||dueDay<=s.day||lender.coins<amount||borrower.coins>1000000-amount||ledger.entries.length>=32)return false;
+ if(!lender||!borrower||!alive(lender)||!alive(borrower)||lender===borrower||travelBusy(s,lenderId)||travelBusy(s,borrowerId)||!integer(amount,1000000)||amount===0||!integer(dueDay,1000000)||dueDay<=s.day||lender.coins<amount||borrower.coins>1000000-amount||ledger.entries.length>=32)return false;
  const id=lenderId+':'+borrowerId+':'+s.day;
  if(ledger.entries.some(x=>x.id===id||(x.status==='open'&&x.lender===lenderId&&x.borrower===borrowerId)))return false;
  lender.coins-=amount;borrower.coins+=amount;
