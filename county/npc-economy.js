@@ -110,6 +110,8 @@ export function npcMentor(s,p,day){
  if(p.id!=='smith'||day%4!==0||p.injuryDays>0||p.energy<20||districtStatus(s,'market').closed||budgetAt(s,'market')<27)return false;
  const apprentice=s.npcWorld.individuals.smithapprentice;
  if(!apprentice||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
+ const bond=s.npcWorld.social.bonds[bondBetween(s,'smith','smithapprentice')];
+ if(bond.trust<30)return false; // A broken apprenticeship stops consuming materials or awarding skill.
  s.commerce.budget.market-=2;
  p.energy-=10;train(apprentice,'craft');
  remember(apprentice,'第'+day+'日跟许师傅学会一项锻造要领，作坊耗材2文。');
