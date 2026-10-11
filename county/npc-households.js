@@ -52,9 +52,9 @@ export function familyResponsibility(s,day){
    notes.push(foodDonor.name+'分粮接济'+needy.name+'，缓解家庭缺粮。');
    continue;
   }
-  const donor=members.find(p=>p!==needy&&p.coins>=12);
+  const donor=members.find(p=>p!==needy&&p.coins>=(h.trust>=70?10:12));
   if(donor&&needy.coins<12){
-   const amount=Math.min(3,donor.coins-9,12-needy.coins);
+   const amount=Math.min(3,donor.coins-(h.trust>=70?7:9),12-needy.coins);
    if(amount>0){
     donor.coins-=amount;needy.coins+=amount;
     h.trust=Math.min(100,h.trust+2);h.hardshipDays=Math.max(0,h.hardshipDays-1);
