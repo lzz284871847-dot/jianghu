@@ -43,6 +43,15 @@ export function familyResponsibility(s,day){
   const needy=members.find(p=>p.injuryDays>=2||p.hunger>=55||p.unemployedDays>=4);
   if(!needy){h.hardshipDays=Math.max(0,h.hardshipDays-1);continue;}
   h.hardshipDays=Math.min(100000,h.hardshipDays+1);
+  const foodDonor=members.find(p=>p!==needy&&p.food>=2);
+  if(needy.food===0&&foodDonor){
+   foodDonor.food--;needy.food++;needy.hunger=Math.max(0,needy.hunger-12);
+   h.trust=Math.min(100,h.trust+2);h.hardshipDays=Math.max(0,h.hardshipDays-1);
+   foodDonor.history=['第'+day+'日分给家人'+needy.name+'一份口粮。',...foodDonor.history].slice(0,8);
+   needy.history=['第'+day+'日得到'+foodDonor.name+'分来的一份口粮。',...needy.history].slice(0,8);
+   notes.push(foodDonor.name+'分粮接济'+needy.name+'，缓解家庭缺粮。');
+   continue;
+  }
   const donor=members.find(p=>p!==needy&&p.coins>=12);
   if(donor&&needy.coins<12){
    const amount=Math.min(3,donor.coins-9,12-needy.coins);
