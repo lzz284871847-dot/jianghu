@@ -1,10 +1,10 @@
-import {travelBusy} from './npc-journeys.js?v=4.26.0';
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.26.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.26.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.26.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.26.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.26.0';
-import {familyOf} from './npc-households.js?v=4.26.0';
+import {travelBusy} from './npc-journeys.js?v=4.27.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.27.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay,recordSiblingBond} from './npc-social.js?v=4.27.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.27.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.27.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.27.0';
+import {familyOf} from './npc-households.js?v=4.27.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -56,7 +56,7 @@ function siblingCare(s,c,day){
  const reserve=['farmhand01','shopassistant'].some(id=>!travelBusy(s,id)&&s.npcWorld.households[familyOf(id)].food>0);
  if(!to.food&&!reserve&&from.food>=2){from.food--;to.food++;aid.push('口粮1份');}
  if(c.life.sickDays&&to.coins<8&&from.coins>=20){const fee=8-to.coins;from.coins-=fee;to.coins+=fee;aid.push('诊金'+fee+'文');}
- if(aid.length){const name='陈家孩子'+(s.npcWorld.lineage.children.indexOf(c)+1);record(from,day,'父母俱亡后分出'+aid.join('、')+'扶养'+name+'。');record(to,day,'得到成年兄姐分来的'+aid.join('、')+'，用于生活与就医。');}
+ if(aid.length){const name='陈家孩子'+(s.npcWorld.lineage.children.indexOf(c)+1);record(from,day,'父母俱亡后分出'+aid.join('、')+'扶养'+name+'。');record(to,day,'得到成年兄姐分来的'+aid.join('、')+'，用于生活与就医。');recordSiblingBond(s,donor.id,c.id,day,'成年兄姐分出'+aid.join('、')+'扶养'+name+'。');}
 }
 export function lineageDay(s,day){
  const l=s.npcWorld.lineage;if(l.lastDay>=day)return [];
@@ -128,6 +128,7 @@ export function lineageDay(s,day){
      const student='陈家孩子'+(l.children.indexOf(c)+1),tutor='陈家孩子'+(l.children.indexOf(sibling)+1);
      record(sibling.livelihood,day,'耗费精力2教养'+student+'，传授日常见识。');
      record(v,day,'随成年兄姐学习日常见识，学习积累增加1。');
+     recordSiblingBond(s,sibling.id,c.id,day,tutor+'耗费精力2教养'+student+'，学习积累增加1。');
      notes.push(tutor+'耗费精力教养'+student+'，学习积累增加1。');
     }
    }
