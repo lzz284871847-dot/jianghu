@@ -847,3 +847,17 @@ test('experienced carrier avoids a novice injury but risk remains on other days'
  assert.equal(p.injuryDays,3);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('injured unemployed worker waits for recovery before changing to carrier',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='original';p.level='ordinary';p.unemployedDays=3;
+ s.commerce.budget.market=0; // No funded shop vacancy should preempt the career decision.
+ p.injuryDays=2;p.energy=80;p.hunger=90;p.coins=10;
+ npcCareerDay(s,p,5);
+ assert.equal(p.occupation,'original');
+ p.injuryDays=0;p.hunger=0;p.energy=80;
+ npcCareerDay(s,p,7);
+ assert.equal(p.occupation,'carrier');
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});

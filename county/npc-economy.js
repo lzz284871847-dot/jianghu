@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.4.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.4.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.4.0';
-import {districtStatus} from './society.js?v=3.4.0';
+import {bondBetween} from './npc-social.js?v=3.5.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.5.0';
+import {MARKET_LIMIT} from './commerce.js?v=3.5.0';
+import {districtStatus} from './society.js?v=3.5.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -168,7 +168,7 @@ export function npcCareerDay(s,p,day){
   return false;
  }
  const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<5;});
- if(p.occupation==='original'&&p.level==='ordinary'&&!recentlyReconsidered&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
+ if(p.occupation==='original'&&p.level==='ordinary'&&p.injuryDays===0&&!recentlyReconsidered&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
  }
