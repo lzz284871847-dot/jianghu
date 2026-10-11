@@ -1,3 +1,4 @@
+import {bondBetween} from './npc-social.js?v=2.0.0';
 import {marketPrice,stockAt,budgetAt} from './commerce.js?v=1.9.0';
 import {MARKET_LIMIT} from './commerce.js?v=1.9.0';
 import {districtStatus} from './society.js?v=1.9.0';
@@ -90,6 +91,8 @@ export function npcApplyShop(s,p,day){
  if(p.level!=='ordinary'||!['original','carrier'].includes(p.occupation)||p.hunger>=80)return false;
  const shop=p.home==='liuxi'?'liuxi':'market';
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<70)return false;
+ const manager=shop==='market'?'merchant':'stallholder',bondKey=bondBetween(s,manager,p.id);
+ if(bondKey&&s.npcWorld.social.bonds[bondKey].trust<30)return false;
  const employees=Object.values(s.npcWorld.individuals).filter(n=>
   n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
   n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
