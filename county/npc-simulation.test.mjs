@@ -201,3 +201,43 @@ test('1.3.0 save migrates unemployment and profession fields',()=>{
  migrated.npcWorld.individuals.shopassistant.unemployedDays=-2;
  assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
 });
+
+test('a vacant shop recruits exactly one ordinary applicant and pays wages from shop cash',async()=>{
+ const {npcApplyShop,npcCareerDay,SHOP_CAPACITY}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01;
+ assert.equal(SHOP_CAPACITY.market,3);
+ assert.equal(npcApplyShop(s,p,2),true);
+ assert.equal(p.occupation,'shopworker');
+ assert.equal(npcApplyShop(s,s.npcWorld.individuals.farmhand02,2),false);
+ const old=s.commerce.budget.market,coins=p.coins;
+ assert.equal(npcCareerDay(s,p,2),true);
+ assert.equal(p.coins,coins+4);assert.equal(s.commerce.budget.market,old-4);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('insolvent or closed shops cannot recruit; non-existent openings never materialize',async()=>{
+ const {npcApplyShop}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01;
+ s.commerce.budget.market=5;
+ assert.equal(npcApplyShop(s,p,2),false);
+ s.commerce.budget.market=150;s.society.districts.market.closedUntil=1;
+ assert.equal(npcApplyShop(s,p,1),false);
+ assert.equal(p.occupation,'original');
+});
+test('smith apprentice becomes craftsman only after twenty financed workdays',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.smithapprentice;
+ s.commerce.budget.market=800;
+ for(let day=2;day<=21;day++){s.day=day;p.energy=100;npcCareerDay(s,p,day);}
+ assert.equal(p.workDays,20);assert.equal(p.occupation,'craftsman');
+ assert.ok(p.history.some(x=>x.includes('正式铁匠')));
+ const budget=s.commerce.budget.market,coins=p.coins;
+ s.day=22; p.energy=100;
+ assert.equal(npcCareerDay(s,p,22),true);
+ assert.equal(p.coins,coins+6);assert.equal(s.commerce.budget.market,budget-6);
+ for(const node of Object.values(s.nodes))node.refreshDay=23;
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('invalid career flags are rejected instead of being silently reset',()=>{
+ const s=fresh();s.npcWorld.individuals.farmhand01.occupation='emperor';
+ assert.throws(()=>restore(JSON.stringify(s)),/NPC人生记录无效/);
+});
