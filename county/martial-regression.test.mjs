@@ -162,3 +162,18 @@ test('feint breaks a guarding expert stance and opens the next strike',()=>{
  assert.equal(c.enemyStance,'游走'); // Expert reacts to the follow-up with an evasive feint.
  assert.doesNotThrow(()=>restore(JSON.stringify(clever)));
 });
+
+test('footwork creates space against brawlers but spear reach still threatens',()=>{
+ const foot=fresh();foot.place='school';assert.equal(martialAction(foot,'learn','footwork'),true);
+ assert.equal(martialAction(foot,'challenge','spearman'),true);
+ foot.combat.distance=2;
+ assert.equal(martialAction(foot,'move','footwork_1',()=>.1),true);
+ assert.equal(foot.combat.distance,3);
+ assert.ok(foot.hp<100,'spear fighter still reaches at distance three');
+ const boxer=fresh();boxer.place='school';assert.equal(martialAction(boxer,'learn','footwork'),true);
+ assert.equal(martialAction(boxer,'challenge','brawler'),true);
+ boxer.combat.distance=2;
+ assert.equal(martialAction(boxer,'move','footwork_1',()=>.1),true);
+ assert.equal(boxer.hp,100,'ordinary brawler cannot reach through the created gap');
+ assert.doesNotThrow(()=>restore(JSON.stringify(foot)));
+});
