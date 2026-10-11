@@ -10,7 +10,7 @@ export const SITES={
  ferry:{name:'旧渡口药篓',minutes:45,energy:10,chance:.65,risk:.10,damage:4,goods:{herb:1},description:'旧药篓有合用药材1份；65%找到，10%擦伤4气血。只可搜寻一次。'},
  mine:{name:'矿洞遗留矿堆',minutes:90,energy:18,chance:.70,risk:.25,damage:8,goods:{ore:2},description:'遗留浅层铁矿2份；需矿镐，70%取得，25%擦伤8气血。只可搜寻一次，不产高级矿。'}
 };
-export const ORGANIZATIONS={school:{name:'青河武馆',place:'school',holder:'master',description:'已学一门武艺且教习关系3后，可付12文入馆；完成委托积累贡献，贡献3后陪练费降至3文。'},caravan:{name:'行脚互助会',place:'market',holder:'merchant',description:'完成一条委托后可付12文加入；贡献2后每天可付3文向柳掌柜购买一份现有口粮，须其余粮至少2份。'}};
+export const ORGANIZATIONS={school:{name:'青河武馆',place:'school',holder:'master',description:'已学一门武艺且教习关系3后，可付12文入馆；完成委托或一次公开切磋积累贡献，贡献3后陪练费降至3文。'},caravan:{name:'行脚互助会',place:'market',holder:'merchant',description:'完成一条委托后可付12文加入；贡献2后每天可付3文向柳掌柜购买一份现有口粮，须其余粮至少2份。'}};
 export const CAREERS={
  porter:{name:'熟手搬运',place:'dock',holder:'boatman',skill:'carry',required:12,input:{},reward:12,minutes:120,energy:18,description:'搬运积累12后验收；开放熟手装船：2小时/精力18，报酬12文来自现有商铺劳务资金，每日一份。'},
  smith:{name:'作坊熟手',place:'workshop',holder:'smith',skill:'smelt',required:10,input:{iron:2},reward:20,minutes:60,energy:10,description:'冶炼积累10后验收；开放铁料订单：交铁料2份，1小时/精力10，报酬20文来自现有商铺作业资金，每日一份。'},
