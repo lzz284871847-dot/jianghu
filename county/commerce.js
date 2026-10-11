@@ -12,6 +12,23 @@ export function commerceValid(s){
 }
 export function budgetAt(s,place){return ensureCommerce(s).budget[place]??0;}
 export function stockAt(s,place,key){return ensureCommerce(s).stock[place]?.[key]??0;}
+// Only staple goods get stock-sensitive prices in this first market cycle.
+// Prices are recalculated before a transaction, preventing stale UI quotes.
+const PRICE_GOODS=new Set(['food','grain','herb','wood','vegetable']);
+export function marketPrice(s,place,type,key){
+ const base=markets[place]?.[type]?.[key];
+ if(base===undefined)return null;
+ if(!PRICE_GOODS.has(key))return base;
+ const quantity=stockAt(s,place,key);
+ if(type==='buy'){
+  if(quantity<=3)return Math.max(1,Math.ceil(base*1.5));
+  if(quantity>=24)return Math.max(1,Math.floor(base*.85));
+  return base;
+ }
+ if(quantity>=24)return Math.max(1,Math.floor(base*.7));
+ if(quantity<=2)return Math.max(1,Math.ceil(base*1.15));
+ return base;
+}
 export function transactionStock(s,type,key,n,price=0){
  const c=ensureCommerce(s),shelf=c.stock[s.place];
  if(type==='buy'&&shelf[key]<n)return '商铺存货不足，本笔不成交。';
