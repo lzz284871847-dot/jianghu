@@ -18,5 +18,9 @@ jobs:
           node --check county/npc-contracts.js
           node --check county/npc-simulation.js
           node --check county/engine.js
-      - name: All repository tests
+      - name: NPC contracts focused tests
+        run: node --test county/npc-contracts.test.mjs
+      - name: All county tests
+        run: node --test county/*.test.mjs
+      - name: Full repository tests
         run: npm test
