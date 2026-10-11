@@ -747,3 +747,28 @@ test('trusted households speed job seeking without guaranteeing employment',asyn
  assert.equal(p.coins,10);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('injured long-term unemployed NPC seeks real jobs without guaranteed income',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='original';p.level='ordinary';p.unemployedDays=2;p.injuryDays=3;
+ p.coins=10;p.energy=10;p.hunger=90;
+ s.npcWorld.households.dock.trust=50;s.npcWorld.households.dock.hardshipDays=0;
+ npcCareerDay(s,p,2);
+ assert.equal(p.coins,10);
+ assert.ok(p.unemployedDays>=3);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('sustained family hardship makes an unemployed carrier reconsider before poverty',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='carrier';p.level='ordinary';p.unemployedDays=4;
+ p.coins=30;p.energy=10;p.hunger=90;
+ s.npcWorld.households.dock.hardshipDays=5;
+ npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.coins,30);
+ assert.ok(p.history.some(x=>x.includes('重新尝试本行')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
