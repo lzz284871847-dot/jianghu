@@ -683,3 +683,15 @@ test('prolonged hardship draws on finite household savings',async()=>{
  assert.ok(needy.history.some(x=>x.includes('动用积蓄')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('family hardship accelerates career reconsideration without guaranteed pay',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='carrier';p.level='ordinary';p.unemployedDays=4;p.coins=10;p.energy=10;p.hunger=90;
+ s.npcWorld.households.dock.hardshipDays=5;
+ const shop=p.home==='liuxi'?'liuxi':'market',budget=s.commerce.budget[shop];
+ npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');assert.equal(p.coins,10);
+ assert.equal(s.commerce.budget[shop],budget);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
