@@ -1,5 +1,5 @@
-import {travelBusy} from './npc-journeys.js?v=4.25.0';
-import {alive} from './npc-mortality.js?v=4.25.0';
+import {travelBusy} from './npc-journeys.js?v=4.26.0';
+import {alive} from './npc-mortality.js?v=4.26.0';
 // Stable household links and accountable mutual aid; no new goods or cash are minted.
 export const HOUSEHOLD_MEMBERS=Object.freeze({
   chen:['farmhand01','farmhand02'],
