@@ -51,7 +51,7 @@ export function resolve(c,player,action,rng=()=>.5){
   const base=action==='heavy'?18:action==='strike'?11:0;
   const accuracy=clamp(.78-(action==='heavy'?.18:0)-(c.distance===reach?.08:0)-effects.accuracyPenalty,.08,.95);
   if(action==='feint'){c.enemyGuard=0;log.push('虚招试探，削弱对方防守。');}
-  else if(inReach&&rng()<accuracy){const broken=c.enemyStance==='失衡';const dmg=Math.max(1,base+equipmentBonuses(player).attack-(enemy==='guard'&&!broken?8:0)-c.enemyGuard);wearEquipment(player,'weapon');c.enemyHp=Math.max(0,c.enemyHp-dmg);log.push('命中对手，造成'+dmg+'点伤害。');}
+  else if(inReach&&rng()<accuracy){const broken=c.enemyStance==='失衡';const dmg=Math.max(1,base+equipmentBonuses(player,c.martial).attack-(enemy==='guard'&&!broken?8:0)-c.enemyGuard);wearEquipment(player,'weapon');c.enemyHp=Math.max(0,c.enemyHp-dmg);log.push('命中对手，造成'+dmg+'点伤害。');}
   else log.push(inReach?'攻击未能命中。':'兵器距离不足，攻击落空。');
  }
  if(c.enemyHp<=0){c.ended='victory';log.push('对手失去继续战斗的能力。');}
