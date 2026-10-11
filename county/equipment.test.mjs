@@ -266,7 +266,7 @@ test('mobile release uses uniform version and preloads equipment logic offline',
   assert.doesNotMatch(txt,/\?v=0\.(?:1\.0|2\.[01])/,path+' stale module version');
  }
  const sw=readFileSync(fileURLToPath(new URL('sw.js',dir)),'utf8');
- assert.match(sw,/VERSION='2\.2\.0'/);
+ assert.match(sw,/VERSION='2\.3\.0'/);
  assert.match(sw,/'equipment\.js'/);
- assert.match(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8'),/青河县 2\.2\.0/);
+ assert.match(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8'),/青河县 2\.3\.0/);
 });

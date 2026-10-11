@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=2.2.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.2.0';
-import {MARKET_LIMIT} from './commerce.js?v=2.2.0';
-import {districtStatus} from './society.js?v=2.2.0';
+import {bondBetween} from './npc-social.js?v=2.3.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.3.0';
+import {MARKET_LIMIT} from './commerce.js?v=2.3.0';
+import {districtStatus} from './society.js?v=2.3.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -93,7 +93,10 @@ export function npcApplyShop(s,p,day){
  const shop=p.home==='liuxi'?'liuxi':'market';
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<70)return false;
  const manager=shop==='market'?'merchant':'stallholder',bondKey=bondBetween(s,manager,p.id);
- if(bondKey&&s.npcWorld.social.bonds[bondKey].trust<30)return false;
+ if(bondKey){
+  const bond=s.npcWorld.social.bonds[bondKey];
+  if(bond.trust<30||bond.resentment>=70)return false;
+ }
  const employees=Object.values(s.npcWorld.individuals).filter(n=>
   n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
   n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
@@ -110,6 +113,8 @@ export function npcMentor(s,p,day){
  if(p.id!=='smith'||day%4!==0||p.injuryDays>0||p.energy<20||districtStatus(s,'market').closed||budgetAt(s,'market')<27)return false;
  const apprentice=s.npcWorld.individuals.smithapprentice;
  if(!apprentice||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
+ const bond=s.npcWorld.social.bonds[bondBetween(s,'smith','smithapprentice')];
+ if(bond.trust<30)return false; // A broken apprenticeship stops consuming materials or awarding skill.
  s.commerce.budget.market-=2;
  p.energy-=10;train(apprentice,'craft');
  remember(apprentice,'第'+day+'日跟许师傅学会一项锻造要领，作坊耗材2文。');

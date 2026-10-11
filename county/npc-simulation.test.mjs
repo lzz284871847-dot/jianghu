@@ -514,3 +514,63 @@ test('household trust never drops below zero under prolonged distress',async()=>
  assert.equal(h.trust,0);
  assert.ok(h.hardshipDays>=9);
 });
+
+test('a friend with low trust refuses aid without moving any money',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
+ const needy=s.npcWorld.individuals.farmhand01,friend=s.npcWorld.individuals.shopassistant;
+ needy.coins=1;needy.hunger=70;friend.coins=30;bond.trust=39;
+ const total=needy.coins+friend.coins;
+ s.day=3;
+ for(const node of Object.values(s.nodes))node.refreshDay=5;
+ const notes=socialDay(s,3);
+ assert.equal(needy.coins+friend.coins,total);
+ assert.equal(needy.coins,1);
+ assert.equal(bond.resentment,1);
+ assert.ok(notes.some(x=>x.includes('求助未果')));
+ const copy=JSON.stringify(s.npcWorld.social);
+ socialDay(s,3);
+ assert.equal(JSON.stringify(s.npcWorld.social),copy);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('long unemployment damages the persistent employer relationship',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['merchant:shopassistant'];
+ const worker=s.npcWorld.individuals.shopassistant;
+ worker.unemployedDays=4;
+ const trust=bond.trust,resentment=bond.resentment;
+ s.day=4;for(const node of Object.values(s.nodes))node.refreshDay=5;
+ socialDay(s,4);
+ assert.equal(bond.trust,trust-2);
+ assert.equal(bond.resentment,resentment+1);
+ assert.ok(bond.history.some(x=>x.includes('连续停工')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('broken master-apprentice trust prevents training costs and skill gains',async()=>{
+ const {npcMentor}=await import('./npc-economy.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['smith:smithapprentice'];
+ const apprentice=s.npcWorld.individuals.smithapprentice,master=s.npcWorld.individuals.smith;
+ const funds=s.commerce.budget.market,skill=apprentice.careerSkills.craft,energy=master.energy;
+ bond.trust=29;
+ assert.equal(npcMentor(s,master,4),false);
+ assert.equal(s.commerce.budget.market,funds);
+ assert.equal(apprentice.careerSkills.craft,skill);
+ assert.equal(master.energy,energy);
+ bond.trust=55;
+ assert.equal(npcMentor(s,master,4),true);
+ assert.equal(s.commerce.budget.market,funds-2);
+ assert.equal(apprentice.careerSkills.craft,skill+1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('employer resentment prevents hiring even when trust is high',async()=>{
+ const {npcApplyShop}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ const bond=s.npcWorld.social.bonds['merchant:shopassistant'];
+ p.occupation='carrier';p.level='ordinary';bond.trust=80;bond.resentment=70;
+ assert.equal(npcApplyShop(s,p,2),false);
+ assert.equal(p.occupation,'carrier');
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
