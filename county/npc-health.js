@@ -1,9 +1,9 @@
-import {travelBusy} from './npc-journeys.js?v=4.25.0';
-import {clinicDoctor,payClinic} from './npc-clinic.js?v=4.25.0';
-import {saveResident} from './npc-residents.js?v=4.25.0';
-import {alive} from './npc-mortality.js?v=4.25.0';
-import {people} from './content.js?v=4.25.0';
-import {marketPrice} from './commerce.js?v=4.25.0';
+import {travelBusy} from './npc-journeys.js?v=4.26.0';
+import {clinicDoctor,payClinic} from './npc-clinic.js?v=4.26.0';
+import {saveResident} from './npc-residents.js?v=4.26.0';
+import {alive} from './npc-mortality.js?v=4.26.0';
+import {people} from './content.js?v=4.26.0';
+import {marketPrice} from './commerce.js?v=4.26.0';
 const record=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 // Daily appointments are simulated inside the doctor's existing 08:00–18:00 hours.
 // Rain/undernutrition can cause a short illness; no extra world RNG is consumed.
@@ -26,7 +26,7 @@ export function npcHealthDay(s,p,age,day,guardians=[]){
   life.restDay=day;
   p.energy=Math.max(0,p.energy-12);
   const doctor=clinicDoctor(s),clinic=people.doctor,quote=marketPrice(s,'market','buy','herb');
-  const payer=age<16?guardians.find(g=>alive(g)&&g.coins>=8)??p:p;
+  const payer=age<16?guardians.find(g=>alive(g)&&!travelBusy(s,g.id)&&g.coins>=8)??p:p;
   // The eight-coin fee goes to the doctor; the doctor purchases one real herb
   // from the market at its current quote. The consumed herb is never duplicated.
   const paid=!travelBusy(s,p.id)&&clinic.open<=600&&clinic.close>=660?payClinic(s,payer,doctor):null;
