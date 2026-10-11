@@ -6,7 +6,7 @@ export function newCombat(opponent='brawler',martial='qinghe_fist'){
  if(!OPPONENTS[opponent]||!MARTIAL_ARTS[martial])throw Error('未知对手或武学');
  return {opponent,martial,round:0,distance:2,stance:'中正',enemyStance:'中正',enemyHp:100,enemyEnergy:100,playerGuard:0,enemyGuard:0,exits:1,history:[]};
 }
-export function intent(c){const type=OPPONENTS[c.opponent].style;if(c.enemyEnergy<18)return 'guard';if(c.distance>=3)return type==='kite'?'retreat':'advance';if(c.playerGuard>0)return type==='adapt'||type==='counter'?'feint':'strike';return ({rush:'heavy',cautious:'guard',reach:'strike',tempo:'strike',pressure:'heavy',defend:'guard',counter:'guard',kite:'retreat',adapt:c.round%3===0?'feint':'strike'})[type]||'strike';}
+export function intent(c){const type=OPPONENTS[c.opponent].style;if(c.enemyEnergy<18)return 'guard';if(c.distance===4)return 'advance';if(type==='reach'&&c.distance===3)return 'strike';if(type==='kite'&&c.distance<=1)return 'retreat';if(c.distance===3)return 'advance';if(c.playerGuard>0)return type==='adapt'||type==='counter'?'feint':'strike';return ({rush:'heavy',cautious:'guard',reach:'strike',tempo:'strike',pressure:'heavy',defend:'guard',counter:'guard',kite:'retreat',adapt:c.round%3===0?'feint':'strike'})[type]||'strike';}
 export function legal(c,action){return ACTIONS.includes(action)&&!(action==='retreat'&&c.distance===4)&&!(action==='advance'&&c.distance===0);}
 export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5,action=''){ 
  const log=[];
