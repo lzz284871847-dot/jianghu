@@ -7,9 +7,9 @@ export function contractsValid(root,day){
 }
 export function openLoan(s,ledger,lenderId,borrowerId,amount,dueDay){
  const people=s.npcWorld.individuals,lender=people[lenderId],borrower=people[borrowerId];
- if(!lender||!borrower||lender===borrower||!integer(amount,1000000)||amount===0||!integer(dueDay,1000000)||dueDay<=s.day||lender.coins<amount||ledger.entries.length>=32)return false;
+ if(!lender||!borrower||lender===borrower||!integer(amount,1000000)||amount===0||!integer(dueDay,1000000)||dueDay<=s.day||lender.coins<amount||borrower.coins>1000000-amount||ledger.entries.length>=32)return false;
  const id=lenderId+':'+borrowerId+':'+s.day;
- if(ledger.entries.some(x=>x.id===id))return false;
+ if(ledger.entries.some(x=>x.id===id||(x.status==='open'&&x.lender===lenderId&&x.borrower===borrowerId)))return false;
  lender.coins-=amount;borrower.coins+=amount;
  ledger.entries.push({id,lender:lenderId,borrower:borrowerId,amount,dueDay,status:'open'});
  ledger.history.unshift(lender.name+'借给'+borrower.name+amount+'文，约定第'+dueDay+'日归还。');
@@ -26,7 +26,7 @@ export function settleContracts(s,ledger,day){
   if(borrower.coins>=c.amount){borrower.coins-=c.amount;lender.coins+=c.amount;c.status='repaid';notes.push(borrower.name+'按约归还'+c.amount+'文。');}
   else {c.status='defaulted';notes.push(borrower.name+'无力偿还'+lender.name+'的'+c.amount+'文借款，留下违约记录。');}
  }
- ledger.history.unshift(...notes);ledger.history=ledger.history.slice(0,24);ledger.lastDay=day;
+ ledger.history.unshift(...notes);ledger.history=ledger.history.slice(0,24);ledger.entries=ledger.entries.filter(x=>x.status==='open'||day-x.dueDay<=30);ledger.lastDay=day;
  return notes;
 }
 
@@ -34,7 +34,7 @@ export function autonomousLoans(s,ledger,day){
  const bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
  const borrower=s.npcWorld.individuals.farmhand01;
  const lender=s.npcWorld.individuals.shopassistant;
- if(day%5!==0||!bond||!borrower||!lender||bond.trust<45||borrower.hunger<50||borrower.coins>3||lender.coins<15)return [];
+ if(day%5!==0||!bond||!borrower||!lender||bond.trust<45||bond.resentment>=45||borrower.hunger<50||borrower.coins>3||lender.coins<15)return [];
  return openLoan(s,ledger,'shopassistant','farmhand01',5,day+4)?['小莲借给陈二五文钱。']:[];
 }
 
