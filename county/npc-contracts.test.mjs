@@ -50,3 +50,12 @@ test('completed debts are eventually removed from ledger',()=>{
  s.day=34;settleContracts(s,ledger,34);
  assert.equal(ledger.entries.length,0);
 });
+
+test('overdue debt changes trust even when simulation skips the due date',async()=>{
+ const {applyContractReputation}=await import('./npc-contracts.js');
+ const bond={trust:55,resentment:0};
+ const s={npcWorld:{social:{bonds:{'farmhand01:shopassistant':bond}}}};
+ const ledger={entries:[{dueDay:4,lender:'shopassistant',borrower:'farmhand01',status:'defaulted'}]};
+ applyContractReputation(s,ledger,7);applyContractReputation(s,ledger,8);
+ assert.equal(bond.trust,40);assert.equal(bond.resentment,20);
+});
