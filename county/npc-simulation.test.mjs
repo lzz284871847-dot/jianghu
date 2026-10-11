@@ -646,3 +646,15 @@ test('bitter rival carriers decline an otherwise payable shift without consuming
  assert.ok(p.history.some(x=>x.includes('避开共同搬运')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('prolonged unemployed carrier reconsiders trade without invented wages',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='carrier';p.level='ordinary';p.unemployedDays=7;p.coins=10;p.energy=10;
+ const shop=p.home==='liuxi'?'liuxi':'market',budget=s.commerce.budget[shop];
+ npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.coins,10);assert.equal(s.commerce.budget[shop],budget);
+ assert.ok(p.history.some(x=>x.includes('重新尝试本行')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
