@@ -1,5 +1,5 @@
 import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.2.0';
-import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js';
+import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.2.0';
 import {makeSocial,socialValid,socialDay} from './npc-social.js?v=4.2.0';
 import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.2.0';
 import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=4.2.0';

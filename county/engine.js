@@ -1,5 +1,5 @@
 import {makeLineage} from './npc-lineage.js?v=4.2.0';
-import {makeContracts} from './npc-contracts.js';
+import {makeContracts} from './npc-contracts.js?v=4.2.0';
 import {makeSocial} from './npc-social.js?v=4.2.0';
 import {makeHouseholds} from './npc-households.js?v=4.2.0';
 import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=4.2.0';
