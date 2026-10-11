@@ -15,7 +15,7 @@ export function makeNPCWorld(day=1){
  const individuals={};
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
  for(const [id,name,place,role,age] of ordinary)individuals[id]=makePerson(id,name,place,role,age,'ordinary');
- for(const person of Object.values(individuals))person.lastDay=day;
+ for(const person of Object.values(individuals)){person.lastDay=day;person.age+=Math.floor((day-1)/360);}
  return {individuals,background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
 }
 export function npcWorldValid(s){
@@ -47,6 +47,8 @@ export function tickNPCs(s,day){
   // Work is not a guaranteed income button: idle residents lose purchasing power.
   p.energy=Math.max(0,p.energy-(p.level==='detailed'?10:15));
   p.workDays+=(p.hunger<65&&p.energy>=20?1:0);
+  if(day%360===1&&day>1)p.age=Math.min(130,p.age+1);
+  if(p.level==='ordinary'&&p.hunger>=80){p.level='detailed';record(p,'第'+day+'日经历严重缺粮，转入重要人物跟踪。');}
   p.lastDay=day;
   if(p.hunger>=60&&p.history[0]?.includes('缺粮'))notes.push(p.name+'近日缺粮，正在寻求活计。');
  }
