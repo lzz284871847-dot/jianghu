@@ -1,4 +1,5 @@
 import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=0.2.0';
+import {injuryEffects} from './injury.js?v=0.2.0';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);
@@ -32,14 +33,14 @@ export function resolve(c,player,action,rng=()=>.5){
  const energy={strike:5,heavy:11,guard:3,feint:6,sidestep:5,advance:4,retreat:4,flee:6}[action];
  if(player.energy<energy)throw Error('精力不足');
  const enemy=intent(c),before={hp:player.hp,energy:player.energy,enemyHp:c.enemyHp};
- const log=[],injuries=player.injuries||{};
+ const log=[],injuries=player.injuries||{},effects=injuryEffects(player);
  player.energy-=energy;c.round++;
  const distanceBefore=c.distance;
  if(action==='advance')c.distance=clamp(c.distance-1,0,4);
  if(action==='retreat')c.distance=clamp(c.distance+1,0,4);
  if(action==='sidestep'){c.stance='游走';c.playerGuard=2;}else if(action==='guard'){c.stance='守势';c.playerGuard=5;}else if(action==='heavy'){c.stance='进逼';c.playerGuard=0;}else if(action==='feint'){c.stance='中正';c.playerGuard=1;}else if(action==='strike')c.playerGuard=0;
  if(action==='flee'){
-  const advantage=(c.distance>=3?3:0)+(c.stance==='游走'?2:0)+(c.exits>0?2:0)-(c.enemyStance==='进逼'?2:0)-(injuries.fracture?3:0);
+  const advantage=(c.distance>=3?3:0)+(c.stance==='游走'?2:0)+(c.exits>0?2:0)-(c.enemyStance==='进逼'?2:0)-(injuries.fracture?3:0)-effects.movementPenalty;
   const threshold=clamp(.28+advantage*.08,.08,.92);
   if(rng()<threshold){c.ended='escaped';log.push('成功脱离交手。');}
   else{log.push('撤退受阻，对手仍有机会追击。');c.distance=clamp(c.distance+1,0,4);}
@@ -47,7 +48,7 @@ export function resolve(c,player,action,rng=()=>.5){
   const reach=MARTIAL_ARTS[c.martial].category==='枪法'?3:['棍法','剑法','刀法'].includes(MARTIAL_ARTS[c.martial].category)?2:1;
   const inReach=c.distance<=reach;
   const base=action==='heavy'?18:action==='strike'?11:0;
-  const accuracy=clamp(.78-(action==='heavy'?.18:0)-(c.distance===reach?.08:0)-(injuries.strain?.12:0)-(injuries.fracture?.22:0),.08,.95);
+  const accuracy=clamp(.78-(action==='heavy'?.18:0)-(c.distance===reach?.08:0)-effects.accuracyPenalty,.08,.95);
   if(action==='feint'){c.enemyGuard=0;log.push('虚招试探，削弱对方防守。');}
   else if(inReach&&rng()<accuracy){const broken=c.enemyStance==='失衡';const dmg=Math.max(1,base-(enemy==='guard'&&!broken?8:0)-c.enemyGuard);c.enemyHp=Math.max(0,c.enemyHp-dmg);log.push('命中对手，造成'+dmg+'点伤害。');}
   else log.push(inReach?'攻击未能命中。':'兵器距离不足，攻击落空。');
