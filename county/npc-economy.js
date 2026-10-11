@@ -57,8 +57,9 @@ export const PRODUCERS=Object.freeze({
 });
 export const TRANSPORTERS=Object.freeze({dockhand01:'market',dockhand02:'liuxi',carter:'market',laborer:'market'});
 export function npcProduce(s,p,day){
- const job=PRODUCERS[p.id];if(!job||p.injuryDays>0||day%job.interval!==0||p.energy<job.effort||p.hunger>=80||p.cargo>=5)return false;
- p.energy-=job.effort;
+ const job=PRODUCERS[p.id];const effort=job?Math.max(12,job.effort-(p.careerSkills.forage>=20?2:0)):0;
+ if(!job||p.injuryDays>0||day%job.interval!==0||p.energy<effort||p.hunger>=80||p.cargo>=5)return false;
+ p.energy-=effort;
  // Deterministic risk based on the game seed and day, without extra RNG side effects.
  const succeeds=(day+p.id.length)%5!==0 && !(s.weather==='雨'&&job.item==='meat');
  if(!succeeds){remember(p,'第'+day+'日外出劳作，没有收获。');return false;}
