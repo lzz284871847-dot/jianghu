@@ -1,10 +1,10 @@
-import {travelBusy} from './npc-journeys.js?v=4.24.0';
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.24.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.24.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.24.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.24.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.24.0';
-import {familyOf} from './npc-households.js?v=4.24.0';
+import {travelBusy} from './npc-journeys.js?v=4.25.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.25.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.25.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.25.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.25.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.25.0';
+import {familyOf} from './npc-households.js?v=4.25.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -117,8 +117,21 @@ export function lineageDay(s,day){
    }
   }
   c.hunger=feed(s,c)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
-  const teacher=ps.find(p=>!travelBusy(s,p.id)&&!p.life.sickDays&&p.life.restDay!==day&&p.energy>=20&&p.hunger<40);
-  if(!health.resting&&age>=6&&age<16&&c.hunger<40&&teacher&&day%3===0){teacher.energy-=2;c.learning=Math.min(500,c.learning+1);}
+  const canTeach=p=>!travelBusy(s,p.id)&&!p.life.sickDays&&p.life.restDay!==day&&!p.injuryDays&&p.energy>=20&&p.hunger<40;
+  const teacher=ps.find(canTeach);
+  if(!health.resting&&!v.injuryDays&&!travelBusy(s,c.id)&&age>=6&&age<16&&c.hunger<40&&c.learning<500&&day%3===0){
+   if(teacher){teacher.energy-=2;c.learning++;}
+   else if(!ps.length){
+    const sibling=l.children.find(x=>x!==c&&alive(x)&&childAge(x,day)>=16&&x.learning>=20&&canTeach({...x.livelihood,id:x.id,life:x.life,hunger:x.hunger}));
+    if(sibling){
+     sibling.livelihood.energy-=2;c.learning++;
+     const student='陈家孩子'+(l.children.indexOf(c)+1),tutor='陈家孩子'+(l.children.indexOf(sibling)+1);
+     record(sibling.livelihood,day,'耗费精力2教养'+student+'，传授日常见识。');
+     record(v,day,'随成年兄姐学习日常见识，学习积累增加1。');
+     notes.push(tutor+'耗费精力教养'+student+'，学习积累增加1。');
+    }
+   }
+  }
   if(age>=16&&childAge(c,c.lastDay)<16)notes.push('陈二与小莲的孩子成年，开始自行寻找谋生岗位。');
   c.lastDay=day;
  }
