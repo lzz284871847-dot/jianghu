@@ -28,3 +28,12 @@ test('unassisted day progression feeds shops and survives save roundtrip',()=>{
  assert.ok(s.news.some(t=>t.includes('农户送来')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('a rain-hit harvest produces a shortage report and less grain',()=>{
+ const wet=fresh(),dry=fresh();
+ wet.commerce.stock.market.grain=0;dry.commerce.stock.market.grain=0;
+ const wetNews=farmDelivery(wet,3,'雨'),dryNews=farmDelivery(dry,3,'晴');
+ assert.ok(wetNews.some(x=>x.includes('收成偏低')));
+ assert.ok(!dryNews.some(x=>x.includes('收成偏低')));
+ assert.ok(stockAt(wet,'market','grain')<stockAt(dry,'market','grain'));
+});
