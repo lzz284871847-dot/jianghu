@@ -1,8 +1,8 @@
-import {travelBusy} from './npc-journeys.js?v=4.19.0';
-import {alive} from './npc-mortality.js?v=4.19.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=4.19.0';
-import {marketPrice,stockAt} from './commerce.js?v=4.19.0';
-import {districtStatus} from './society.js?v=4.19.0';
+import {travelBusy} from './npc-journeys.js?v=4.20.0';
+import {alive} from './npc-mortality.js?v=4.20.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=4.20.0';
+import {marketPrice,stockAt} from './commerce.js?v=4.20.0';
+import {districtStatus} from './society.js?v=4.20.0';
 export const makeClinic=(day=1)=>({holder:'doctor',appointedDay:0,lastDay:day,learners:{}});
 export const clinicDoctor=s=>namedResidents(s).find(p=>p.id===s.npcWorld.clinic.holder);
 const fit=(p,day)=>!!p&&alive(p)&&!p.retirement.active&&!p.life.sickDays&&!p.injuryDays&&p.life.restDay!==day;
@@ -36,4 +36,4 @@ export function clinicTrainingDay(s,day){
  }
  return notes;
 }
-export function clinicSummary(s){const d=clinicDoctor(s);return [d&&alive(d)?'河湾村医者：'+d.name+(d.id==='doctor'?'，原有医者。':'，第'+s.npcWorld.clinic.appointedDay+'日接任。'):'河湾村医者空缺，等待已有20次实际跟诊积累的在世居民接任。',...Object.entries(s.npcWorld.clinic.learners).map(([id,v])=>namedResidents(s).find(p=>p.id===id).name+' · 跟诊积累'+v.practice+'次 · 最近跟诊第'+v.lastDay+'日')];}
+export function clinicSummary(s){const d=clinicDoctor(s);return [d&&alive(d)?'河湾村医者：'+d.name+(d.life.sickDays||d.life.restDay===s.day||d.injuryDays?'，今日休养，暂停诊治。':'')+(d.id==='doctor'?'，原有医者。':'，第'+s.npcWorld.clinic.appointedDay+'日接任。'):'河湾村医者空缺，等待已有20次实际跟诊积累的在世居民接任。',...Object.entries(s.npcWorld.clinic.learners).map(([id,v])=>namedResidents(s).find(p=>p.id===id).name+' · 跟诊积累'+v.practice+'次 · 最近跟诊第'+v.lastDay+'日')];}
