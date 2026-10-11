@@ -1,15 +1,17 @@
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.2.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.2.0';
-import {people,items} from './content.js?v=5.2.0';
-import {gain} from './progression.js?v=5.2.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.2.0';
-import {EQUIPMENT} from './equipment.js?v=5.2.0';
-export const makeAdventures=(day=1)=>({feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.3.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.3.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.3.0';
+import {people,items} from './content.js?v=5.3.0';
+import {gain} from './progression.js?v=5.3.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.3.0';
+import {EQUIPMENT} from './equipment.js?v=5.3.0';
+export const makeAdventures=(day=1)=>({exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==12||!feedbackValid(s))return false;
- if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty'].includes(v)))return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==13||!feedbackValid(s))return false;
+ if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty','retreated'].includes(v)))return false;
+ if(!explorationValid(s))return false;
  if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
  const o=a.org;if(!obj(o)||Object.keys(o).length!==3||!['none','school','caravan'].includes(o.id)||!obj(o.rep)||Object.keys(o.rep).length!==2||!['school','caravan'].every(id=>num(o.rep[id],100))||!num(o.aidDay,s.day))return false;
  if(!obj(a.orderCounts)||Object.keys(a.orderCounts).length!==3||!Object.keys(CAREERS).every(id=>num(a.orderCounts[id],100000)))return false;
@@ -24,7 +26,7 @@ const paid=(s,id,n)=>{const p=s.npcWorld.individuals[id];return p.coins>=n&&s.co
 function reward(s,id,n){s.npcWorld.individuals[id].coins-=n;s.coins+=n;}
 function fee(s,id,n){const p=s.npcWorld.individuals[id];if(s.coins<n||p.coins>1000000-n)return false;s.coins-=n;p.coins+=n;return true;}
 function finish(s,success){const a=s.adventures,q=a.quest;(success?a.done:a.failed).push(q.id);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
-export function expireAdventures(s){expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
+export function expireAdventures(s){reconcileExploration(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
 export function recordAdventureVictory(s,c){if(c.ended==='victory'&&!c.practice&&s.adventures&&!s.adventures.victories.includes(c.opponent))s.adventures.victories.push(c.opponent);}
 export const practiceFee=s=>s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3?3:4;
 const trained=(s,tier)=>Object.keys(s.martial.known).filter(id=>MARTIAL_ARTS[id].tier===tier&&s.martial.practice[id]>=120).length;
@@ -35,6 +37,7 @@ export function adventureAction(s,id,{advance,rng}){
  if(s.dead||s.pending||s.combat)return fail(s,'先处理眼前交手或选择；死亡后不能继续。');
  expireAdventures(s);const a=s.adventures,[kind,key]=String(id).split(':');
  if(kind==='followup'||kind==='event')return feedbackAction(s,String(id),{present,transact,advance});
+ if(kind==='route'||kind==='encounter')return explorationAction(s,String(id),{transact,advance,rng});
  if(kind==='retry'){
   const d=QUESTS[key];if(!d||key==='parcel'||a.quest||!a.failed.includes(key)||a.done.includes(key))return fail(s,'此委托不能重新约定；失物与已完成委托不重复开放。');
   if(key==='rescue'&&a.milestones.length<2)return fail(s,'救援仍需完成县境成长第二阶段。');
@@ -67,11 +70,7 @@ export function adventureAction(s,id,{advance,rng}){
   if(!paid(s,d.payer||d.giver,d.reward)||q.id==='escort'&&!present(s,d.payer,15))return fail(s,'委托人现有钱不足，未交物或结算；可稍后再来或撤回。');
   return transact(s,'完成：'+d.name,15,0,()=>{if(q.id==='medicine')s.bag.herb-=2;reward(s,d.payer||d.giver,d.reward);s.relations[d.giver]=Math.min(100,s.relations[d.giver]+2);finish(s,true);s.result.push('实际支付报酬'+d.reward+'文，委托完成。');xp(s,q.id==='escort'?'carry':q.id==='parcel'?'forage':'herb',2);},advance);
  }
- if(kind==='explore'){
-  const d=SITES[key];if(!d||s.place!==key)return fail(s,'请到对应探索地点。');if(a.sites[key])return fail(s,'这处遗留物已搜寻，不会刷新。');if(s.hp<25||key==='mine'&&!s.bag.pick)return fail(s,'需气血至少25；矿堆还需矿镐。');
-  if(Object.entries(d.goods).some(([id,n])=>s.bag[id]>1000000-n))return fail(s,'背包库存已满。');
-  return transact(s,'搜寻：'+d.name,d.minutes,d.energy,()=>{const found=rng()<d.chance;a.sites[key]=found?'found':'empty';if(found){for(const [id,n] of Object.entries(d.goods))s.bag[id]+=n;s.result.push('取得此处有限遗留物：'+Object.entries(d.goods).map(([id,n])=>items[id]+'×'+n).join('、'));}else s.result.push('没有找到合用物资，这处搜寻已结束。');if(rng()<d.risk){s.hp-=d.damage;s.result.push('擦伤，气血 -'+d.damage+'。');}xp(s,key==='mine'?'mining':key==='ferry'?'herb':'forage',2);},advance);
- }
+ if(kind==='explore')return explorationAction(s,'route:'+key+':standard',{transact,advance,rng});
  if(kind==='join'){
   const d=ORGANIZATIONS[key];if(!d||a.org.id!=='none')return fail(s,'请先退出当前组织，或选择已开放组织。');
   if(!present(s,d.holder,30))return fail(s,'组织接洽人不在场或已休息。');
