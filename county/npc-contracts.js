@@ -1,4 +1,4 @@
-import {alive} from './npc-mortality.js?v=4.8.0';
+import {alive} from './npc-mortality.js?v=4.9.0';
 // Deterministic, bounded social contracts. No virtual money is created.
 export const CONTRACT_VERSION=1;
 const integer=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;

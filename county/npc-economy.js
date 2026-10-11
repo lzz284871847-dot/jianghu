@@ -1,9 +1,9 @@
-import {alive} from './npc-mortality.js?v=4.8.0';
-import {familyOf} from './npc-households.js?v=4.8.0';
-import {bondBetween} from './npc-social.js?v=4.8.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.8.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.8.0';
-import {districtStatus} from './society.js?v=4.8.0';
+import {alive} from './npc-mortality.js?v=4.9.0';
+import {familyOf} from './npc-households.js?v=4.9.0';
+import {bondBetween} from './npc-social.js?v=4.9.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.9.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.9.0';
+import {districtStatus} from './society.js?v=4.9.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -21,8 +21,8 @@ export function npcCareer(p){
  return {key,rank,label:['初入行','熟手','资深'][rank],bonus:key==='forage'?0:rank};
 }
 export function npcWork(s,p,day){
- if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
- const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];
+ if(!alive(p)||p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
+ const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:['original','craftsman'].includes(p.occupation)?POSITIONS[p.id]:null;
  const effort=p.careerSkills.trade>=20?13:15;
  if(!pos||p.injuryDays>0||p.energy<Math.max(20,effort)||p.hunger>=80)return false;
  const shop=pos.market,craft=p.id==='smithapprentice'&&p.occupation==='craftsman';
@@ -72,7 +72,7 @@ export const PRODUCERS=Object.freeze({
 export function producerOf(p){return PRODUCERS[p.id]??(/^chen-child-[12]$/.test(p.id)?PRODUCERS.farmhand01:null);}
 export const TRANSPORTERS=Object.freeze({dockhand01:'market',dockhand02:'liuxi',carter:'market',laborer:'market'});
 export function npcProduce(s,p,day){
- if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
+ if(!alive(p)||p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const job=producerOf(p);const effort=job?Math.max(12,job.effort-(p.careerSkills.forage>=20?2:0)):0;
  if(!job||/^chen-child-/.test(p.id)&&p.occupation!=='farmer'||p.injuryDays>0||day%job.interval!==0||p.energy<effort||p.hunger>=80||p.cargo>=5)return false;
  p.energy-=effort;
@@ -82,7 +82,7 @@ export function npcProduce(s,p,day){
  p.cargo++;train(p,'forage');remember(p,'第'+day+'日采获'+job.item+'，等待集市收购。');return true;
 }
 export function npcSellProduce(s,p,day){
- if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
+ if(!alive(p)||p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const job=producerOf(p);if(!job||p.cargo<=0)return false;
  const shop=job.market,price=marketPrice(s,shop,'sell',job.item);
  if(districtStatus(s,shop).closed||price===null||stockAt(s,shop,job.item)>=MARKET_LIMIT||budgetAt(s,shop)<price)return false;
@@ -90,7 +90,7 @@ export function npcSellProduce(s,p,day){
  remember(p,'第'+day+'日在集市售出'+job.item+'，得到'+price+'文。');return true;
 }
 export function npcTransport(s,p,day){
- if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
+ if(!alive(p)||p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const shop=TRANSPORTERS[p.id];
  const effort=p.careerSkills.carry>=20?20:22;
  const injuryPeriod=p.careerSkills.carry>=40?23:17;
@@ -110,7 +110,7 @@ export function npcFindWork(s,p,day){
 // Vacancy is derived from persisted employees; applications do not invent jobs.
 export const SHOP_CAPACITY=Object.freeze({market:3,liuxi:2});
 export function npcApplyShop(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.retirement?.active)return false;
  if(p.level!=='ordinary'||!['original','carrier'].includes(p.occupation)||p.hunger>=80)return false;
  const shop=p.home==='liuxi'?'liuxi':'market';
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<70)return false;
@@ -119,7 +119,7 @@ export function npcApplyShop(s,p,day){
   const bond=s.npcWorld.social.bonds[bondKey];
   if(bond.trust<30||bond.resentment>=70)return false;
  }
- const employees=[...Object.values(s.npcWorld.individuals),...(s.npcWorld.lineage?.children??[]).filter(c=>alive(c)&&s.day-c.bornDay>=16*360).map(c=>({...c.livelihood,home:'market'}))].filter(n=>alive(n)).filter(n=>
+ const employees=[...Object.values(s.npcWorld.individuals),...(s.npcWorld.lineage?.children??[]).filter(c=>alive(c)&&s.day-c.bornDay>=16*360).map(c=>({...c.livelihood,home:'market'}))].filter(n=>alive(n)&&!n.retirement?.active).filter(n=>
   n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
   n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
   n.occupation==='craftsman'&&n.id==='smithapprentice'&&shop==='market'
@@ -132,10 +132,10 @@ export function npcApplyShop(s,p,day){
 // Skilled masters use a small amount of shop material budget to mentor apprentices.
 // No salary or skill is conjured without real training costs.
 export function npcMentor(s,p,day){
- if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
+ if(!alive(p)||p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
  if(p.id!=='smith'||day%4!==0||p.injuryDays>0||p.energy<20||districtStatus(s,'market').closed||budgetAt(s,'market')<27)return false;
  const apprentice=s.npcWorld.individuals.smithapprentice;
- if(!apprentice||apprentice.life?.sickDays>0||apprentice.life?.restDay===day||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
+ if(!apprentice||apprentice.retirement?.active||apprentice.life?.sickDays>0||apprentice.life?.restDay===day||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
  const bond=s.npcWorld.social.bonds[bondBetween(s,'smith','smithapprentice')];
  if(bond.trust<30)return false; // A broken apprenticeship stops consuming materials or awarding skill.
  s.commerce.budget.market-=2;
@@ -144,7 +144,7 @@ export function npcMentor(s,p,day){
  return true;
 }
 export function npcCareerDay(s,p,day){
- if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
+ if(!alive(p)||p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
  if(p.id==='smith')npcMentor(s,p,day);
  const before=p.workDays,rankBefore=npcCareer(p).rank;
  if(p.occupation==='shopworker'||p.occupation==='craftsman'){
@@ -212,4 +212,25 @@ export function npcCareerDay(s,p,day){
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
  }
  return false;
+}
+
+// First retirement batch follows the same Chen family as mortality and inheritance.
+export const makeRetirement=(day=1)=>({active:false,retiredDay:0,lastDay:day});
+export const retirementValid=(r,day)=>!!r&&typeof r==='object'&&!Array.isArray(r)&&Object.keys(r).length===3&&typeof r.active==='boolean'&&
+ Number.isSafeInteger(r.lastDay)&&r.lastDay>=1&&r.lastDay<=day&&Number.isSafeInteger(r.retiredDay)&&r.retiredDay>=0&&r.retiredDay<=r.lastDay&&(!r.active||r.retiredDay>0);
+export const retirementSummary=p=>p.retirement.active?'退养中，使用自己的钱粮':p.retirement.retiredDay?'曾退养，现重新谋生':'尚未退养';
+export function npcRetirementDay(s,p,age,day){
+ const r=p.retirement;if(!alive(p)||r.lastDay>=day)return false;r.lastDay=day;
+ if(!['farmhand01','shopassistant'].includes(p.id)&&!/^chen-child-[12]$/.test(p.id))return false;
+ if(r.active){
+  if(p.coins>=30&&p.hunger<40)return false;
+  r.active=false;
+  // An old employer/family farm slot may have been taken while this person rested.
+  // Return as a job seeker rather than silently evicting the replacement employee.
+  if(p.occupation==='shopworker'||p.occupation==='craftsman'||p.occupation==='farmer'||POSITIONS[p.id])p.occupation='carrier';
+  p.unemployedDays=0;remember(p,'第'+day+'日退养钱粮不足，重新谋生；旧有技艺与经历保留，商铺职位须重新应聘。');return true;
+ }
+ if(age<65||p.workDays<20||p.coins<120||p.food<2||p.hunger>=40||p.injuryDays||p.life?.sickDays||p.life?.restDay===day)return false;
+ r.active=true;r.retiredDay=r.retiredDay||day;
+ remember(p,'第'+day+'日凭自己的积蓄开始退养，停止劳作并让出岗位，日常仍消耗真实钱粮。');return true;
 }
