@@ -1,9 +1,9 @@
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.17.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.17.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.17.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.17.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.17.0';
-import {familyOf} from './npc-households.js?v=4.17.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.18.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.18.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.18.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.18.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.18.0';
+import {familyOf} from './npc-households.js?v=4.18.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
