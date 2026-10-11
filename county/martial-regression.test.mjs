@@ -93,3 +93,27 @@ test('martial teachers demand the appropriate place and trust',()=>{
  s.relations.master=5;assert.equal(martialAction(s,'learn','stone_palm'),true);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('footwork evades enemy blows that would hit ordinary attacks',()=>{
+ const agile=fresh();agile.place='school';assert.equal(martialAction(agile,'learn','footwork'),true);
+ assert.equal(martialAction(agile,'challenge','brawler'),true);
+ agile.combat.distance=0;
+ assert.equal(martialAction(agile,'move','footwork_1',()=>.6),true);
+ assert.equal(agile.hp,100);
+ assert.equal(agile.combat.distance,1);
+ const plain=fresh();plain.place='school';assert.equal(martialAction(plain,'learn','qinghe_fist'),true);
+ assert.equal(martialAction(plain,'challenge','brawler'),true);
+ plain.combat.distance=0;
+ assert.equal(martialAction(plain,'move','qinghe_fist_1',()=>.6),true);
+ assert.ok(plain.hp<100);
+ assert.doesNotThrow(()=>restore(JSON.stringify(agile)));
+});
+test('breathing techniques restore stamina while exposed to enemy pressure',()=>{
+ const s=fresh();s.place='school';assert.equal(martialAction(s,'learn','breath'),true);
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ s.energy=30;s.combat.distance=0;
+ assert.equal(martialAction(s,'move','breath_1',()=>.6),true);
+ assert.equal(s.energy,31);
+ assert.equal(s.combat.playerGuard,4);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
