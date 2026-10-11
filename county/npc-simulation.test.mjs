@@ -804,3 +804,14 @@ test('experienced shopworker saves effort without raising merchant-funded wages'
  assert.equal(s.commerce.budget.market,budget-4);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('experienced emergency transporter works with conserved effort and funded wages',async()=>{
+ const {npcTransport}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.injuryDays=0;p.energy=21;p.hunger=0;p.careerSkills.carry=20;
+ const budget=s.commerce.budget.market,coins=p.coins;
+ assert.equal(npcTransport(s,p,3),true);
+ assert.equal(p.energy,1);assert.equal(p.coins,coins+3);
+ assert.equal(s.commerce.budget.market,budget-3);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
