@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fresh,restore,equipmentAction} from './engine.js';
-import {EQUIPMENT,equipmentBonuses,wearEquipment} from './equipment.js';
+import {EQUIPMENT,equipmentBonuses,wearEquipment,equipmentWorkCost} from './equipment.js';
 import {newCombat,resolve} from './combat-core.js';
 
 test('20 pieces span five tiers and two slots',()=>{
@@ -134,4 +134,48 @@ test('old equipment save without quality is migrated as ordinary',()=>{
  const restored=restore(JSON.stringify(s));
  assert.equal(restored.equipment.quality.wood_staff,1);
  assert.doesNotThrow(()=>restore(JSON.stringify(restored)));
+});
+
+test('forging consumes time and stamina on both success and failure',()=>{
+ const successful=fresh();successful.place='workshop';successful.bag.wood=5;
+ const cost=equipmentWorkCost(EQUIPMENT.wood_staff,'craft');
+ assert.equal(equipmentAction(successful,'craft','wood_staff',()=>.5),true);
+ assert.equal(successful.minute,480+cost.minutes);
+ assert.equal(successful.energy,100-cost.energy);
+ const failed=fresh();failed.place='workshop';failed.coins=100;failed.relations.smith=8;
+ failed.bag.iron=20;failed.bag.wood=5;failed.bag.fine_ore=2;
+ const high=equipmentWorkCost(EQUIPMENT.steel_blade,'craft');
+ assert.equal(equipmentAction(failed,'craft','steel_blade',()=>0),true);
+ assert.equal(failed.minute,480+high.minutes);
+ assert.equal(failed.energy,100-high.energy);
+ assert.equal(failed.bag.fine_ore,0);
+ assert.equal(failed.equipment.owned.steel_blade,undefined);
+ assert.doesNotThrow(()=>restore(JSON.stringify(failed)));
+});
+test('insufficient time or energy rejects work without taking materials or coins',()=>{
+ const s=fresh();s.place='workshop';s.bag.wood=6;s.minute=1070;
+ const before={coins:s.coins,wood:s.bag.wood,minute:s.minute,energy:s.energy};
+ assert.equal(equipmentAction(s,'craft','wood_staff',()=>.5),false);
+ assert.deepEqual({coins:s.coins,wood:s.bag.wood,minute:s.minute,energy:s.energy},before);
+ s.minute=480;s.energy=0;
+ assert.equal(equipmentAction(s,'craft','wood_staff',()=>.5),false);
+ assert.equal(s.bag.wood,6);assert.equal(s.coins,30);
+ s.energy=100;
+ assert.equal(equipmentAction(s,'craft','wood_staff',()=>.5),true);
+ s.equipment.owned.wood_staff=20;s.minute=1070;
+ assert.equal(equipmentAction(s,'repair','wood_staff'),false);
+ assert.equal(s.equipment.owned.wood_staff,20);
+});
+test('repair consumes fewer resources but advances clock and preserves fine quality',()=>{
+ const s=fresh();s.place='workshop';s.bag.wood=8;
+ assert.equal(equipmentAction(s,'craft','wood_staff',()=>.99),true);
+ assert.equal(s.equipment.quality.wood_staff,2);
+ s.equipment.owned.wood_staff=10;
+ const start=s.minute,energy=s.energy;
+ const work=equipmentWorkCost(EQUIPMENT.wood_staff,'repair');
+ assert.equal(equipmentAction(s,'repair','wood_staff'),true);
+ assert.equal(s.minute,start+work.minutes);
+ assert.equal(s.energy,energy-work.energy);
+ assert.equal(s.equipment.quality.wood_staff,2);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
