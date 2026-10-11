@@ -61,3 +61,15 @@ test('long-run personal histories remain bounded and resident identities persist
  assert.ok(s.news.length<=20);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('significant hardship promotes an ordinary resident without replacing their identity',()=>{
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01;
+ const id=p.id,name=p.name;
+ s.commerce.stock.market.grain=0;
+ for(let day=2;day<=9;day++){s.day=day;tickNPCs(s,day);}
+ for(const node of Object.values(s.nodes))node.refreshDay=11;
+ assert.equal(p.id,id);assert.equal(p.name,name);
+ assert.equal(p.level,'detailed');
+ assert.ok(p.history.some(x=>x.includes('重要人物跟踪')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
