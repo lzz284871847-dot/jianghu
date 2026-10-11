@@ -31,8 +31,8 @@ test('practice reuses existing martial gains and charges twelve real energy with
  s.day=25;assert.equal(npcStudyDay(s,p,19,25),false);assert.equal(p.energy,energy-12);
 });
 test('practice caps remain bounded and completed study no longer spends energy',()=>{
- const s=setup(),p=pupil(s);p.study={learnedDay:7,practice:2399,insight:2399,lastDay:20};npcStudyDay(s,p,19,21);
- assert.equal(p.study.practice,2400);assert.equal(p.study.insight,2400);const energy=p.energy;npcStudyDay(s,p,19,24);assert.equal(p.energy,energy);
+ const s=setup(),p=pupil(s);p.study={...makeStudy(20),learnedDay:7,practice:2399,insight:2399};npcStudyDay(s,p,65,21);
+ assert.equal(p.study.practice,2400);assert.equal(p.study.insight,2400);const energy=p.energy;npcStudyDay(s,p,65,24);assert.equal(p.energy,energy);
 });
 test('illness and death stop practice permanently until health permits it',()=>{
  const s=setup(),p=pupil(s);p.study.learnedDay=7;p.life.sickDays=3;npcStudyDay(s,p,19,21);assert.equal(p.study.practice,0);
@@ -67,4 +67,43 @@ test('adult descendants fund their own lessons and retain independent practice o
 });
 test('NPC martial module is included in offline caching',()=>{
  assert.match(readFileSync(new URL('./sw.js',import.meta.url),'utf8'),/'npc-martial.js'/);
+});
+test('second art has a real fee and zero initial mastery; training balances both arts',()=>{
+ const s=setup(),p=pupil(s),teacher=s.npcWorld.individuals.master;p.study.learnedDay=7;p.study.practice=120;p.study.insight=30;
+ const before=cash(s);assert.equal(npcStudyDay(s,p,19,21),true);assert.equal(p.coins,32);assert.equal(cash(s),before);assert.equal(teacher.energy,80);
+ assert.deepEqual(p.study.otherArts.spring_kick,{learnedDay:21,practice:0,insight:0});assert.equal(p.study.teacherTrust,5);
+ npcStudyDay(s,p,19,24);assert.equal(p.study.otherArts.spring_kick.practice,12);assert.equal(p.study.practice,120);assert.equal(p.energy,88);
+});
+test('advanced lessons require both predecessor proficiency and actual teacher trust',()=>{
+ for(const block of ['first','second','trust',null]){
+  const s=setup(),p=pupil(s);p.coins=100;p.study.learnedDay=7;p.study.practice=block==='first'?119:120;p.study.teacherTrust=block==='trust'?4:5;
+  p.study.otherArts.spring_kick={learnedDay:14,practice:block==='second'?119:120,insight:30};
+  npcStudyDay(s,p,19,21);assert.equal(!!p.study.otherArts.stone_palm,block===null,block);
+  if(block===null){assert.equal(p.coins,84);assert.equal(p.study.otherArts.stone_palm.practice,0);assert.equal(p.study.teacherTrust,10);}
+ }
+});
+test('long autonomous study reaches third-tier arts without creating money or simultaneous practice',()=>{
+ const s=setup(),p=pupil(s);p.coins=800;const before=cash(s),teacher=s.npcWorld.individuals.master;
+ for(let day=21;day<=420;day++){
+  s.day=day;p.energy=100;teacher.energy=100;
+  const progress=()=>p.study.practice+Object.values(p.study.otherArts).reduce((n,a)=>n+a.practice,0),old=progress(),coins=p.coins;
+  npcStudyDay(s,p,19,day);assert.ok([0,12].includes(progress()-old));if(p.coins<coins)assert.equal(progress(),old);
+ }
+ assert.ok(p.study.otherArts.soft_palm);assert.ok(p.study.otherArts.stone_palm.practice>=120);assert.ok(p.study.otherArts.river_knife.practice>=120);assert.equal(cash(s),before);
+ assert.equal(p.study.otherArts.wood_knife,undefined);assert.equal(p.study.otherArts.staff,undefined);assert.ok(studyValid(p.study,s.day));
+ for(const n of Object.values(s.nodes))n.refreshDay=s.day%2===1?s.day+2:s.day+1;assert.deepEqual(restore(JSON.stringify(s)).npcWorld.individuals.dockhand01.study,p.study);
+});
+test('4.10 study migrates exactly, including adult descendant records, with no trust gift',()=>{
+ const s=setup(),p=pupil(s);p.study={learnedDay:7,practice:120,insight:30,lastDay:20};
+ s.day=7007;for(const n of Object.values(s.nodes))n.refreshDay=7009;
+ const v=makeChildLivelihood('chen-child-1',7006);v.study={learnedDay:6000,practice:12,insight:3,lastDay:7006};
+ s.npcWorld.lineage={lastDay:7006,courtshipDay:2,marriedDay:32,conceivedDay:0,children:[{id:'chen-child-1',bornDay:332,hunger:0,learning:0,lastDay:7006,life:makeLife(),livelihood:v}]};
+ const before=cash(s),x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld.individuals.dockhand01.study,{...p.study,otherArts:{},teacherTrust:0});
+ assert.deepEqual(x.npcWorld.lineage.children[0].livelihood.study,{...v.study,otherArts:{},teacherTrust:0});assert.equal(cash(x),before);
+});
+test('extended study rejects unknown arts, village teaching, duplicate primary and invalid gains',()=>{
+ for(const [id,a] of [['unknown',{learnedDay:14,practice:0,insight:0}],['wood_knife',{learnedDay:14,practice:0,insight:0}],['qinghe_fist',{learnedDay:14,practice:0,insight:0}],['spring_kick',{learnedDay:22,practice:0,insight:0}],['spring_kick',{learnedDay:14,practice:2401,insight:0}]]){
+  const s=setup(),p=pupil(s);p.study.learnedDay=7;p.study.otherArts[id]=a;assert.throws(()=>restore(JSON.stringify(s)),/NPC人生/);
+ }
+ const s=setup();s.npcWorld.individuals.dockhand01.study.teacherTrust=101;assert.throws(()=>restore(JSON.stringify(s)),/NPC人生/);
 });
