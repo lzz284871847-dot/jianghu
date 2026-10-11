@@ -1,17 +1,18 @@
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.3.0';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.3.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.3.0';
-import {people,items} from './content.js?v=5.3.0';
-import {gain} from './progression.js?v=5.3.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.3.0';
-import {EQUIPMENT} from './equipment.js?v=5.3.0';
-export const makeAdventures=(day=1)=>({exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {makeTrials,trialsValid} from './trials.js?v=5.4.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.4.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.4.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.4.0';
+import {people,items} from './content.js?v=5.4.0';
+import {gain} from './progression.js?v=5.4.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.4.0';
+import {EQUIPMENT} from './equipment.js?v=5.4.0';
+export const makeAdventures=(day=1)=>({trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==13||!feedbackValid(s))return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==14||!feedbackValid(s))return false;
  if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty','retreated'].includes(v)))return false;
- if(!explorationValid(s))return false;
+ if(!explorationValid(s)||!trialsValid(s))return false;
  if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
  const o=a.org;if(!obj(o)||Object.keys(o).length!==3||!['none','school','caravan'].includes(o.id)||!obj(o.rep)||Object.keys(o.rep).length!==2||!['school','caravan'].every(id=>num(o.rep[id],100))||!num(o.aidDay,s.day))return false;
  if(!obj(a.orderCounts)||Object.keys(a.orderCounts).length!==3||!Object.keys(CAREERS).every(id=>num(a.orderCounts[id],100000)))return false;

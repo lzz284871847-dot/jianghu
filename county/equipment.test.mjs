@@ -81,7 +81,7 @@ test('rare ore nodes migrate and deeper layers require mining mastery',async()=>
  assert.doesNotThrow(()=>restore(JSON.stringify(migrated)));
  migrated.place='mine';migrated.bag.pick=1;
  assert.match(resourceBlocker(migrated,'fine_ore'),/提高采矿经验/);
- migrated.skills.mining=150;
+ migrated.skills.mining=30;
  assert.equal(resourceBlocker(migrated,'fine_ore'),null);
  assert.equal(act(migrated,'fine_ore',()=>0),true);
  assert.equal(migrated.pending.type,'resource');
@@ -266,7 +266,7 @@ test('mobile release uses uniform version and preloads equipment logic offline',
   assert.doesNotMatch(txt,/\?v=0\.(?:1\.0|2\.[01])/,path+' stale module version');
  }
  const sw=readFileSync(fileURLToPath(new URL('sw.js',dir)),'utf8');
- assert.match(sw,/VERSION='5\.3\.0'/);
+ assert.match(sw,/VERSION='5\.4\.0'/);
  assert.match(sw,/'equipment\.js'/);
- assert.match(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8'),/青河县 5\.3\.0/);
+ assert.match(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8'),/青河县 5\.4\.0/);
 });

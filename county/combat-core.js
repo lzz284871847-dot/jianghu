@@ -1,6 +1,7 @@
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.3.0';
-import {injuryEffects} from './injury.js?v=5.3.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.3.0';
+import {trialModifiers} from './trials.js?v=5.4.0';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.4.0';
+import {injuryEffects} from './injury.js?v=5.4.0';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.4.0';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);
@@ -15,11 +16,11 @@ export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5,action=''){
  
   if(enemy==='advance')c.distance=clamp(c.distance-1,0,4);
   else if(enemy==='retreat')c.distance=clamp(c.distance+1,0,4);
-  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';if(['counter','adapt'].includes(OPPONENTS[c.opponent].style)&&action==='heavy'&&c.distance<=2&&rng()<.7){const damage=Math.max(1,12-c.playerGuard);const dealt=Math.min(Math.max(1,damage-equipmentBonuses(player).defense),Math.max(0,player.hp-(c.practice?40:0)));player.hp=Math.max(c.practice?40:0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手看穿重击破绽，守中反击造成'+dealt+'点伤害。');}}
+  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';if(['counter','adapt'].includes(OPPONENTS[c.opponent].style)&&action==='heavy'&&c.distance<=2&&rng()<.7){const damage=Math.max(1,12+trialModifiers(player,c).attack-c.playerGuard);const dealt=Math.min(Math.max(1,damage-equipmentBonuses(player).defense),Math.max(0,player.hp-(c.practice?40:0)));player.hp=Math.max(c.practice?40:0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手看穿重击破绽，守中反击造成'+dealt+'点伤害。');}}
   else if(enemy==='feint'){c.playerGuard=0;c.enemyStance='游走';}
   else if(c.distance<= (['reach'].includes(OPPONENTS[c.opponent].style)?3:2)){
    const hit=clamp(.72-(action==='sidestep'?.24:0)-(action==='guard'?.12:0),.12,.9);
-   if(rng()<hit){const damage=Math.max(1,(enemy==='heavy'?17:10)-c.playerGuard);const dealt=Math.min(Math.max(1,damage-equipmentBonuses(player).defense),Math.max(0,player.hp-(c.practice?40:0)));player.hp=Math.max(c.practice?40:0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手命中，损失气血'+dealt+'。');
+   if(rng()<hit){const damage=Math.max(1,(enemy==='heavy'?17:10)+trialModifiers(player,c).attack-c.playerGuard);const dealt=Math.min(Math.max(1,damage-equipmentBonuses(player).defense),Math.max(0,player.hp-(c.practice?40:0)));player.hp=Math.max(c.practice?40:0,player.hp-dealt);wearEquipment(player,'armor');log.push('对手命中，损失气血'+dealt+'。');
     if(damage>=12&&rng()<.2){player.injuries??={};player.injuries.bruise=clamp((player.injuries.bruise||0)+1,1,5);log.push('新增擦伤瘀伤。');}
    }else log.push('避开对手攻击。');
   }
@@ -52,7 +53,7 @@ export function resolve(c,player,action,rng=()=>.5){
   const base=action==='heavy'?18:action==='strike'?11:0;
   const accuracy=clamp(.78-(action==='heavy'?.18:0)-(c.distance===reach?.08:0)-effects.accuracyPenalty,.08,.95);
   if(action==='feint'){c.enemyGuard=0;log.push('虚招试探，削弱对方防守。');}
-  else if(inReach&&rng()<accuracy){const broken=c.enemyStance==='失衡';const dmg=Math.max(1,base+equipmentBonuses(player,c.martial).attack-(enemy==='guard'&&!broken?8:0)-c.enemyGuard);wearEquipment(player,'weapon');c.enemyHp=Math.max(0,c.enemyHp-dmg);log.push('命中对手，造成'+dmg+'点伤害。');}
+  else if(inReach&&rng()<accuracy){const broken=c.enemyStance==='失衡';const dmg=Math.max(1,base+equipmentBonuses(player,c.martial).attack-trialModifiers(player,c).defense-(enemy==='guard'&&!broken?8:0)-c.enemyGuard);wearEquipment(player,'weapon');c.enemyHp=Math.max(0,c.enemyHp-dmg);log.push('命中对手，造成'+dmg+'点伤害。');}
   else log.push(inReach?'攻击未能命中。':'兵器距离不足，攻击落空。');
  }
  if(c.enemyHp<=0){c.ended='victory';log.push('对手失去继续战斗的能力。');}
