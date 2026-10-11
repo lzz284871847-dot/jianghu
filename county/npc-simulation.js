@@ -1,12 +1,12 @@
-import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=4.9.0';
-import {npcHealthDay} from './npc-health.js?v=4.9.0';
-import {makeLife,lifeValid,alive,parentMortality,settleEstates,recoveryFor} from './npc-mortality.js?v=4.9.0';
-import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.9.0';
-import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.9.0';
-import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=4.9.0';
-import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.9.0';
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid,npcRetirementDay} from './npc-economy.js?v=4.9.0';
-import {people,places} from './content.js?v=4.9.0';
+import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=4.10.0';
+import {npcHealthDay} from './npc-health.js?v=4.10.0';
+import {makeLife,lifeValid,alive,parentMortality,settleEstates,recoveryFor} from './npc-mortality.js?v=4.10.0';
+import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.10.0';
+import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.10.0';
+import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=4.10.0';
+import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.10.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid,npcRetirementDay} from './npc-economy.js?v=4.10.0';
+import {people,places} from './content.js?v=4.10.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
@@ -48,12 +48,14 @@ export function tickNPCs(s,day){
   if(p.lastDay>=day)continue;
   if(!alive(p)){p.lastDay=day;continue;}
   if(p.injuryDays>0){p.injuryDays--;p.energy=Math.min(100,p.energy+12);}else p.energy=Math.min(100,p.energy+recoveryFor(p.age));
-  if(p.food>0){p.food--;p.hunger=Math.max(0,p.hunger-12);}
-  else p.hunger=Math.min(100,p.hunger+22);
   // Work and food are settled against real merchant funds and market inventories.
   // A closed or insolvent shop cannot pay wages or sell grain.
   const health=['farmhand01','shopassistant'].includes(p.id)?npcHealthDay(s,p,p.age,day):{resting:false,notes:[]};
   notes.push(...health.notes);
+  if(!alive(p)){p.lastDay=day;continue;}
+  if(p.food>0){p.food--;p.hunger=Math.max(0,p.hunger-12);}
+  else p.hunger=Math.min(100,p.hunger+22);
+
   npcRetirementDay(s,p,p.age,day);
   if(!health.resting&&!p.retirement.active)npcCareerDay(s,p,day);
   familySupport(s,p,day);
