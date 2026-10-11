@@ -1,7 +1,8 @@
+import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=0.3.0';
 import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.2.1';
 import {command} from './commands.js?v=0.2.1';
 import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.2.1';
-import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves} from './engine.js?v=0.2.1';
+import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves,equipmentAction} from './engine.js?v=0.2.1';
 import {date,progress,MAX} from './progression.js?v=0.2.1';
 import {npcPlace} from './world.js?v=0.2.1';
 import {save,load,importSave} from './storage.js?v=0.2.1';
@@ -45,6 +46,15 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  if(!blocked&&['school','oldroad'].includes(s.place)){const foes=s.place==='school'?Object.entries(OPPONENTS):Object.entries(OPPONENTS).filter(([id])=>['brawler','skirmisher','chief'].includes(id));martialBox.append(el('h3','实战挑战 · 可撤退但不保证成功'),el('p','高手有不同战术，战斗可能重伤或死亡；挑战不会自动恢复状态。','muted'));for(const [id,foe] of foes)martialBox.append(button('挑战 · '+foe.name,()=>martialAction(s,'challenge',id),!known[s.martial?.equipped]));}
  $('skills').append(martialBox);
  $('inventory').replaceChildren(...Object.entries(items).filter(([key])=>s.bag[key]>0).map(([key,name])=>el('p',name+'×'+s.bag[key])));if(!$('inventory').children.length)$('inventory').append(el('p','目前没有物品。'));$('use-items').replaceChildren(action('eat','吃干粮','15分钟，精力最多+12、气血最多+5'),action('heal','使用常见药材','15分钟，气血最多+20'));
+ const eq=s.equipment||{owned:{},equipped:{weapon:null,armor:null}},boost=equipmentBonuses(s);
+ $('equipment').replaceChildren(el('p','武器：'+(EQUIPMENT[eq.equipped.weapon]?.name||'空')+' · 护具：'+(EQUIPMENT[eq.equipped.armor]?.name||'空')),el('p','战斗加成：攻击 +'+boost.attack+'，防御 +'+boost.defense,'muted'));
+ for(const [id,item] of Object.entries(EQUIPMENT)){
+  const row=el('article',''),owned=Object.hasOwn(eq.owned,id),active=eq.equipped[item.slot]===id,need=Object.entries(item.materials).map(([k,n])=>items[k]+'×'+n).join('、');
+  row.append(el('p',item.name+' · '+item.tier+'阶 · '+(item.slot==='weapon'?'兵器':'防具')+' · 攻'+item.attack+'/防'+item.defense+(owned?' · 耐久'+eq.owned[id]+'/'+item.durability:'')),el('p','打造：'+need+'，'+item.fee+'文'+(item.tier>=3?' · 铁匠关系'+((item.tier-2)*8):''),'muted'));
+  if(owned){row.append(button(active?'卸下':'穿戴',()=>equipmentAction(s,active?'unequip':'equip',id),!!blocked||(!active&&eq.owned[id]===0)));if(eq.owned[id]<item.durability)row.append(button('修理',()=>equipmentAction(s,'repair',id),!!blocked||s.place!=='workshop'));}
+  else if(s.place==='workshop')row.append(button('打造',()=>equipmentAction(s,'craft',id),!!blocked));
+  $('equipment').append(row);
+ }
  $('market').replaceChildren();const m=markets[s.place];if(m){$('market').append(el('p',`营业${m.open/60}:00–${m.close/60}:00；每笔15分钟 / 精力1，不能完成则整笔取消。`));for(const type of ['buy','sell']){const grid=el('div','','grid');for(const [key,price] of Object.entries(m[type]))grid.append(button((type==='buy'?'买':'卖')+items[key]+' · '+price+'文',()=>trade(s,type,key),!!blocked||(type==='buy'?s.coins<price:s.bag[key]<1)));$('market').append(grid);}}else $('market').append(el('p','到县城街市或柳溪集交易。','muted'));
  $('recipes').replaceChildren();if(s.place==='workshop'){for(const [id,d] of Object.entries(recipes))$('recipes').append(el('p',d.name+'：'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+' → '+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、')),action(id,d.name,`${d.minutes}分钟 / 精力${d.energy}`));}else $('recipes').append(el('p','作坊街可以加工干粮与普通铁料。','muted'));
  $('news').replaceChildren(...(s.news.length?s.news:['尚未跨日；世界新闻将在一天结束后出现。']).map(t=>el('p',t)));const tasks=s.dead?['人生已结束，可导出记录。']:['可到县城或码头做白天短工；也可继续探索。'];if(!s.dead){for(const [key,d] of Object.entries(resources))if(!d.tool||s.bag[d.tool]){const next=d.places.find(place=>s.nodes[place+':'+key].left>0);if(next)tasks.push('可去'+places[next].name+d.name+'，是否参与由你决定。');}if(s.energy<30)tasks.unshift('精力偏低，先歇息或去河湾村借宿。');if(s.hp<50)tasks.unshift('伤势需要恢复，可使用药材或找沈医者。');if(s.bag.ore>=2&&s.bag.wood)tasks.push('原料够用，可去作坊炼制铁料。');} $('tomorrow').replaceChildren(...tasks.map(t=>el('p',t)));$('journal').replaceChildren(...s.journal.map(j=>el('p','第'+j.day+'日：'+j.text)));for(const v of document.querySelectorAll('.view'))v.hidden=v.id!==view;
