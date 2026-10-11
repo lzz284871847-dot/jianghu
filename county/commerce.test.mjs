@@ -71,3 +71,40 @@ test('0.5.0 saves without merchant budgets migrate; invalid bank notes rejected'
  migrated.commerce.budget.market=-1;
  assert.throws(()=>restore(JSON.stringify(migrated)),/商铺库存记录无效/);
 });
+
+test('scarcity raises shop prices while glut discounts them, quotes are bounded',async()=>{
+ const {marketPrice}=await import('./commerce.js');
+ const s=fresh();s.place='market';s.coins=100;
+ assert.equal(marketPrice(s,'market','buy','grain'),2);
+ s.commerce.stock.market.grain=2;
+ assert.equal(marketPrice(s,'market','buy','grain'),3);
+ const funds=s.coins;
+ assert.equal(trade(s,'buy','grain',1),true);
+ assert.equal(s.coins,funds-3);
+ s.commerce.stock.market.grain=27;
+ assert.equal(marketPrice(s,'market','buy','grain'),1);
+ assert.equal(trade(s,'buy','grain',1),true);
+ assert.equal(s.coins,funds-4);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('surplus cuts farmer sale price but failed sales have zero cost',async()=>{
+ const {marketPrice}=await import('./commerce.js');
+ const s=fresh();s.place='market';s.bag.wood=5;s.coins=20;
+ s.commerce.stock.market.wood=25;
+ assert.equal(marketPrice(s,'market','sell','wood'),1);
+ const before=s.coins;
+ assert.equal(trade(s,'sell','wood',1),true);
+ assert.equal(s.coins,before+1);
+ const snapshot={coins:s.coins,wood:s.bag.wood,minute:s.minute};
+ s.commerce.stock.market.wood=30;
+ assert.equal(trade(s,'sell','wood',1),false);
+ assert.deepEqual({coins:s.coins,wood:s.bag.wood,minute:s.minute},snapshot);
+});
+test('failing a scarce purchase never charges more than displayed quote',async()=>{
+ const {marketPrice}=await import('./commerce.js');
+ const s=fresh();s.place='market';s.commerce.stock.market.food=2;s.coins=2;
+ assert.equal(marketPrice(s,'market','buy','food'),6);
+ const before={coins:s.coins,day:s.day,minute:s.minute};
+ assert.equal(trade(s,'buy','food',1),false);
+ assert.deepEqual({coins:s.coins,day:s.day,minute:s.minute},before);
+});
