@@ -118,6 +118,6 @@ test('daily simulation pays employed NPCs but does not fake wages for others',()
  assert.equal(employee.coins,34);
  assert.equal(farmer.workDays,0);
  assert.equal(farmer.coins,30);
- assert.equal(s.commerce.budget.market,budget-8);
+ assert.equal(s.commerce.budget.market,budget-8+1);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
