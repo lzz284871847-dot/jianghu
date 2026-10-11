@@ -747,3 +747,15 @@ test('trusted households speed job seeking without guaranteeing employment',asyn
  assert.equal(p.coins,10);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('injured long-term unemployed NPC seeks real jobs without guaranteed income',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='original';p.level='ordinary';p.unemployedDays=2;p.injuryDays=3;
+ p.coins=10;p.energy=10;p.hunger=90;
+ s.npcWorld.households.dock.trust=50;s.npcWorld.households.dock.hardshipDays=0;
+ npcCareerDay(s,p,2);
+ assert.equal(p.coins,10);
+ assert.ok(p.unemployedDays>=3);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
