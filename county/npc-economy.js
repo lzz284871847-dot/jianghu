@@ -1,8 +1,8 @@
-import {familyOf} from './npc-households.js?v=4.2.0';
-import {bondBetween} from './npc-social.js?v=4.2.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.2.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.2.0';
-import {districtStatus} from './society.js?v=4.2.0';
+import {familyOf} from './npc-households.js?v=4.3.0';
+import {bondBetween} from './npc-social.js?v=4.3.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.3.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.3.0';
+import {districtStatus} from './society.js?v=4.3.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -111,7 +111,7 @@ export function npcApplyShop(s,p,day){
   const bond=s.npcWorld.social.bonds[bondKey];
   if(bond.trust<30||bond.resentment>=70)return false;
  }
- const employees=Object.values(s.npcWorld.individuals).filter(n=>
+ const employees=[...Object.values(s.npcWorld.individuals),...(s.npcWorld.lineage?.children??[]).filter(c=>s.day-c.bornDay>=16*360).map(c=>({...c.livelihood,home:'market'}))].filter(n=>
   n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
   n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
   n.occupation==='craftsman'&&n.id==='smithapprentice'&&shop==='market'

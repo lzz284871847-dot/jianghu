@@ -1,8 +1,10 @@
-import {familyOf} from './npc-households.js?v=4.2.0';
+import {npcCareerDay,npcBuyFood,npcCareer} from './npc-economy.js?v=4.3.0';
+import {familyOf} from './npc-households.js?v=4.3.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
 export const makeLineage=(day=1)=>({lastDay:day,courtshipDay:0,marriedDay:0,conceivedDay:0,children:[]});
+export const makeChildLivelihood=()=>({coins:0,food:0,energy:100,workDays:0,unemployedDays:0,injuryDays:0,occupation:'original',careerSkills:{craft:0,trade:0,carry:0,forage:0},history:[]});
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
 const integer=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 export const childAge=(c,day)=>Math.floor((day-c.bornDay)/360);
@@ -14,12 +16,18 @@ export function lineageValid(s){
  !Array.isArray(l.children)||l.children.length>2)return false;
  if(l.marriedDay&&(!l.courtshipDay||l.marriedDay-l.courtshipDay<30))return false;
  if(l.conceivedDay&&(!l.marriedDay||l.conceivedDay<l.marriedDay+30))return false;
- return l.children.every((c,i)=>obj(c)&&Object.keys(c).length===5&&c.id==='chen-child-'+(i+1)&&
+ return l.children.every((c,i)=>obj(c)&&Object.keys(c).length===6&&childLivelihoodValid(c.livelihood)&&c.id==='chen-child-'+(i+1)&&
  integer(c.bornDay,l.lastDay)&&c.bornDay>=l.marriedDay+300&&l.marriedDay>0&&
  (!i||c.bornDay>=l.children[i-1].bornDay+360)&&integer(c.hunger,100)&&integer(c.learning,500)&&
  integer(c.lastDay,l.lastDay)&&c.lastDay>=c.bornDay)&&
  (!l.conceivedDay||!l.children.length||l.conceivedDay>=l.children.at(-1).bornDay+90)&&
  (!l.conceivedDay||l.children.length<2);
+}
+function childLivelihoodValid(v){
+ return obj(v)&&Object.keys(v).length===9&&integer(v.coins,1000000)&&integer(v.food,100)&&integer(v.energy,100)&&
+ integer(v.workDays,100000)&&integer(v.unemployedDays,100000)&&integer(v.injuryDays,30)&&
+ ['original','carrier','shopworker'].includes(v.occupation)&&obj(v.careerSkills)&&Object.keys(v.careerSkills).length===4&&
+ ['craft','trade','carry','forage'].every(k=>integer(v.careerSkills[k],500))&&Array.isArray(v.history)&&v.history.length<=8&&v.history.every(t=>typeof t==='string'&&t.length<=180);
 }
 const parents=s=>[s.npcWorld.individuals.farmhand01,s.npcWorld.individuals.shopassistant];
 const record=(p,day,text)=>{p.history=['第'+day+'日'+text,...p.history].slice(0,8);};
@@ -27,7 +35,8 @@ function ready(s){
  const ps=parents(s),bond=s.npcWorld.social.bonds[UNION_ID];
  return bond.trust>=70&&bond.resentment<20&&ps.every(p=>p.age>=18&&p.age<=55&&p.hunger<40&&p.injuryDays===0&&p.workDays>=20)&&ps.reduce((n,p)=>n+p.coins,0)>=60;
 }
-function feed(s){
+function feed(s,c){
+ if(c.livelihood.food>0){c.livelihood.food--;return true;}
  for(const p of parents(s))if(p.food>0){p.food--;return true;}
  for(const p of parents(s)){const h=s.npcWorld.households[familyOf(p.id)];if(h.food>0){h.food--;return true;}}
  return false;
@@ -50,16 +59,30 @@ export function lineageDay(s,day){
   if(!l.conceivedDay&&l.children.length<2&&day-l.marriedDay>=30&&(!latest||day-latest.bornDay>=90)&&ready(s)&&ps.reduce((n,p)=>n+p.food,0)>=2){
    l.conceivedDay=day;notes.push('陈二与小莲准备迎接孩子，养育将消耗家中实际口粮。');
   }else if(l.conceivedDay&&day-l.conceivedDay>=270){
-   l.children.push({id:'chen-child-'+(l.children.length+1),bornDay:day,hunger:0,learning:0,lastDay:day});l.conceivedDay=0;
+   l.children.push({livelihood:makeChildLivelihood(),id:'chen-child-'+(l.children.length+1),bornDay:day,hunger:0,learning:0,lastDay:day});l.conceivedDay=0;
    ps.forEach(p=>record(p,day,'孩子出生，开始承担养育责任。'));notes.push('陈二与小莲的孩子出生。');
   }
  }
  for(const c of l.children){
   if(c.lastDay>=day)continue;
-  c.hunger=feed(s)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
-  const age=childAge(c,day),teacher=ps.find(p=>p.energy>=20&&p.hunger<40);
+  const age=childAge(c,day);
+  if(age>=16){
+   const v=c.livelihood;
+   if(v.injuryDays>0){v.injuryDays--;v.energy=Math.min(100,v.energy+12);}else v.energy=Math.min(100,v.energy+25);
+   // The adapter uses the child's persisted purse and skills. No new NPC wallet is minted.
+   const worker={...v,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),home:'market',level:'ordinary',hunger:c.hunger};
+   npcCareerDay(s,worker,day);npcBuyFood(s,worker,day);
+   for(const key of Object.keys(v))v[key]=worker[key];
+   const needy=ps.find(p=>(p.age>=60||p.injuryDays>=2||p.unemployedDays>=4||p.hunger>=55)&&(p.coins<12||p.food===0));
+   if(needy&&c.hunger<40){
+    if(v.food>=2&&needy.food===0){v.food--;needy.food++;record(needy,day,'成年子女分来一份口粮赡养。');}
+    if(v.coins>=15&&needy.coins<12){const aid=Math.min(3,12-needy.coins);v.coins-=aid;needy.coins+=aid;record(needy,day,'成年子女接济'+aid+'文赡养。');}
+   }
+  }
+  c.hunger=feed(s,c)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
+  const teacher=ps.find(p=>p.energy>=20&&p.hunger<40);
   if(age>=6&&age<16&&c.hunger<40&&teacher&&day%3===0){teacher.energy-=2;c.learning=Math.min(500,c.learning+1);}
-  if(age>=16&&childAge(c,c.lastDay)<16)notes.push('陈二与小莲的孩子成年；职业接替尚待后续开放。');
+  if(age>=16&&childAge(c,c.lastDay)<16)notes.push('陈二与小莲的孩子成年，开始自行寻找谋生岗位。');
   c.lastDay=day;
  }
  l.lastDay=day;return notes;
@@ -68,5 +91,5 @@ export function lineageSummary(s){
  const l=s.npcWorld.lineage;
  return [l.marriedDay?'陈二与小莲：夫妻，第'+l.marriedDay+'日结亲。':l.courtshipDay?'陈二与小莲：正在商议成家。':'陈二与小莲：尚未结亲，关系和生计条件仍需积累。',
  ...(l.conceivedDay?['正在孕育孩子，预计第'+(l.conceivedDay+270)+'日出生。']:[]),
- ...l.children.map((c,i)=>'孩子'+(i+1)+' · '+childAge(c,s.day)+'岁 · '+childStage(c,s.day)+' · '+(c.hunger>=60?'缺粮':c.hunger>=40?'口粮不足':'饮食尚稳')+' · 学习积累'+c.learning+'。')];
+ ...l.children.map((c,i)=>'孩子'+(i+1)+' · '+childAge(c,s.day)+'岁 · '+childStage(c,s.day)+' · '+(c.hunger>=60?'缺粮':c.hunger>=40?'口粮不足':'饮食尚稳')+' · 学习积累'+c.learning+(childAge(c,s.day)>=16?' · '+({original:'求职中',carrier:'运输短工',shopworker:'商铺伙计'}[c.livelihood.occupation])+' · '+npcCareer({...c.livelihood,id:c.id}).label+' · 积蓄'+c.livelihood.coins+'文 · 劳动'+c.livelihood.workDays+'日':'')+'。')];
 }
