@@ -257,3 +257,16 @@ test('lasting injuries reduce attack reliability and make escape harder',()=>{
  assert.ok(limping.combat===null);
  assert.doesNotThrow(()=>restore(JSON.stringify(limping)));
 });
+
+test('daily reward history migrates from older martial saves and rejects forged entries',()=>{
+ const old=fresh();delete old.martial.rewardDays;
+ const migrated=restore(JSON.stringify(old));
+ assert.deepEqual(migrated.martial.rewardDays,{});
+ assert.doesNotThrow(()=>restore(JSON.stringify(migrated)));
+ migrated.martial.rewardDays={brawler:migrated.day};
+ assert.doesNotThrow(()=>restore(JSON.stringify(migrated)));
+ migrated.martial.rewardDays={unknown:migrated.day};
+ assert.throws(()=>restore(JSON.stringify(migrated)),/战斗奖励记录无效/);
+ migrated.martial.rewardDays={brawler:migrated.day+1};
+ assert.throws(()=>restore(JSON.stringify(migrated)),/战斗奖励记录无效/);
+});
