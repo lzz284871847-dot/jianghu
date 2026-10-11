@@ -11,7 +11,7 @@ export const harvestFor=(day,weather)=>{
 export function farmDelivery(s,day,weather,max=30){
  const deliveries=harvestFor(day,weather);
  if(!deliveries)return [];
- const messages=[];
+ const messages=weather==='雨'?['连日阴雨使本轮农户收成偏低，粮菜供给减少。']:[];
  for(const [place,goods] of Object.entries(deliveries)){
   const shelf=s.commerce.stock[place];
   for(const [key,n] of Object.entries(goods)){
