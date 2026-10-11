@@ -28,3 +28,11 @@ test('debt reputation applies only once on replay',async()=>{
  applyContractReputation(s,ledger,4);applyContractReputation(s,ledger,4);
  assert.equal(bond.trust,40);assert.equal(bond.resentment,20);
 });
+
+test('older Qinghe saves acquire an empty contract ledger',async()=>{
+ const {fresh,restore}=await import('./engine.js');
+ const old=fresh();delete old.npcWorld.contracts;
+ const loaded=restore(JSON.stringify(old));
+ assert.equal(loaded.npcWorld.contracts.version,1);
+ assert.equal(loaded.npcWorld.contracts.entries.length,0);
+});
