@@ -93,7 +93,10 @@ export function npcApplyShop(s,p,day){
  const shop=p.home==='liuxi'?'liuxi':'market';
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<70)return false;
  const manager=shop==='market'?'merchant':'stallholder',bondKey=bondBetween(s,manager,p.id);
- if(bondKey&&s.npcWorld.social.bonds[bondKey].trust<30)return false;
+ if(bondKey){
+  const bond=s.npcWorld.social.bonds[bondKey];
+  if(bond.trust<30||bond.resentment>=70)return false;
+ }
  const employees=Object.values(s.npcWorld.individuals).filter(n=>
   n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
   n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
