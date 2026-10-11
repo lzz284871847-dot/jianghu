@@ -1,5 +1,6 @@
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.7.0';
-import {people,places} from './content.js?v=1.7.0';
+import {makeHouseholds,householdsValid,familySupport} from './npc-households.js?v=1.8.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.8.0';
+import {people,places} from './content.js?v=1.8.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
@@ -17,10 +18,11 @@ export function makeNPCWorld(day=1){
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
  for(const [id,name,place,role,age] of ordinary)individuals[id]=makePerson(id,name,place,role,age,'ordinary');
  for(const person of Object.values(individuals)){person.lastDay=day;person.age+=Math.floor((day-1)/360);}
- return {individuals,background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
+ return {individuals,households:makeHouseholds(),background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
 }
 export function npcWorldValid(s){
  const root=s.npcWorld;if(!root||typeof root!=='object'||Array.isArray(root)||!bounded(root.lastDay,s.day)||root.lastDay<1||!root.individuals||typeof root.individuals!=='object'||Array.isArray(root.individuals))return false;
+ if(!householdsValid(s))return false;
  const canonical=makeNPCWorld();
  if(Object.keys(root.individuals).length!==Object.keys(canonical.individuals).length)return false;
  for(const [id,p] of Object.entries(root.individuals)){
@@ -42,6 +44,7 @@ export function tickNPCs(s,day){
   // Work and food are settled against real merchant funds and market inventories.
   // A closed or insolvent shop cannot pay wages or sell grain.
   npcCareerDay(s,p,day);
+  familySupport(s,p,day);
   const bought=npcBuyFood(s,p,day);
   if(!bought&&p.hunger>=60&&p.hunger<82)record(p,'第'+day+'日缺粮，决定寻找新的谋生办法。');
   // No fictional workDays gain on days without an actual paid job.

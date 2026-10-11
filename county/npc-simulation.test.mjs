@@ -323,3 +323,44 @@ test('injury records migrate older saves and reject corrupted duration',()=>{
  restored.npcWorld.individuals.dockhand01.injuryDays=-1;
  assert.throws(()=>restore(JSON.stringify(restored)),/NPC人生记录无效/);
 });
+
+test('household food and cash transfers conserve total assets',async()=>{
+ const {familySupport,familyOf,HOUSEHOLD_MEMBERS}=await import('./npc-households.js');
+ const s=fresh(),donor=s.npcWorld.individuals.farmhand01,recipient=s.npcWorld.individuals.farmhand02,h=s.npcWorld.households.chen;
+ assert.equal(familyOf(donor.id),'chen');
+ assert.deepEqual(HOUSEHOLD_MEMBERS.chen,[donor.id,recipient.id]);
+ donor.food=5;donor.coins=60;recipient.food=0;recipient.coins=0;
+ const initialFood=donor.food+recipient.food+h.food,initialCoins=donor.coins+recipient.coins+h.coins;
+ familySupport(s,donor,2);familySupport(s,recipient,2);
+ assert.equal(donor.food+recipient.food+h.food,initialFood);
+ assert.equal(donor.coins+recipient.coins+h.coins,initialCoins);
+ assert.equal(recipient.food,1);
+ assert.ok(h.coins>0);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('family mutual aid has no benefit when household lacks resources',async()=>{
+ const {familySupport}=await import('./npc-households.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand02;
+ p.food=0;p.coins=0;
+ const snapshot=JSON.stringify({p,house:s.npcWorld.households.chen});
+ assert.equal(familySupport(s,p,2),false);
+ assert.equal(JSON.stringify({p,house:s.npcWorld.households.chen}),snapshot);
+});
+test('1.7.0 save migrates zero-value households without altering NPC money',()=>{
+ const s=fresh(),before=s.npcWorld.individuals.farmhand01.coins;
+ delete s.npcWorld.households;
+ const x=restore(JSON.stringify(s));
+ assert.equal(x.npcWorld.households.chen.coins,0);
+ assert.equal(x.npcWorld.households.chen.food,0);
+ assert.equal(x.npcWorld.individuals.farmhand01.coins,before);
+ x.npcWorld.households.chen.food=-1;
+ assert.throws(()=>restore(JSON.stringify(x)),/NPC人生记录无效/);
+});
+test('daily family aid is not multiplied by repeated same-day ticks',()=>{
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01;
+ p.coins=60;p.food=5;s.day=2;
+ tickNPCs(s,2);const snapshot=JSON.stringify(s.npcWorld);
+ tickNPCs(s,2);
+ assert.equal(JSON.stringify(s.npcWorld),snapshot);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
