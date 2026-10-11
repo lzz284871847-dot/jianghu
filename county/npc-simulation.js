@@ -1,4 +1,4 @@
-import {people,places} from './content.js?v=1.0.0';
+import {people,places} from './content.js?v=1.1.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
