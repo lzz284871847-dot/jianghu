@@ -35,6 +35,11 @@ export function socialDay(s,day){
    right.coins-=3;left.coins+=3;b.trust=Math.min(100,b.trust+3);
    event(b,day,right.name+'帮助'+left.name+'3文，友情更深。');
    notes.push(right.name+'救济了困顿的朋友'+left.name+'。');
+  }else if(b.kind==='friend'&&left.coins<=4&&left.hunger>=50&&right.coins>=12&&b.trust<40&&day%3===0){
+   // Low trust has a concrete consequence: help is refused, with no transfer.
+   b.resentment=Math.min(100,b.resentment+1);
+   event(b,day,right.name+'因彼此信任不足，拒绝借钱给'+left.name+'。');
+   notes.push(left.name+'向朋友求助未果。');
   }else if(b.kind==='competitor'&&left.workDays>0&&right.unemployedDays>=3&&day%3===0){
    b.resentment=Math.min(100,b.resentment+2);b.trust=Math.max(0,b.trust-1);
    event(b,day,right.name+'因'+left.name+'较容易获得活计而心生不满。');
