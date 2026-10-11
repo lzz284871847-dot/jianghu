@@ -159,6 +159,6 @@ test('feint breaks a guarding expert stance and opens the next strike',()=>{
  assert.equal(c.enemyStance,'失衡');
  const followup=resolve(c,clever,'strike',()=>0.1);
  assert.equal(followup.enemyHpDelta,-11);
- assert.equal(c.enemyStance,'守势');
+ assert.equal(c.enemyStance,'游走'); // Expert reacts to the follow-up with an evasive feint.
  assert.doesNotThrow(()=>restore(JSON.stringify(clever)));
 });
