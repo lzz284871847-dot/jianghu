@@ -37,3 +37,20 @@ export function autonomousLoans(s,ledger,day){
  if(day%5!==0||!bond||!borrower||!lender||bond.trust<45||borrower.hunger<50||borrower.coins>3||lender.coins<15)return [];
  return openLoan(s,ledger,'shopassistant','farmhand01',5,day+4)?['小莲借给陈二五文钱。']:[];
 }
+
+export function applyContractReputation(s,ledger,day){
+ const bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
+ if(!bond)return [];
+ const notes=[];
+ for(const loan of ledger.entries){
+  if(loan.dueDay!==day||loan.lender!=='shopassistant'||loan.borrower!=='farmhand01')continue;
+  if(loan.status==='defaulted'){
+   bond.trust=Math.max(0,bond.trust-15);
+   bond.resentment=Math.min(100,bond.resentment+20);
+   notes.push('陈二未能还钱，小莲不再轻信。');
+  }else if(loan.status==='repaid'){
+   bond.trust=Math.min(100,bond.trust+4);
+  }
+ }
+ return notes;
+}
