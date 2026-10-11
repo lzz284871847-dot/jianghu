@@ -40,6 +40,10 @@ export function socialDay(s,day){
    b.resentment=Math.min(100,b.resentment+1);
    event(b,day,right.name+'因彼此信任不足，拒绝借钱给'+left.name+'。');
    notes.push(left.name+'向朋友求助未果。');
+  }else if(b.kind==='friend'&&left.hunger<40&&left.coins>=8&&b.resentment>0&&day%7===0){
+   // Reconciliation follows improved circumstances; it does not mint supplies.
+   b.resentment=Math.max(0,b.resentment-1);b.trust=Math.min(100,b.trust+1);
+   event(b,day,left.name+'生活稍有起色，与'+right.name+'的旧日隔阂渐渐缓和。');
   }else if(b.kind==='competitor'&&left.workDays>0&&right.unemployedDays>=3&&day%3===0){
    b.resentment=Math.min(100,b.resentment+2);b.trust=Math.max(0,b.trust-1);
    event(b,day,right.name+'因'+left.name+'较容易获得活计而心生不满。');
@@ -47,8 +51,14 @@ export function socialDay(s,day){
   }else if(b.kind==='employer'&&right.unemployedDays>=3&&day%4===0){
    b.trust=Math.max(0,b.trust-2);b.resentment=Math.min(100,b.resentment+1);
    event(b,day,'连续停工使雇佣关系承压。');
+  }else if(b.kind==='employer'&&right.unemployedDays===0&&b.resentment>0&&day%6===0){
+   b.resentment=Math.max(0,b.resentment-2);b.trust=Math.min(100,b.trust+1);
+   event(b,day,'恢复稳定工作后，雇佣双方逐渐消除旧怨。');
   }else if(b.kind==='mentor'&&right.careerSkills.craft>=20&&b.trust<90&&day%8===0){
-   b.trust++;event(b,day,'学徒技艺进步，师徒信任增加。');
+   const improvement=right.careerSkills.craft>=40?2:1;
+   b.trust=Math.min(100,b.trust+improvement);
+   if(right.careerSkills.craft>=40)b.resentment=Math.max(0,b.resentment-1);
+   event(b,day,'学徒凭已掌握的锻造技艺逐渐重新赢得师傅认可。');
   }
  }
  s.npcWorld.social.lastDay=day;
