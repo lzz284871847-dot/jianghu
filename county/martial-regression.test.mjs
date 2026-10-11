@@ -65,3 +65,16 @@ test('untrained roadside encounter remains playable and saveable',()=>{
  assert.equal(s.combat.hp,28);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('higher martial tiers cannot be purchased without prerequisite practice',()=>{
+ const s=fresh();s.place='school';s.coins=500;
+ assert.equal(martialAction(s,'learn','stone_palm'),false);
+ assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ assert.equal(martialAction(s,'learn','spring_kick'),true);
+ assert.equal(martialAction(s,'learn','stone_palm'),false);
+ s.martial.practice.qinghe_fist=120;s.martial.practice.spring_kick=119;
+ assert.equal(martialAction(s,'learn','stone_palm'),false);
+ s.martial.practice.spring_kick=120;
+ assert.equal(martialAction(s,'learn','stone_palm'),true);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
