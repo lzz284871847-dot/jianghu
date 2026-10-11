@@ -400,3 +400,44 @@ test('1.8.0 household saves migrate relationship fields safely',()=>{
  restored.npcWorld.households.chen.trust=150;
  assert.throws(()=>restore(JSON.stringify(restored)),/NPC人生记录无效/);
 });
+
+test('friend support moves real money, changes trust and records history',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),poor=s.npcWorld.individuals.farmhand01,friend=s.npcWorld.individuals.shopassistant;
+ poor.coins=1;poor.hunger=60;friend.coins=30;s.day=2;
+ const before=poor.coins+friend.coins,trust=s.npcWorld.social.bonds['farmhand01:shopassistant'].trust;
+ const news=socialDay(s,2);
+ assert.equal(poor.coins,4);assert.equal(friend.coins,27);
+ assert.equal(poor.coins+friend.coins,before);
+ assert.equal(s.npcWorld.social.bonds['farmhand01:shopassistant'].trust,trust+3);
+ assert.ok(news.some(n=>n.includes('救济')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('same day social simulation is idempotent and unwilling friend cannot mint aid',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),poor=s.npcWorld.individuals.farmhand01,friend=s.npcWorld.individuals.shopassistant;
+ poor.coins=1;poor.hunger=80;friend.coins=3;s.day=2;
+ socialDay(s,2);const snap=JSON.stringify(s.npcWorld);
+ socialDay(s,2);assert.equal(JSON.stringify(s.npcWorld),snap);
+ assert.equal(poor.coins,1);
+});
+test('competition under unemployment alters personal trust without fake money',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),worker=s.npcWorld.individuals.dockhand01,rival=s.npcWorld.individuals.carter;
+ worker.workDays=2;rival.unemployedDays=4;s.day=3;
+ const coins=worker.coins+rival.coins;
+ socialDay(s,3);
+ const bond=s.npcWorld.social.bonds['dockhand01:carter'];
+ assert.equal(bond.resentment,22);assert.equal(bond.trust,34);
+ assert.equal(worker.coins+rival.coins,coins);
+});
+test('social bonds migrate older saves, reject tampering, and influence recruitment',async()=>{
+ const {npcApplyShop}=await import('./npc-economy.js');
+ const s=fresh();delete s.npcWorld.social;
+ const migrated=restore(JSON.stringify(s));const bond=migrated.npcWorld.social.bonds['merchant:shopassistant'];
+ assert.equal(bond.trust,55);bond.trust=20;
+ const applicant=migrated.npcWorld.individuals.shopassistant;applicant.occupation='carrier';
+ assert.equal(npcApplyShop(migrated,applicant,2),false);
+ bond.trust=101;
+ assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
+});
