@@ -4,7 +4,7 @@ import {advance,random,npcPlace} from './world.js?v=0.2.1';
 import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=0.2.1';
 import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=0.2.1';
 import {injuryValid,treatInjury} from './injury.js?v=0.2.1';
-import {makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=0.3.0';
+import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=0.3.0';
 export const KEY='jianghu-qinghe-county-v1';
 export function fresh(p={}){return {version:'county-1',name:String(p.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(p.age)||18))),gender:p.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(p.background)?p.background:'农家',personality:['谨慎','随和','勤奋'].includes(p.personality)?p.personality:'谨慎',talent:Object.hasOwn(talents,p.talent)?p.talent:'ordinary',day:1,minute:480,place:'county',weather:'晴',coins:30,hp:100,energy:100,dead:false,martial:makeMartial(),equipment:makeEquipment(),injuries:{},injuryRecovery:{},seed:823471,bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},nodes:Object.fromEntries(Object.entries(nodeDefs).map(([k,n])=>[k,{left:n.capacity,refreshDay:3}])),encounterDay:0,pending:null,combat:null,news:[],journal:[],result:['你是初到青河县的普通人。可以找活、认识当地人，也可以自行出门。']};}
 const fail=(s,t)=>{s.result=[t];return false;},sign=n=>(n>=0?'+':'')+n;
@@ -50,7 +50,17 @@ export function martialAction(s,kind,id,rng=()=>random(s)){
  return fail(s,'未知武学行动。');
 }
 export {usableMoves};
-export function equipmentAction(s,kind,id,rng=()=>random(s)){if(!available(s))return false;return equipmentManage(s,kind,id,rng);}
+export function equipmentAction(s,kind,id,rng=()=>random(s)){
+ if(!available(s))return false;
+ const result=equipmentManage(s,kind,id,rng);
+ if(result&&['craft','repair'].includes(kind)&&EQUIPMENT[id]){
+  const work=equipmentWorkCost(EQUIPMENT[id],kind);
+  s.energy-=work.energy;
+  advance(s,work.minutes);
+  s.result.push('作业耗时'+work.minutes+'分钟，精力 -'+work.energy+'。');
+ }
+ return result;
+}
 export function restore(raw){const s=JSON.parse(raw),int=(n,a,b)=>Number.isSafeInteger(n)&&n>=a&&n<=b,obj=x=>x&&typeof x==='object'&&!Array.isArray(x);if(!obj(s)||s.version!=='county-1')throw Error('不是青河县独立存档。');if(typeof s.name!=='string'||!s.name.trim()||s.name.length>12||!int(s.age,16,60)||!['男','女'].includes(s.gender)||!['农家','学徒','小贩'].includes(s.background)||!['谨慎','随和','勤奋'].includes(s.personality)||!Object.hasOwn(talents,s.talent))throw Error('人物资料无效。');for(const [k,a,b] of [['day',1,100000],['minute',0,1439],['hp',0,100],['energy',0,100],['coins',0,10000000],['seed',1,4294967295],['encounterDay',0,s.day]])if(!int(s[k],a,b))throw Error('数值无效。');if(!Object.hasOwn(places,s.place)||!['晴','雨'].includes(s.weather)||typeof s.dead!=='boolean'||s.dead!==(s.hp===0))throw Error('世界状态无效。');for(const key of ['fine_ore','cold_ore','meteor_ore'])if(s.bag&&s.bag[key]===undefined)s.bag[key]=0;for(const [key,d] of Object.entries(nodeDefs))if(s.nodes&&s.nodes[key]===undefined&&['fine_ore','cold_ore','meteor_ore'].includes(d.key))s.nodes[key]={left:d.capacity,refreshDay:s.day%2===1?s.day+2:s.day+1};for(const [map,keys,max] of [[s.bag,Object.keys(items),1000000],[s.skills,Object.keys(skills),MAX],[s.relations,Object.keys(people),100]]){if(!obj(map))throw Error('记录无效。');for(const k of keys)if(!int(map[k],0,max))throw Error('库存或成长无效。');}if(!obj(s.talkDays)||Object.entries(s.talkDays).some(([k,v])=>!Object.hasOwn(people,k)||!int(v,1,s.day)))throw Error('交谈记录无效。');if(!obj(s.nodes)||Object.keys(s.nodes).length!==Object.keys(nodeDefs).length)throw Error('资源点无效。');for(const [k,d] of Object.entries(nodeDefs)){const n=s.nodes[k];if(!obj(n)||!int(n.left,0,d.capacity)||!int(n.refreshDay,s.day+1,s.day+2)||n.refreshDay%2!==1)throw Error('资源记录无效。');}if(s.pending&&!(s.pending.type==='bandit'&&s.place==='oldroad'||s.pending.type==='resource'&&Object.hasOwn(resources,s.pending.key)&&!!s.nodes[s.place+':'+s.pending.key]&&resources[s.pending.key].risk>0))throw Error('选择无效。');if(s.combat){
  if(!obj(s.combat)||!['oldroad','school'].includes(s.place))throw Error('战斗无效。');
  if(Object.hasOwn(s.combat,'hp')){if(!int(s.combat.hp,1,28)||s.place!=='oldroad')throw Error('旧战斗无效。');}
