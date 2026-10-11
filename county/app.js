@@ -1,10 +1,10 @@
-import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.2.0';
-import {command} from './commands.js?v=0.2.0';
-import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.1.0';
-import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves} from './engine.js?v=0.2.0';
-import {date,progress,MAX} from './progression.js?v=0.1.0';
-import {npcPlace} from './world.js?v=0.2.0';
-import {save,load,importSave} from './storage.js?v=0.2.0';
+import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=0.2.1';
+import {command} from './commands.js?v=0.2.1';
+import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=0.2.1';
+import {KEY,fresh,move,act,choose,fight,trade,talk,cost,chance,resourceBlocker,martialAction,usableMoves} from './engine.js?v=0.2.1';
+import {date,progress,MAX} from './progression.js?v=0.2.1';
+import {npcPlace} from './world.js?v=0.2.1';
+import {save,load,importSave} from './storage.js?v=0.2.1';
 const $=id=>document.getElementById(id);let state=null,view='world';
 const el=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;};
 function button(label,fn,disabled=false,preview=''){const b=el('button',label);b.type='button';b.disabled=disabled;b.onclick=()=>{try{fn();persist();render();feedback();if(state.pending||state.combat||state.dead){tab('world');$('scene').scrollIntoView({block:'start'});}}catch(e){$('save-status').textContent='行动未完成：'+e.message;}};if(preview)b.append(el('small',preview));return b;}
@@ -39,10 +39,10 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  for(const [id,art] of Object.entries(MARTIAL_ARTS)){
   const row=el('article','');row.append(el('p',art.name+' · '+art.category+' · 第'+art.tier+'阶'+(known[id]?' · 已学':'')));
   if(known[id]){row.append(button('使用',()=>martialAction(s,'equip',id),!!blocked||s.martial.equipped===id),button('练习 · 精力12',()=>martialAction(s,'train',id),!!blocked||s.energy<12));}
-  else if(['school','village'].includes(s.place))row.append(button('求学 · '+art.tier*8+'文',()=>martialAction(s,'learn',id),!!blocked||s.coins<art.tier*8));
+  else {const teachAt=art.source==='village'?'village':'school';row.append(el('p','授艺地点：'+(teachAt==='village'?'河湾村':'县城武馆')+(art.tier>1?' · 教习信任至少'+(art.tier===2?5:12):''),'muted'));if(s.place===teachAt)row.append(button('求学 · '+art.tier*8+'文',()=>martialAction(s,'learn',id),!!blocked||s.coins<art.tier*8));}
   martialBox.append(row);
  }
- if(!blocked&&['school','oldroad'].includes(s.place))martialBox.append(button('试与普通拳手交手',()=>martialAction(s,'challenge','brawler'),!known[s.martial?.equipped]));
+ if(!blocked&&['school','oldroad'].includes(s.place)){const foes=s.place==='school'?Object.entries(OPPONENTS):Object.entries(OPPONENTS).filter(([id])=>['brawler','skirmisher','chief'].includes(id));martialBox.append(el('h3','实战挑战 · 可撤退但不保证成功'),el('p','高手有不同战术，战斗可能重伤或死亡；挑战不会自动恢复状态。','muted'));for(const [id,foe] of foes)martialBox.append(button('挑战 · '+foe.name,()=>martialAction(s,'challenge',id),!known[s.martial?.equipped]));}
  $('skills').append(martialBox);
  $('inventory').replaceChildren(...Object.entries(items).filter(([key])=>s.bag[key]>0).map(([key,name])=>el('p',name+'×'+s.bag[key])));if(!$('inventory').children.length)$('inventory').append(el('p','目前没有物品。'));$('use-items').replaceChildren(action('eat','吃干粮','15分钟，精力最多+12、气血最多+5'),action('heal','使用常见药材','15分钟，气血最多+20'));
  $('market').replaceChildren();const m=markets[s.place];if(m){$('market').append(el('p',`营业${m.open/60}:00–${m.close/60}:00；每笔15分钟 / 精力1，不能完成则整笔取消。`));for(const type of ['buy','sell']){const grid=el('div','','grid');for(const [key,price] of Object.entries(m[type]))grid.append(button((type==='buy'?'买':'卖')+items[key]+' · '+price+'文',()=>trade(s,type,key),!!blocked||(type==='buy'?s.coins<price:s.bag[key]<1)));$('market').append(grid);}}else $('market').append(el('p','到县城街市或柳溪集交易。','muted'));
@@ -54,6 +54,6 @@ $('create').onsubmit=e=>{e.preventDefault();const p=Object.fromEntries(new FormD
 for(const b of $('tabs').children)b.onclick=()=>tab(b.dataset.tab);$('dismiss').onclick=()=>{$('feedback').hidden=true;};$('save').onclick=()=>{persist();};
 $('new').onclick=()=>{if(!confirm('开始新的人生将替换青河县当前存档。需要时先导出。'))return;try{localStorage.removeItem(KEY);state=null;$('game').hidden=true;$('setup').hidden=false;}catch(e){$('save-status').textContent='无法清除存档：'+e.message;}};
 $('export').onclick=()=>{if(!state)return;const url=URL.createObjectURL(new Blob([JSON.stringify(state)],{type:'application/json'})),a=el('a','');a.href=url;a.download='qinghe-day'+state.day+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>150000)throw Error('存档过大。');const raw=await f.text();const {restore}=await import('./engine.js?v=0.2.0'),candidate=restore(raw);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`))return;state=importSave(raw,state);view='world';render();tab('world');$('save-status').textContent='导入成功。';}catch(err){$('save-status').textContent='导入未完成：'+err.message;}finally{e.target.value='';}};
+$('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>150000)throw Error('存档过大。');const raw=await f.text();const {restore}=await import('./engine.js?v=0.2.1'),candidate=restore(raw);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`))return;state=importSave(raw,state);view='world';render();tab('world');$('save-status').textContent='导入成功。';}catch(err){$('save-status').textContent='导入未完成：'+err.message;}finally{e.target.value='';}};
 try{state=load();if(state){render();tab('world');}}catch(e){$('startup-error').textContent='存档未能读取，原始记录没有被覆盖：'+e.message;}
 if(globalThis.navigator?.serviceWorker)navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{const worker=reg.installing||reg.waiting||reg.active;if(!worker){$('offline').textContent='离线文件尚未就绪。';return;}const status=()=>{$('offline').textContent=worker.state==='activated'?'青河县离线文件已就绪。':worker.state==='redundant'?'离线准备失败，可继续联网玩。':'正在准备青河县离线文件，首次请保持联网。';};worker.addEventListener('statechange',status);status();}).catch(()=>{$('offline').textContent='离线准备失败，可继续联网玩。';});else $('offline').textContent='此浏览器可联网玩，未提供离线缓存。';
