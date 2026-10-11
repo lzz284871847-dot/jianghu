@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fresh,restore,martialAction,act,choose} from './engine.js';
 import {advance} from './world.js';
-import {catalogCheck} from './martial-data.js';
+import {catalogCheck,OPPONENTS} from './martial-data.js';
 import {combatCatalogValid,newCombat,intent,resolve} from './combat-core.js';
 import {moveCatalogValid} from './martial-moves.js';
 
@@ -269,4 +269,13 @@ test('daily reward history migrates from older martial saves and rejects forged 
  assert.throws(()=>restore(JSON.stringify(migrated)),/战斗奖励记录无效/);
  migrated.martial.rewardDays={brawler:migrated.day+1};
  assert.throws(()=>restore(JSON.stringify(migrated)),/战斗奖励记录无效/);
+});
+
+test('all twelve opponents are accessible and survive save/load',()=>{
+ for(const opponent of Object.keys(OPPONENTS)){
+  const s=fresh();s.place='school';
+  assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+  assert.equal(martialAction(s,'challenge',opponent),true,opponent);
+  assert.equal(restore(JSON.stringify(s)).combat.opponent,opponent);
+ }
 });
