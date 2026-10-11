@@ -1,9 +1,10 @@
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.18.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.18.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.18.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.18.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.18.0';
-import {familyOf} from './npc-households.js?v=4.18.0';
+import {travelBusy} from './npc-journeys.js?v=4.19.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.19.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.19.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.19.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.19.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.19.0';
+import {familyOf} from './npc-households.js?v=4.19.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -37,19 +38,20 @@ const parents=s=>[s.npcWorld.individuals.farmhand01,s.npcWorld.individuals.shopa
 const record=(p,day,text)=>{p.history=['第'+day+'日'+text,...p.history].slice(0,8);};
 function ready(s){
  const ps=parents(s),bond=s.npcWorld.social.bonds[UNION_ID];
- return ps.length===2&&bond.trust>=70&&bond.resentment<20&&ps.every(p=>p.age>=18&&p.age<=55&&p.hunger<40&&p.injuryDays===0&&p.workDays>=20)&&ps.reduce((n,p)=>n+p.coins,0)>=60;
+ return ps.length===2&&bond.trust>=70&&bond.resentment<20&&ps.every(p=>!travelBusy(s,p.id)&&p.age>=18&&p.age<=55&&p.hunger<40&&p.injuryDays===0&&p.workDays>=20)&&ps.reduce((n,p)=>n+p.coins,0)>=60;
 }
 function feed(s,c){
  if(c.livelihood.food>0){c.livelihood.food--;return true;}
- for(const p of parents(s))if(p.food>0){p.food--;return true;}
- for(const id of ['farmhand01','shopassistant']){const h=s.npcWorld.households[familyOf(id)];if(h.food>0){h.food--;return true;}}
+ if(travelBusy(s,c.id))return false;
+ for(const p of parents(s))if(!travelBusy(s,p.id)&&p.food>0){p.food--;return true;}
+ for(const id of ['farmhand01','shopassistant']){const h=s.npcWorld.households[familyOf(id)];if(!travelBusy(s,id)&&h.food>0){h.food--;return true;}}
  return false;
 }
 export function lineageDay(s,day){
  const l=s.npcWorld.lineage;if(l.lastDay>=day)return [];
  const ps=parents(s),bond=s.npcWorld.social.bonds[UNION_ID],notes=[];
  // Existing friendship slowly deepens when both lives are stable; hunger cannot buy intimacy.
- if(!l.marriedDay&&day%7===0&&bond.resentment<20&&ps.length===2&&ps.every(p=>p.hunger<40&&p.workDays>0))bond.trust=Math.min(100,bond.trust+1);
+ if(!l.marriedDay&&day%7===0&&bond.resentment<20&&ps.length===2&&ps.every(p=>!travelBusy(s,p.id)&&p.hunger<40&&p.workDays>0))bond.trust=Math.min(100,bond.trust+1);
  if(!l.marriedDay){
   if(!ready(s))l.courtshipDay=0;
   else if(!l.courtshipDay){l.courtshipDay=day;ps.forEach(p=>record(p,day,'开始与'+ps.find(x=>x!==p).name+'商议成家。'));}
@@ -59,7 +61,7 @@ export function lineageDay(s,day){
  if(l.marriedDay){
   // Spousal aid is a transfer between existing balances, once per simulated day.
   const needy=ps.find(p=>p.food===0&&p.hunger>=40),donor=ps.find(p=>p!==needy&&p.food>=2);
-  if(needy&&donor){donor.food--;needy.food++;record(needy,day,'得到配偶分来的一份口粮。');}
+  if(needy&&donor&&!travelBusy(s,needy.id)&&!travelBusy(s,donor.id)){donor.food--;needy.food++;record(needy,day,'得到配偶分来的一份口粮。');}
   const latest=l.children.at(-1);
   if(!l.conceivedDay&&l.children.length<2&&day-l.marriedDay>=30&&(!latest||day-latest.bornDay>=90)&&ready(s)&&ps.reduce((n,p)=>n+p.food,0)>=2){
    l.conceivedDay=day;notes.push('陈二与小莲准备迎接孩子，养育将消耗家中实际口粮。');
@@ -83,7 +85,7 @@ export function lineageDay(s,day){
    npcRetirementDay(s,retiree,age,day);
    for(const key of Object.keys(v))v[key]=retiree[key];
    // One available family farm position, released by the father's death. No copied skill.
-   if(!health.resting&&!v.retirement.active&&!alive(s.npcWorld.individuals.farmhand01)&&c.learning>=20&&v.occupation==='original'&&!l.children.some(x=>x!==c&&alive(x)&&!x.livelihood.retirement.active&&x.livelihood.occupation==='farmer')){
+   if(!travelBusy(s,c.id)&&!health.resting&&!v.retirement.active&&!alive(s.npcWorld.individuals.farmhand01)&&c.learning>=20&&v.occupation==='original'&&!l.children.some(x=>x!==c&&alive(x)&&!x.livelihood.retirement.active&&x.livelihood.occupation==='farmer')){
     v.occupation='farmer';v.unemployedDays=0;
     v.history=['第'+day+'日接手父亲留下的农事岗位，从自己的采收经验开始。',...v.history].slice(0,8);
     notes.push('陈家孩子'+(l.children.indexOf(c)+1)+'接手家中农事，能否收成与出售仍有风险。');
@@ -91,18 +93,18 @@ export function lineageDay(s,day){
    if(v.injuryDays>0){v.injuryDays--;v.energy=Math.min(100,v.energy+12);}else v.energy=Math.min(100,v.energy+recoveryFor(age));
    // The adapter uses the child's persisted purse and skills. No new NPC wallet is minted.
    const worker={...v,life:c.life,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),home:'market',level:'ordinary',hunger:c.hunger};
-   if(!health.resting&&!v.retirement.active)npcCareerDay(s,worker,day);npcBuyFood(s,worker,day);
+   if(!travelBusy(s,c.id)){if(!health.resting&&!v.retirement.active)npcCareerDay(s,worker,day);npcBuyFood(s,worker,day);}
    ambitionDay(s,worker,day,npcApplyShop);
    npcStudyDay(s,worker,age,day);
    for(const key of Object.keys(v))v[key]=worker[key];
-   const needy=ps.find(p=>(p.age>=60||p.injuryDays>=2||p.unemployedDays>=4||p.hunger>=55)&&(p.coins<12||p.food===0));
-   if(needy&&c.hunger<40){
+   const needy=ps.find(p=>!travelBusy(s,p.id)&&(p.age>=60||p.injuryDays>=2||p.unemployedDays>=4||p.hunger>=55)&&(p.coins<12||p.food===0));
+   if(!travelBusy(s,c.id)&&needy&&c.hunger<40){
     if(v.food>=2&&needy.food===0){v.food--;needy.food++;record(needy,day,'成年子女分来一份口粮赡养。');}
     if(v.coins>=15&&needy.coins<12){const aid=Math.min(3,12-needy.coins);v.coins-=aid;needy.coins+=aid;record(needy,day,'成年子女接济'+aid+'文赡养。');}
    }
   }
   c.hunger=feed(s,c)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
-  const teacher=ps.find(p=>!p.life.sickDays&&p.life.restDay!==day&&p.energy>=20&&p.hunger<40);
+  const teacher=ps.find(p=>!travelBusy(s,p.id)&&!p.life.sickDays&&p.life.restDay!==day&&p.energy>=20&&p.hunger<40);
   if(!health.resting&&age>=6&&age<16&&c.hunger<40&&teacher&&day%3===0){teacher.energy-=2;c.learning=Math.min(500,c.learning+1);}
   if(age>=16&&childAge(c,c.lastDay)<16)notes.push('陈二与小莲的孩子成年，开始自行寻找谋生岗位。');
   c.lastDay=day;

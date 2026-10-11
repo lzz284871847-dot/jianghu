@@ -1,8 +1,9 @@
-import {schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.18.0';
-import {alive} from './npc-mortality.js?v=4.18.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=4.18.0';
-import {canLearn,learn,train} from './martial-progression.js?v=4.18.0';
-import {people} from './content.js?v=4.18.0';
+import {travelBusy} from './npc-journeys.js?v=4.19.0';
+import {schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.19.0';
+import {alive} from './npc-mortality.js?v=4.19.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=4.19.0';
+import {canLearn,learn,train} from './martial-progression.js?v=4.19.0';
+import {people} from './content.js?v=4.19.0';
 export const NPC_ART='qinghe_fist';
 export const makeMentor=()=>({joinedDay:0,endedDay:0,lastAidDay:0,aidCount:0});
 export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day,otherArts:{},teacherTrust:0,experience:0,mastery:0,lastSparDay:0,mentor:makeMentor()});
@@ -35,8 +36,8 @@ function mentorshipDay(s,p,age,day){
 }
 export function npcStudyDay(s,p,age,day){
  const v=p.study;if(!alive(p)||v.lastDay>=day)return false;v.lastDay=day;
- if(mentorshipDay(s,p,age,day))return true;
- if(p.id==='master'||age<16||p.hunger>=40||p.injuryDays||p.life?.sickDays||p.life?.restDay===day||p.energy<30)return false;
+ if(!travelBusy(s,p.id)&&mentorshipDay(s,p,age,day))return true;
+ if(travelBusy(s,p.id)||p.id==='master'||age<16||p.hunger>=40||p.injuryDays||p.life?.sickDays||p.life?.restDay===day||p.energy<30)return false;
  const known=arts(v),adapter={place:'school',hp:100,coins:p.coins,energy:p.energy,relations:{master:v.teacherTrust},martial:{known:Object.fromEntries(known.map(([id])=>[id,true])),equipped:NPC_ART,practice:Object.fromEntries(known.map(([id,a])=>[id,a.practice])),insight:Object.fromEntries(known.map(([id,a])=>[id,a.insight])),experience:{},mastery:{}}};
  // Only actual paid lessons build trust. Higher tiers reuse the player's two-art prerequisite.
  if(!v.learnedDay||v.practice>=120){
