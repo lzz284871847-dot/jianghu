@@ -19,7 +19,7 @@ test('residents consume their own food and change state when world advances',()=
  const start={food:p.food,workDays:p.workDays,coins:p.coins};
  advance(s,1440-s.minute);
  assert.equal(s.day,2);assert.equal(p.food,start.food-1);
- assert.equal(p.workDays,start.workDays+1);
+ assert.equal(p.workDays,start.workDays);
  assert.equal(p.lastDay,2);
  assert.equal(p.coins,start.coins);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
@@ -71,5 +71,53 @@ test('significant hardship promotes an ordinary resident without replacing their
  assert.equal(p.id,id);assert.equal(p.name,name);
  assert.equal(p.level,'detailed');
  assert.ok(p.history.some(x=>x.includes('重要人物跟踪')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('paid NPC labor transfers money from the employer instead of creating it',async()=>{
+ const {npcWork}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ const initial={p:p.coins,b:s.commerce.budget.market,total:p.coins+s.commerce.budget.market};
+ assert.equal(npcWork(s,p,2),true);
+ assert.equal(p.coins,initial.p+4);
+ assert.equal(s.commerce.budget.market,initial.b-4);
+ assert.equal(p.coins+s.commerce.budget.market,initial.total);
+ assert.equal(p.workDays,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('NPC grain purchase transfers exact dynamic price and one stocked unit',async()=>{
+ const {npcBuyFood}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ p.food=0;s.commerce.stock.market.grain=2;
+ const before={npc:p.coins,shop:s.commerce.budget.market,grain:s.commerce.stock.market.grain};
+ assert.equal(npcBuyFood(s,p,2),true);
+ assert.equal(p.coins,before.npc-3);
+ assert.equal(s.commerce.budget.market,before.shop+3);
+ assert.equal(s.commerce.stock.market.grain,before.grain-1);
+ assert.equal(p.food,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('shop closure, employer poverty and out-of-stock block NPC economic actions',async()=>{
+ const {npcWork,npcBuyFood}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ p.food=0;s.society.districts.market.closedUntil=1;
+ const previous={coins:p.coins,budget:s.commerce.budget.market,stock:s.commerce.stock.market.grain};
+ assert.equal(npcWork(s,p,1),false);assert.equal(npcBuyFood(s,p,1),false);
+ assert.deepEqual({coins:p.coins,budget:s.commerce.budget.market,stock:s.commerce.stock.market.grain},previous);
+ s.society.districts.market.closedUntil=0;s.commerce.budget.market=0;
+ assert.equal(npcWork(s,p,1),false);
+ s.commerce.stock.market.grain=0;
+ assert.equal(npcBuyFood(s,p,1),false);
+ assert.equal(p.food,0);
+});
+test('daily simulation pays employed NPCs but does not fake wages for others',()=>{
+ const s=fresh(),employee=s.npcWorld.individuals.shopassistant,farmer=s.npcWorld.individuals.farmhand01;
+ const budget=s.commerce.budget.market;
+ advance(s,1440-s.minute);
+ assert.equal(employee.workDays,1);
+ assert.equal(employee.coins,34);
+ assert.equal(farmer.workDays,0);
+ assert.equal(farmer.coins,30);
+ assert.equal(s.commerce.budget.market,budget-8);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
