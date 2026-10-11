@@ -1,12 +1,12 @@
-import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=4.11.0';
-import {npcHealthDay} from './npc-health.js?v=4.11.0';
-import {makeLife,lifeValid,alive,parentMortality,settleEstates,recoveryFor} from './npc-mortality.js?v=4.11.0';
-import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.11.0';
-import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.11.0';
-import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=4.11.0';
-import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.11.0';
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid,npcRetirementDay} from './npc-economy.js?v=4.11.0';
-import {people,places} from './content.js?v=4.11.0';
+import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=4.12.0';
+import {npcHealthDay} from './npc-health.js?v=4.12.0';
+import {makeLife,lifeValid,alive,parentMortality,settleEstates,recoveryFor} from './npc-mortality.js?v=4.12.0';
+import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.12.0';
+import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.12.0';
+import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=4.12.0';
+import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.12.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid,npcRetirementDay} from './npc-economy.js?v=4.12.0';
+import {people,places} from './content.js?v=4.12.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
