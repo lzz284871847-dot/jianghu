@@ -1,10 +1,10 @@
-import {travelBusy} from './npc-journeys.js?v=4.23.0';
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.23.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.23.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.23.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.23.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.23.0';
-import {familyOf} from './npc-households.js?v=4.23.0';
+import {travelBusy} from './npc-journeys.js?v=4.24.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.24.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.24.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.24.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.24.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.24.0';
+import {familyOf} from './npc-households.js?v=4.24.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -47,6 +47,17 @@ function feed(s,c){
  for(const id of ['farmhand01','shopassistant']){const h=s.npcWorld.households[familyOf(id)];if(!travelBusy(s,id)&&h.food>0){h.food--;return true;}}
  return false;
 }
+// Orphan support moves existing balances before health bills and the daily meal.
+function siblingCare(s,c,day){
+ if(childAge(c,day)>=16||parents(s).length||travelBusy(s,c.id))return;
+ const donor=s.npcWorld.lineage.children.find(x=>x!==c&&alive(x)&&childAge(x,day)>=16&&!travelBusy(s,x.id)&&x.hunger<40&&!x.life.sickDays&&x.life.restDay!==day&&!x.livelihood.injuryDays&&x.livelihood.energy>=20);
+ if(!donor)return;
+ const from=donor.livelihood,to=c.livelihood,aid=[];
+ const reserve=['farmhand01','shopassistant'].some(id=>!travelBusy(s,id)&&s.npcWorld.households[familyOf(id)].food>0);
+ if(!to.food&&!reserve&&from.food>=2){from.food--;to.food++;aid.push('口粮1份');}
+ if(c.life.sickDays&&to.coins<8&&from.coins>=20){const fee=8-to.coins;from.coins-=fee;to.coins+=fee;aid.push('诊金'+fee+'文');}
+ if(aid.length){const name='陈家孩子'+(s.npcWorld.lineage.children.indexOf(c)+1);record(from,day,'父母俱亡后分出'+aid.join('、')+'扶养'+name+'。');record(to,day,'得到成年兄姐分来的'+aid.join('、')+'，用于生活与就医。');}
+}
 export function lineageDay(s,day){
  const l=s.npcWorld.lineage;if(l.lastDay>=day)return [];
  const ps=parents(s),bond=s.npcWorld.social.bonds[UNION_ID],notes=[];
@@ -75,6 +86,7 @@ export function lineageDay(s,day){
   if(!alive(c)){c.lastDay=day;continue;}
   const age=childAge(c,day);
   if(mortality(c,age,c.hunger,day)){c.lastDay=day;notes.push('陈家孩子'+(l.children.indexOf(c)+1)+'去世，停止谋生，钱粮转交在世家人。');continue;}
+  siblingCare(s,c,day);
   const v=c.livelihood;
   const patient={...v,life:c.life,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),hunger:c.hunger};
   const health=npcHealthDay(s,patient,age,day,ps);notes.push(...health.notes);
