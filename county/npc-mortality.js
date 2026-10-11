@@ -1,6 +1,7 @@
-import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.15.0';
-import {districtStatus} from './society.js?v=4.15.0';
-// First mortality batch covers the established Chen/Xiao-Lian family only.
+import {HOUSEHOLD_MEMBERS,familyOf} from './npc-households.js?v=4.16.0';
+import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.16.0';
+import {districtStatus} from './society.js?v=4.16.0';
+// The Chen family retains its spouse/child succession; all other named NPCs age daily.
 export const TRACKED_PARENTS=['farmhand01','shopassistant'];
 export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0,sickDays:0,healthDay:0,restDay:0,illnessDays:0,careDays:0});
 export const alive=p=>!p?.life?.deathDay;
@@ -18,11 +19,11 @@ export function mortality(p,age,hunger,day){
 }
 export function parentMortality(s,day){
  const notes=[];
- for(const id of TRACKED_PARENTS){const p=s.npcWorld.individuals[id];
+ for(const p of Object.values(s.npcWorld.individuals)){
   if(p.lastDay>=day||!alive(p))continue;
   if(mortality(p,p.age,p.hunger,day)){
    p.history=['第'+day+'日因'+(p.life.illnessDays===30?'重病未能治愈':p.life.starvationDays===30?'长期断粮':'衰老')+'去世，留下真实的钱粮与经历。',...p.history].slice(0,8);
-   notes.push(p.name+'去世，停止劳作，遗留钱粮将在清算借款后交给家人。');
+   notes.push(p.name+'去世，停止劳作；钱粮在清算借款后转交已有在世家人，无继承人的遗物保留。');
   }
  }
  return notes;
@@ -54,5 +55,14 @@ export function settleEstates(s){
   const heirs=[...spouse,...children.filter(alive).map(c=>c.livelihood)];
   transfer(p,heirs);if(p.id==='farmhand01')liquidate(p,p.life,heirs);transfer(p,heirs);
  }
+ for(const p of Object.values(s.npcWorld.individuals).filter(p=>!alive(p)&&!TRACKED_PARENTS.includes(p.id))){
+  const family=familyOf(p.id),heirs=family?HOUSEHOLD_MEMBERS[family].filter(id=>id!==p.id).map(id=>s.npcWorld.individuals[id]).filter(alive):[];
+  transfer(p,heirs);
+ }
  for(const c of children.filter(c=>!alive(c))){const heirs=[...parents.filter(alive),...children.filter(alive).map(x=>x.livelihood)];transfer(c.livelihood,heirs);liquidate(c.livelihood,c.life,heirs);transfer(c.livelihood,heirs);}
+}
+
+export function mortalitySummary(s){
+ const people=Object.values(s.npcWorld.individuals).filter(p=>p.age>=65||!alive(p));
+ return people.length?people.map(p=>p.name+' · '+p.age+'岁 · '+(alive(p)?'在世，衰弱'+p.life.frailty+'/100':'第'+p.life.deathDay+'日去世；未转交遗物'+p.coins+'文、'+p.food+'份口粮、'+p.cargo+'份待售产物')):['目前没有年满65岁的具名居民或死亡记录。'];
 }
