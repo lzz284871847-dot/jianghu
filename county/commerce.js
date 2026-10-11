@@ -1,5 +1,5 @@
-import {farmDelivery} from './agriculture.js?v=0.7.0';
-import {markets} from './content.js?v=0.7.0';
+import {farmDelivery} from './agriculture.js?v=0.8.0';
+import {markets} from './content.js?v=0.8.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
@@ -12,6 +12,23 @@ export function commerceValid(s){
 }
 export function budgetAt(s,place){return ensureCommerce(s).budget[place]??0;}
 export function stockAt(s,place,key){return ensureCommerce(s).stock[place]?.[key]??0;}
+// Only staple goods get stock-sensitive prices in this first market cycle.
+// Prices are recalculated before a transaction, preventing stale UI quotes.
+const PRICE_GOODS=new Set(['food','grain','herb','wood','vegetable']);
+export function marketPrice(s,place,type,key){
+ const base=markets[place]?.[type]?.[key];
+ if(base===undefined)return null;
+ if(!PRICE_GOODS.has(key))return base;
+ const quantity=stockAt(s,place,key);
+ if(type==='buy'){
+  if(quantity<=3)return Math.max(1,Math.ceil(base*1.5));
+  if(quantity>=24)return Math.max(1,Math.floor(base*.85));
+  return base;
+ }
+ if(quantity>=24)return Math.max(1,Math.floor(base*.7));
+ if(quantity<=2)return Math.max(1,Math.ceil(base*1.15));
+ return base;
+}
 export function transactionStock(s,type,key,n,price=0){
  const c=ensureCommerce(s),shelf=c.stock[s.place];
  if(type==='buy'&&shelf[key]<n)return '商铺存货不足，本笔不成交。';
@@ -40,7 +57,7 @@ export function dailyCommerce(s){
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+(place==='market'?24:18));
    }
   }
-  messages.push(...farmDelivery(s,day,s.weather,MARKET_LIMIT));
+  const deliveryNews=farmDelivery(s,day,s.weather,MARKET_LIMIT);if(deliveryNews.length)messages.push(deliveryNews.join(' '));
   if(day%2===1)messages.push('县城和柳溪的商贩补充了一批日常货物；居民也会自行购买粮药。');
  }
  commerce.lastDay=s.day;
