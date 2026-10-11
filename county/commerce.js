@@ -1,4 +1,4 @@
-import {markets} from './content.js?v=0.5.0';
+import {markets} from './content.js?v=0.6.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
