@@ -1,6 +1,7 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=4.30.1';
-import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=4.30.1';
-import {useMove,usableMoves} from './martial-moves.js?v=4.30.1';
+import {recordAdventureVictory} from './adventures.js?v=5.0.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.0.0';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.0.0';
+import {useMove,usableMoves} from './martial-moves.js?v=5.0.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
@@ -13,6 +14,7 @@ export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s
 // Victory grants limited insight, not free equipment or money. Flight and death grant no victory reward.
 function stopPractice(s,c,log){if(c.practice&&!c.ended&&(s.hp<=40||c.enemyHp<=40||c.round>=12||s.energy<3)){c.ended='practice';log.push('达到收手线或本轮练习上限，陪练停止。');}}
 function finalizeCombat(s,c,log){
+ recordAdventureVictory(s,c);
  if(c.practice){log.push('陪练结束，保留实际耗费和招式积累，不发实战胜利领悟、钱物或装备。');return;}
  if(c.ended==='victory'){
   const narrow=s.hp<=30;
