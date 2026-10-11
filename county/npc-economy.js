@@ -85,7 +85,7 @@ export function npcCareerDay(s,p,day){
  }
  if(p.workDays>before){p.unemployedDays=0;return true;}
  p.unemployedDays=Math.min(100000,p.unemployedDays+1);
- if(p.occupation==='original'&&p.unemployedDays>=3&&p.coins<=35&&p.energy>=22){
+ if(p.occupation==='original'&&p.level==='ordinary'&&p.unemployedDays>=3&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
  }
