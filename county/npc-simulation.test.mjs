@@ -861,3 +861,16 @@ test('injured unemployed worker waits for recovery before changing to carrier',a
  assert.equal(p.occupation,'carrier');
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('injured worker searches for a real shop vacancy sooner without minting wages',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='original';p.level='ordinary';p.injuryDays=2;p.unemployedDays=1;
+ p.hunger=0;p.energy=70;p.coins=10;
+ const budget=s.commerce.budget.market,coins=p.coins;
+ npcCareerDay(s,p,1);
+ assert.equal(p.occupation,'shopworker');
+ assert.equal(p.coins,coins);
+ assert.equal(s.commerce.budget.market,budget);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
