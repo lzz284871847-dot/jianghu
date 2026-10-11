@@ -707,3 +707,17 @@ test('voluntary household contributions improve trust without minting goods',asy
  assert.ok(p.history.some(x=>x.includes('贡献')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('high household trust unlocks earlier aid from actual savings',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),h=s.npcWorld.households.chen;
+ const needy=s.npcWorld.individuals.farmhand01,donor=s.npcWorld.individuals.farmhand02;
+ needy.injuryDays=3;needy.food=1;needy.coins=1;donor.food=1;donor.coins=10;
+ h.coins=0;h.trust=70;
+ const total=needy.coins+donor.coins+h.coins;
+ familyResponsibility(s,2);
+ assert.equal(needy.coins,4);assert.equal(donor.coins,7);
+ assert.equal(needy.coins+donor.coins+h.coins,total);
+ assert.ok(needy.history.some(x=>x.includes('帮助3文')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
