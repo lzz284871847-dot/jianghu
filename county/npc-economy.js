@@ -76,9 +76,10 @@ export function npcSellProduce(s,p,day){
 }
 export function npcTransport(s,p,day){
  const shop=TRANSPORTERS[p.id];
- if(!shop||p.injuryDays>0||p.energy<22||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
+ const effort=p.careerSkills.carry>=20?20:22;
+ if(!shop||p.injuryDays>0||p.energy<effort||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
  // Merchant pays documented carriage charges; no cargo is conjured into existence.
- const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=22;p.workDays++;train(p,'carry');
+ const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
  if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日替商户搬运现有货物，领到'+pay+'文运费。');
  return true;
