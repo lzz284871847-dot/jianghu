@@ -22,5 +22,11 @@ jobs:
         run: node --test county/npc-contracts.test.mjs
       - name: All county tests
         run: node --test county/*.test.mjs
+      - name: Legacy and foundation test group
+        continue-on-error: true
+        run: node --test tests/[!r]*.test.js
+      - name: Rebuild test group
+        continue-on-error: true
+        run: node --test tests/rebuild*.test.js
       - name: Full repository tests
         run: npm test
