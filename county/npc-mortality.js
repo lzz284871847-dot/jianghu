@@ -1,19 +1,19 @@
-import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.9.0';
-import {districtStatus} from './society.js?v=4.9.0';
+import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.10.0';
+import {districtStatus} from './society.js?v=4.10.0';
 // First mortality batch covers the established Chen/Xiao-Lian family only.
 export const TRACKED_PARENTS=['farmhand01','shopassistant'];
-export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0,sickDays:0,healthDay:0,restDay:0});
+export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0,sickDays:0,healthDay:0,restDay:0,illnessDays:0,careDays:0});
 export const alive=p=>!p?.life?.deathDay;
-export const lifeValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===7&&
- [['frailty',100],['starvationDays',30],['deathDay',day],['estateDay',day],['sickDays',6],['healthDay',day],['restDay',day]].every(([k,max])=>Number.isSafeInteger(v[k])&&v[k]>=0&&v[k]<=max)&&
- (v.restDay<=v.healthDay)&&(!v.deathDay||v.frailty===100||v.starvationDays===30)&&(!v.estateDay||v.deathDay>0&&v.estateDay>=v.deathDay);
+export const lifeValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===9&&
+ [['frailty',100],['starvationDays',30],['deathDay',day],['estateDay',day],['sickDays',6],['healthDay',day],['restDay',day],['illnessDays',30],['careDays',2]].every(([k,max])=>Number.isSafeInteger(v[k])&&v[k]>=0&&v[k]<=max)&&
+ (v.restDay<=v.healthDay)&&(v.illnessDays>0?v.sickDays>0:v.careDays===0)&&(!v.deathDay||v.frailty===100||v.starvationDays===30||v.illnessDays===30)&&(!v.estateDay||v.deathDay>0&&v.estateDay>=v.deathDay);
 export const recoveryFor=(age,injured=false)=>injured?12:age>=75?12:age>=65?18:25;
 export function mortality(p,age,hunger,day){
  const v=p.life;if(!alive(p))return false;
  v.starvationDays=hunger>=100?Math.min(30,v.starvationDays+1):0;
  const period=age>=75?10:30;
  if(age>=65&&day%period===0)v.frailty=Math.min(100,v.frailty+1);
- if(v.frailty<100&&v.starvationDays<30)return false;
+ if(v.frailty<100&&v.starvationDays<30&&v.illnessDays<30)return false;
  v.deathDay=day;return true;
 }
 export function parentMortality(s,day){
@@ -21,7 +21,7 @@ export function parentMortality(s,day){
  for(const id of TRACKED_PARENTS){const p=s.npcWorld.individuals[id];
   if(p.lastDay>=day||!alive(p))continue;
   if(mortality(p,p.age,p.hunger,day)){
-   p.history=['第'+day+'日因'+(p.life.starvationDays===30?'长期断粮':'衰老')+'去世，留下真实的钱粮与经历。',...p.history].slice(0,8);
+   p.history=['第'+day+'日因'+(p.life.illnessDays===30?'重病未能治愈':p.life.starvationDays===30?'长期断粮':'衰老')+'去世，留下真实的钱粮与经历。',...p.history].slice(0,8);
    notes.push(p.name+'去世，停止劳作，遗留钱粮将在清算借款后交给家人。');
   }
  }
