@@ -169,7 +169,9 @@ export function npcCareerDay(s,p,day){
   remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
   return false;
  }
- const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<5;});
+ // Repeated failure in carriage work makes a worker more reluctant to switch back; family hardship can override some hesitation.
+ const reconsiderDays=familyHardship>=5?3:Math.min(9,5+p.history.filter(x=>/搬运短工长期无着/.test(x)).length*2);
+ const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<reconsiderDays;});
  // Recent injury makes a recovered worker hesitate before returning to heavy carriage work.
  // Severe household hardship shortens (but never erases) the caution after a carriage injury.
  const injuryCautionDays=familyHardship>=5?3:7;
