@@ -12,7 +12,9 @@ export const POSITIONS=Object.freeze({
 const remember=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 const train=(p,key,amount=1)=>{p.careerSkills[key]=Math.min(500,p.careerSkills[key]+amount);};
 export function npcWork(s,p,day){
- const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];if(!pos||p.injuryDays>0||p.energy<20||p.hunger>=80)return false;
+ const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];
+ const effort=p.careerSkills.trade>=20?13:15;
+ if(!pos||p.injuryDays>0||p.energy<Math.max(20,effort)||p.hunger>=80)return false;
  const shop=pos.market,craft=p.id==='smithapprentice'&&p.occupation==='craftsman';
  const pay=craft?6:pos.pay;
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<pay+25)return false;
@@ -30,7 +32,7 @@ export function npcWork(s,p,day){
  }
  // An employer spends its own cash, so no money is created by this action.
  s.commerce.budget[shop]-=pay;p.coins+=pay;
- p.workDays++;p.energy=Math.max(0,p.energy-15);
+ p.workDays++;p.energy=Math.max(0,p.energy-effort);
  train(p,p.id==='smithapprentice'?'craft':'trade');
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日在'+(shop==='market'?'县城':'柳溪')+'商铺做工，领到'+pay+'文。');
  return true;
