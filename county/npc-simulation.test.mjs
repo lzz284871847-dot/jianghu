@@ -547,3 +547,20 @@ test('long unemployment damages the persistent employer relationship',async()=>{
  assert.ok(bond.history.some(x=>x.includes('连续停工')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('broken master-apprentice trust prevents training costs and skill gains',async()=>{
+ const {npcMentor}=await import('./npc-economy.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['smith:smithapprentice'];
+ const apprentice=s.npcWorld.individuals.smithapprentice,master=s.npcWorld.individuals.smith;
+ const funds=s.commerce.budget.market,skill=apprentice.careerSkills.craft,energy=master.energy;
+ bond.trust=29;
+ assert.equal(npcMentor(s,master,4),false);
+ assert.equal(s.commerce.budget.market,funds);
+ assert.equal(apprentice.careerSkills.craft,skill);
+ assert.equal(master.energy,energy);
+ bond.trust=55;
+ assert.equal(npcMentor(s,master,4),true);
+ assert.equal(s.commerce.budget.market,funds-2);
+ assert.equal(apprentice.careerSkills.craft,skill+1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
