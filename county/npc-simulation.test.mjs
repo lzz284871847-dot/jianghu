@@ -277,3 +277,49 @@ test('older saves gain validated vocational experience without losing prior appr
  restored.npcWorld.individuals.smithapprentice.careerSkills.trade=-1;
  assert.throws(()=>restore(JSON.stringify(restored)),/NPC人生记录无效/);
 });
+
+test('porter injury interrupts further labor and recovers by world days',async()=>{
+ const {npcTransport}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ let injuryDay=2;while((injuryDay+p.id.length)%17!==0)injuryDay++;
+ assert.equal(npcTransport(s,p,injuryDay),true);
+ assert.equal(p.injuryDays,3);
+ const old={cash:s.commerce.budget.market,coins:p.coins,days:p.workDays};
+ assert.equal(npcTransport(s,p,injuryDay+1),false);
+ assert.deepEqual({cash:s.commerce.budget.market,coins:p.coins,days:p.workDays},old);
+ const {tickNPCs}=await import('./npc-simulation.js');
+ s.day=injuryDay; s.npcWorld.lastDay=injuryDay-1;p.lastDay=injuryDay-1;
+ for(const resident of Object.values(s.npcWorld.individuals))if(resident!==p)resident.lastDay=injuryDay;
+ tickNPCs(s,injuryDay);
+ assert.equal(p.injuryDays,2);
+ assert.doesNotThrow(()=>restore(JSON.stringify({...s,nodes:Object.fromEntries(Object.entries(s.nodes).map(([k,n])=>[k,{...n,refreshDay:injuryDay%2===0?injuryDay+1:injuryDay+2}]))})));
+});
+test('mentor transmits skill by spending actual materials and energy',async()=>{
+ const {npcMentor}=await import('./npc-economy.js');
+ const s=fresh(),master=s.npcWorld.individuals.smith,learner=s.npcWorld.individuals.smithapprentice;
+ const old={cash:s.commerce.budget.market,skill:learner.careerSkills.craft,energy:master.energy};
+ assert.equal(npcMentor(s,master,4),true);
+ assert.equal(s.commerce.budget.market,old.cash-2);
+ assert.equal(learner.careerSkills.craft,old.skill+1);
+ assert.equal(master.energy,old.energy-10);
+ s.society.districts.market.closedUntil=4;
+ assert.equal(npcMentor(s,master,4),false);
+ assert.equal(learner.careerSkills.craft,old.skill+1);
+});
+test('injured master and insolvent workshop cannot transmit free skill',async()=>{
+ const {npcMentor,npcWork}=await import('./npc-economy.js');
+ const s=fresh(),master=s.npcWorld.individuals.smith,apprentice=s.npcWorld.individuals.smithapprentice;
+ master.injuryDays=2;assert.equal(npcMentor(s,master,4),false);
+ master.injuryDays=0;s.commerce.budget.market=0;
+ assert.equal(npcMentor(s,master,4),false);
+ apprentice.injuryDays=2;
+ assert.equal(npcWork(s,apprentice,2),false);
+ assert.equal(apprentice.careerSkills.craft,0);
+});
+test('injury records migrate older saves and reject corrupted duration',()=>{
+ const s=fresh();for(const p of Object.values(s.npcWorld.individuals))delete p.injuryDays;
+ const restored=restore(JSON.stringify(s));
+ assert.ok(Object.values(restored.npcWorld.individuals).every(p=>p.injuryDays===0));
+ restored.npcWorld.individuals.dockhand01.injuryDays=-1;
+ assert.throws(()=>restore(JSON.stringify(restored)),/NPC人生记录无效/);
+});

@@ -1,6 +1,6 @@
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=1.6.0';
-import {MARKET_LIMIT} from './commerce.js?v=1.6.0';
-import {districtStatus} from './society.js?v=1.6.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=1.7.0';
+import {MARKET_LIMIT} from './commerce.js?v=1.7.0';
+import {districtStatus} from './society.js?v=1.7.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -10,7 +10,7 @@ export const POSITIONS=Object.freeze({
 const remember=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 const train=(p,key,amount=1)=>{p.careerSkills[key]=Math.min(500,p.careerSkills[key]+amount);};
 export function npcWork(s,p,day){
- const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];if(!pos||p.energy<20||p.hunger>=80)return false;
+ const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];if(!pos||p.injuryDays>0||p.energy<20||p.hunger>=80)return false;
  const shop=pos.market,craft=p.id==='smithapprentice'&&p.occupation==='craftsman';
  const pay=craft?6:pos.pay;
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<pay+25)return false;
@@ -55,7 +55,7 @@ export const PRODUCERS=Object.freeze({
 });
 export const TRANSPORTERS=Object.freeze({dockhand01:'market',dockhand02:'liuxi',carter:'market',laborer:'market'});
 export function npcProduce(s,p,day){
- const job=PRODUCERS[p.id];if(!job||day%job.interval!==0||p.energy<job.effort||p.hunger>=80||p.cargo>=5)return false;
+ const job=PRODUCERS[p.id];if(!job||p.injuryDays>0||day%job.interval!==0||p.energy<job.effort||p.hunger>=80||p.cargo>=5)return false;
  p.energy-=job.effort;
  // Deterministic risk based on the game seed and day, without extra RNG side effects.
  const succeeds=(day+p.id.length)%5!==0 && !(s.weather==='雨'&&job.item==='meat');
@@ -71,9 +71,10 @@ export function npcSellProduce(s,p,day){
 }
 export function npcTransport(s,p,day){
  const shop=TRANSPORTERS[p.id];
- if(!shop||p.energy<22||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
+ if(!shop||p.injuryDays>0||p.energy<22||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
  // Merchant pays documented carriage charges; no cargo is conjured into existence.
  const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=22;p.workDays++;train(p,'carry');
+ if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日替商户搬运现有货物，领到'+pay+'文运费。');
  return true;
 }
@@ -99,15 +100,28 @@ export function npcApplyShop(s,p,day){
  remember(p,'第'+day+'日应聘成功，成为'+(shop==='market'?'县城':'柳溪')+'商铺伙计。');
  return true;
 }
+// Skilled masters use a small amount of shop material budget to mentor apprentices.
+// No salary or skill is conjured without real training costs.
+export function npcMentor(s,p,day){
+ if(p.id!=='smith'||day%4!==0||p.injuryDays>0||p.energy<20||districtStatus(s,'market').closed||budgetAt(s,'market')<27)return false;
+ const apprentice=s.npcWorld.individuals.smithapprentice;
+ if(!apprentice||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
+ s.commerce.budget.market-=2;
+ p.energy-=10;train(apprentice,'craft');
+ remember(apprentice,'第'+day+'日跟许师傅学会一项锻造要领，作坊耗材2文。');
+ return true;
+}
 export function npcCareerDay(s,p,day){
+ if(p.id==='smith')npcMentor(s,p,day);
  const before=p.workDays;
  if(p.occupation==='shopworker'||p.occupation==='craftsman'){
   npcWork(s,p,day);
  }else if(p.occupation==='carrier'){
   // Career conversion has the same finite merchant payroll as normal carters.
   const shop=p.home==='liuxi'?'liuxi':'market',pay=3;
-  if(p.energy>=22&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
+  if(p.injuryDays===0&&p.energy>=22&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
    s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=22;p.workDays++;train(p,'carry');
+   if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
    if(p.workDays%10===0)remember(p,'第'+day+'日做搬运短工，得到'+pay+'文。');
   }
  }else{
