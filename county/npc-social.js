@@ -40,6 +40,10 @@ export function socialDay(s,day){
    b.resentment=Math.min(100,b.resentment+1);
    event(b,day,right.name+'因彼此信任不足，拒绝借钱给'+left.name+'。');
    notes.push(left.name+'向朋友求助未果。');
+  }else if(b.kind==='friend'&&left.hunger<40&&left.coins>=8&&b.resentment>0&&day%7===0){
+   // Reconciliation follows improved circumstances; it does not mint supplies.
+   b.resentment=Math.max(0,b.resentment-1);b.trust=Math.min(100,b.trust+1);
+   event(b,day,left.name+'生活稍有起色，与'+right.name+'的旧日隔阂渐渐缓和。');
   }else if(b.kind==='competitor'&&left.workDays>0&&right.unemployedDays>=3&&day%3===0){
    b.resentment=Math.min(100,b.resentment+2);b.trust=Math.max(0,b.trust-1);
    event(b,day,right.name+'因'+left.name+'较容易获得活计而心生不满。');
