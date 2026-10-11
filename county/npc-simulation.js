@@ -1,4 +1,4 @@
-import {makeHouseholds,householdsValid,familySupport} from './npc-households.js?v=1.8.0';
+import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=1.8.0';
 import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.8.0';
 import {people,places} from './content.js?v=1.8.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
@@ -53,6 +53,7 @@ export function tickNPCs(s,day){
   p.lastDay=day;
   if(p.hunger>=60&&p.history[0]?.includes('缺粮'))notes.push(p.name+'近日缺粮，正在寻求活计。');
  }
+ notes.push(...familyResponsibility(s,day));
  s.npcWorld.lastDay=day;
  return notes.slice(0,2);
 }
