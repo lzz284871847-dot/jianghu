@@ -650,7 +650,7 @@ test('bitter rival carriers decline an otherwise payable shift without consuming
 test('prolonged unemployed carrier reconsiders trade without invented wages',async()=>{
  const {npcCareerDay}=await import('./npc-economy.js');
  const s=fresh(),p=s.npcWorld.individuals.dockhand01;
- p.occupation='carrier';p.level='ordinary';p.unemployedDays=7;p.coins=10;p.energy=10;
+ p.occupation='carrier';p.level='ordinary';p.unemployedDays=7;p.coins=10;p.energy=10;p.hunger=90;
  const shop=p.home==='liuxi'?'liuxi':'market',budget=s.commerce.budget[shop];
  npcCareerDay(s,p,3);
  assert.equal(p.occupation,'original');
