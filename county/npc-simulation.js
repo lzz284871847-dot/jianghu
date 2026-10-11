@@ -1,6 +1,6 @@
 import {makeHouseholds,householdsValid,familySupport} from './npc-households.js?v=1.8.0';
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.7.0';
-import {people,places} from './content.js?v=1.7.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.8.0';
+import {people,places} from './content.js?v=1.8.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
