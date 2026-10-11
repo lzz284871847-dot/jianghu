@@ -1,5 +1,5 @@
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=0.2.1';
-import {injuryEffects} from './injury.js?v=0.2.1';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=0.3.0';
+import {injuryEffects} from './injury.js?v=0.3.0';
 import {equipmentBonuses,wearEquipment} from './equipment.js?v=0.3.0';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
