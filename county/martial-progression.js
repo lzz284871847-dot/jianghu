@@ -2,7 +2,7 @@ import {MARTIAL_ARTS} from './martial-data.js?v=0.2.0';
 import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=0.2.0';
 import {useMove,usableMoves} from './martial-moves.js?v=0.2.0';
 const MAX=2400;
-export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{}});
+export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
 export function canLearn(s,id){const art=MARTIAL_ARTS[id];if(!art)return '不存在这门武学。';const m=ensureMartial(s);if(m.known[id])return '已经学过。';if(art.tier>1){const trained=Object.entries(m.known).filter(([k,v])=>v&&MARTIAL_ARTS[k].tier===art.tier-1&&(m.practice[k]||0)>=120).length;if(trained<2)return '需先把至少两门前一阶段武学练至熟练（各120点）。';}const teachingPlace=art.source==='village'?'village':'school';if(s.place!==teachingPlace)return teachingPlace==='village'?'这门武学要到河湾村求教。':'这门武学需到县城武馆求教。';if(art.tier>1){const trust=art.tier===2?5:12;if((s.relations?.master||0)<trust)return '高阶授艺需周师傅信任达到'+trust+'点，请先在武馆结识教习。';}if(s.coins<art.tier*8)return '学费不足。';return null;}
 export function learn(s,id){const error=canLearn(s,id);if(error){s.result=[error];return false;}const art=MARTIAL_ARTS[id],m=ensureMartial(s);s.coins-=art.tier*8;m.known[id]=true;m.practice[id]=0;m.insight[id]=0;m.experience[id]=0;m.mastery[id]=0;if(!m.equipped||!m.known[m.equipped])m.equipped=id;s.result=['学会'+art.name+'的基础架构。','扣除学费'+art.tier*8+'文；招式需逐步练熟。'];return true;}
@@ -14,11 +14,15 @@ export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s
 function finalizeCombat(s,c,log){
  if(c.ended==='victory'){
   const narrow=s.hp<=30;
-  const gain=narrow?6:s.hp<=60?4:2;
+  const baseGain=narrow?6:s.hp<=60?4:2;
   const m=ensureMartial(s),id=c.martial;
+  m.rewardDays??={};
+  const repeated=m.rewardDays[c.opponent]===s.day;
+  const gain=repeated?0:baseGain;
+  if(!repeated)m.rewardDays[c.opponent]=s.day;
   m.insight[id]=Math.min(MAX,(m.insight[id]||0)+gain);
   log.push(narrow?'险胜保命，伤势沉重，需尽快疗伤。':s.hp<=60?'苦战取胜，伤势不轻。':'交手获胜，仍须提防下一场恶战。');
-  log.push('实战领悟 +'+gain+'；没有额外钱财或神兵掉落。');
+  log.push(repeated?'今天已从此类对手得到实战领悟，再战无额外领悟。':'实战领悟 +'+gain+'；没有额外钱财或神兵掉落。');
  }else if(c.ended==='escaped')log.push('成功脱身，未获得胜利奖励；气血和伤势保留。');
  else if(c.ended==='death')log.push('战败身亡，这段人生结束。');
 }
