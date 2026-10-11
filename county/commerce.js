@@ -57,7 +57,7 @@ export function dailyCommerce(s){
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+(place==='market'?24:18));
    }
   }
-  messages.push(...farmDelivery(s,day,s.weather,MARKET_LIMIT));
+  const deliveryNews=farmDelivery(s,day,s.weather,MARKET_LIMIT);if(deliveryNews.length)messages.push(deliveryNews.join(' '));
   if(day%2===1)messages.push('县城和柳溪的商贩补充了一批日常货物；居民也会自行购买粮药。');
  }
  commerce.lastDay=s.day;
