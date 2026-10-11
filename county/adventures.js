@@ -1,8 +1,8 @@
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.0.0';
-import {people,items} from './content.js?v=5.0.0';
-import {gain} from './progression.js?v=5.0.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.0.0';
-import {EQUIPMENT} from './equipment.js?v=5.0.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.1.0';
+import {people,items} from './content.js?v=5.1.0';
+import {gain} from './progression.js?v=5.1.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.1.0';
+import {EQUIPMENT} from './equipment.js?v=5.1.0';
 export const makeAdventures=()=>({quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
@@ -33,6 +33,12 @@ function xp(s,key,n){const line=gain(s,key,n);if(line)s.result.push(line);}
 export function adventureAction(s,id,{advance,rng}){
  if(s.dead||s.pending||s.combat)return fail(s,'先处理眼前交手或选择；死亡后不能继续。');
  expireAdventures(s);const a=s.adventures,[kind,key]=String(id).split(':');
+ if(kind==='retry'){
+  const d=QUESTS[key];if(!d||key==='parcel'||a.quest||!a.failed.includes(key)||a.done.includes(key))return fail(s,'此委托不能重新约定；失物与已完成委托不重复开放。');
+  if(key==='rescue'&&a.milestones.length<2)return fail(s,'救援仍需完成县境成长第二阶段。');
+  if(!present(s,d.giver,15))return fail(s,'请在委托人可接洽时回到原领取处。');
+  return transact(s,'重新约定：'+d.name,15,0,()=>{a.failed=a.failed.filter(id=>id!==key);a.quest={id:key,stage:0,acceptedDay:s.day,dueDay:s.day+d.days};s.result.push('不预付报酬；需重新完成实际步骤，本条成功后只结算一次。',d.description);},advance);
+ }
  if(kind==='quest'){
   const d=QUESTS[key];if(!d)return fail(s,'没有这条委托。');
   if(a.quest||a.done.includes(key)||a.failed.includes(key))return fail(s,'这条委托已处理，或仍有未结束的委托。');

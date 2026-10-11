@@ -1,10 +1,11 @@
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.0.0';
-import {nextMilestone} from './adventures.js?v=5.0.0';
-import {places} from './content.js?v=5.0.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.1.0';
+import {nextMilestone} from './adventures.js?v=5.1.0';
+import {places} from './content.js?v=5.1.0';
 export function activityOptions(s){
  const a=s.adventures,out=[],add=(id,label,preview)=>out.push({id,label,preview});
  for(const [id,d] of Object.entries(QUESTS))if(s.place===d.from&&!a.done.includes(id)&&!a.failed.includes(id)&&!a.quest)add('quest:'+id,'领取 · '+d.name,d.description);
- if(a.quest){const q=a.quest,d=QUESTS[q.id];add('withdraw','撤回当前委托','无罚款，无报酬，本条结束，不可重复领取。');
+ for(const id of a.failed)if(id!=='parcel'&&s.place===QUESTS[id].from&&!a.quest)add('retry:'+id,'重新约定 · '+QUESTS[id].name,'失败、撤回或逾期后可重新完成；不提前发奖，已成功委托不重复。');
+ if(a.quest){const q=a.quest,d=QUESTS[q.id];add('withdraw','撤回当前委托','无罚款，无报酬；药材、护送和救援可回领取处重新约定，失物不重复。');
   if(q.id==='parcel'&&!q.stage&&s.place==='bamboo')add('questStep:search','搜寻失落货包','1小时 / 精力12，70%找回；未找到则委托结束。');
   if(q.id==='escort'&&!q.stage&&s.place==='ferry'){add('questStep:safe','护送 · 稳妥步道','45分钟 / 精力8，不发生路线擦伤。');add('questStep:quick','护送 · 抄近路','15分钟 / 精力12，30%擦伤8气血，可能死亡。');}
   if(q.id==='rescue'&&!q.stage&&s.place==='hill')add('questStep:help','救助采药人','1小时 / 精力16，消耗药材1份；70%成功，失败擦伤8气血。');
