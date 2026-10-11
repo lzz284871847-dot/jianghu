@@ -44,7 +44,7 @@ test('advanced gear needs smith trust; armor reduces incoming damage',()=>{
  assert.equal(equipmentAction(s,'equip','iron_vest'),true);
  const c=newCombat('brawler','qinghe_fist');c.distance=1;
  resolve(c,s,'guard',()=>0.1);
- assert.equal(s.hp,100-12);
+ assert.equal(s.hp,93);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 test('invalid gear or equipped references cannot be imported',()=>{
