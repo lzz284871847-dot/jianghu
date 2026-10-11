@@ -198,7 +198,8 @@ test('mining to forge to actual combat wear to repair can be played end to end',
  assert.equal((await import('./engine.js')).trade(s,'buy','pick'),true);
  for(const to of ['county','road','foot'])assert.equal(move(s,to),true);
  assert.equal(act(s,'wood',()=>.5),true);
- assert.equal(s.bag.wood,2);
+ assert.equal(act(s,'wood',()=>.5),true);
+ assert.equal(s.bag.wood,4);
  for(const to of ['hill','mine'])assert.equal(move(s,to),true);
  for(let i=0;i<2;i++){
   assert.equal(act(s,'ore'),true);
@@ -221,6 +222,7 @@ test('mining to forge to actual combat wear to repair can be played end to end',
  assert.equal(martialAction(s,'turn','flee',()=>.1),true);
  assert.equal(s.combat,null);
  for(const to of ['county','workshop'])assert.equal(move(s,to),true);
+ assert.equal(act(s,'rest'),true);
  assert.equal(equipmentAction(s,'repair','farm_knife'),true);
  assert.equal(s.equipment.owned.farm_knife,EQUIPMENT.farm_knife.durability);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
