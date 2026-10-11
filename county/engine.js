@@ -1,24 +1,24 @@
-import {makeJourneys,travelBusy} from './npc-journeys.js?v=4.20.0';
-import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=4.20.0';
-import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.20.0';
-import {makeRetirement} from './npc-economy.js?v=4.20.0';
-import {makeStudy,makeMentor} from './npc-martial.js?v=4.20.0';
-import {makeLife} from './npc-mortality.js?v=4.20.0';
-import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=4.20.0';
-import {makeContracts} from './npc-contracts.js?v=4.20.0';
-import {makeSocial,makeOutlook} from './npc-social.js?v=4.20.0';
-import {makeHouseholds} from './npc-households.js?v=4.20.0';
-import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=4.20.0';
-import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=4.20.0';
-import {gain,progress,MAX} from './progression.js?v=4.20.0';
-import {advance,random,npcPlace} from './world.js?v=4.20.0';
-import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=4.20.0';
-import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=4.20.0';
-import {injuryValid,treatInjury} from './injury.js?v=4.20.0';
-import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=4.20.0';
-import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=4.20.0';
-import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=4.20.0';
-import {makeSociety,societyValid,districtStatus} from './society.js?v=4.20.0';
+import {makeJourneys,travelBusy} from './npc-journeys.js?v=4.21.0';
+import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=4.21.0';
+import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.21.0';
+import {makeRetirement} from './npc-economy.js?v=4.21.0';
+import {makeStudy,makeMentor} from './npc-martial.js?v=4.21.0';
+import {makeLife} from './npc-mortality.js?v=4.21.0';
+import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=4.21.0';
+import {makeContracts} from './npc-contracts.js?v=4.21.0';
+import {makeSocial,makeOutlook} from './npc-social.js?v=4.21.0';
+import {makeHouseholds} from './npc-households.js?v=4.21.0';
+import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=4.21.0';
+import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=4.21.0';
+import {gain,progress,MAX} from './progression.js?v=4.21.0';
+import {advance,random,npcPlace} from './world.js?v=4.21.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=4.21.0';
+import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=4.21.0';
+import {injuryValid,treatInjury} from './injury.js?v=4.21.0';
+import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=4.21.0';
+import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=4.21.0';
+import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=4.21.0';
+import {makeSociety,societyValid,districtStatus} from './society.js?v=4.21.0';
 export const KEY='jianghu-qinghe-county-v1';
 export function fresh(p={}){return {version:'county-1',name:String(p.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(p.age)||18))),gender:p.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(p.background)?p.background:'农家',personality:['谨慎','随和','勤奋'].includes(p.personality)?p.personality:'谨慎',talent:Object.hasOwn(talents,p.talent)?p.talent:'ordinary',day:1,minute:480,place:'county',weather:'晴',coins:30,hp:100,energy:100,dead:false,martial:makeMartial(),equipment:makeEquipment(),livelihood:makeLivelihood(),commerce:makeCommerce(),society:makeSociety(),npcWorld:makeNPCWorld(),injuries:{},injuryRecovery:{},seed:823471,bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},nodes:Object.fromEntries(Object.entries(nodeDefs).map(([k,n])=>[k,{left:n.capacity,refreshDay:3}])),encounterDay:0,pending:null,combat:null,news:[],journal:[],result:['你是初到青河县的普通人。可以找活、认识当地人，也可以自行出门。']};}
 const fail=(s,t)=>{s.result=[t];return false;},sign=n=>(n>=0?'+':'')+n;
@@ -39,7 +39,7 @@ export function act(s,id,rng=()=>random(s)){
  if(id==='wait')return settle(s,'等候半小时',30,0,()=>{s.result.push('等候不恢复精力或气血。');});
  if(id==='sleep'){if(!['inn','village'].includes(s.place))return fail(s,'可到客栈住宿或河湾村借宿。');const fee=s.place==='inn'?5:0;if(s.coins<fee)return fail(s,'住宿需要5文。');return settle(s,'睡一觉',480,0,()=>{s.coins-=fee;s.energy=100;s.hp=Math.min(100,s.hp+20);});}
  if(id==='eat'||id==='heal'){const key=id==='eat'?'food':'herb';if(!s.bag[key])return fail(s,'没有'+items[key]+'。');if(s.hp===100&&(id==='heal'&&!Object.keys(s.injuries||{}).some(k=>['bruise','cut','strain'].includes(k))||id==='eat'&&s.energy===100))return fail(s,'现在不需要恢复，不消耗物品。');return settle(s,id==='eat'?'吃干粮':'用常见药材处理伤口',15,0,()=>{s.bag[key]--;s.hp=Math.min(100,s.hp+(id==='eat'?5:20));if(id==='eat')s.energy=Math.min(100,s.energy+12);else {for(const injury of ['bruise','cut','strain'])if(s.injuries?.[injury]){s.result.push(treatInjury(s,injury,'herb'));break;}}});}
- if(id==='doctor'){const doctor=clinicDoctor(s);if(!doctor||doctor.life.deathDay)return fail(s,'医者已故或岗位空缺，不能提供诊治。');if(doctor.life.sickDays||doctor.life.restDay===s.day||doctor.injuryDays)return fail(s,'医者正在休养，今日不能提供诊治。');if(s.place!=='village'||s.minute<480||s.minute+60>1080)return fail(s,'请在河湾村08:00–18:00内完成诊治，共1小时。');if(s.hp===100&&!Object.keys(s.injuries||{}).length)return fail(s,'无需治疗。');if(s.coins<8)return fail(s,'诊金8文，不足则不治疗。');const successor=doctor.id!=='doctor';if(successor&&clinicQuote(s,s,doctor)===null)return fail(s,'现任医者身体、精力或实际药材不足，暂不能诊治。');return settle(s,'医者治疗',60,0,()=>{if(successor)payClinic(s,s,doctor);else s.coins-=8;s.hp=Math.min(100,s.hp+50);for(const injury of Object.keys(s.injuries||{}))s.result.push(treatInjury(s,injury,'doctor'));});}
+ if(id==='doctor'){const doctor=clinicDoctor(s);if(!doctor||doctor.life.deathDay)return fail(s,'医者已故或岗位空缺，不能提供诊治。');if(doctor.retirement.active)return fail(s,'医者已退养，等待合格居民接任。');if(doctor.life.sickDays||doctor.life.restDay===s.day||doctor.injuryDays)return fail(s,'医者正在休养，今日不能提供诊治。');if(s.place!=='village'||s.minute<480||s.minute+60>1080)return fail(s,'请在河湾村08:00–18:00内完成诊治，共1小时。');if(s.hp===100&&!Object.keys(s.injuries||{}).length)return fail(s,'无需治疗。');if(s.coins<8)return fail(s,'诊金8文，不足则不治疗。');const successor=doctor.id!=='doctor';if(successor&&clinicQuote(s,s,doctor)===null)return fail(s,'现任医者身体、精力或实际药材不足，暂不能诊治。');return settle(s,'医者治疗',60,0,()=>{if(successor)payClinic(s,s,doctor);else s.coins-=8;s.hp=Math.min(100,s.hp+50);for(const injury of Object.keys(s.injuries||{}))s.result.push(treatInjury(s,injury,'doctor'));});}
  if(id==='train'){if(s.place!=='school'||s.minute<480||s.minute+120>1080)return fail(s,'请在武馆08:00–18:00内完成基础练习，共2小时。');if(s.hp<25)return fail(s,'先养伤。');return settle(s,'练习入门拳脚',120,18,()=>{s.result.push('仅为入门练习，完整武学成长将在后续系统批次开放。');},{fist:2});}
  if(Object.hasOwn(recipes,id)){const d=recipes[id];if(s.place!=='workshop'||s.minute<420||s.minute+d.minutes>1080)return fail(s,'请在作坊07:00–18:00内完成加工。');for(const [k,n] of Object.entries(d.input))if(s.bag[k]<n)return fail(s,items[k]+'不足，未消耗材料。');return settle(s,d.name,d.minutes,d.energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push('本次生产：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、'),'材料消耗：'+Object.entries(d.input).map(([k,n])=>items[k]+' -'+n).join('、'),'当前库存：'+Object.keys(d.input).map(k=>items[k]+' '+s.bag[k]).join('、'));},{[d.skill]:2});}
  return fail(s,'这项行动尚未实装。');
@@ -54,7 +54,7 @@ export function martialAction(s,kind,id,rng=()=>random(s)){
   try{const outcome=kind==='move'?martialMoveTurn(s,id,rng):martialTurn(s,id,rng);return !!outcome;}catch(e){return fail(s,e.message);}
  }
  if(!available(s))return false;
- if(kind==='learn'){const village=MARTIAL_ARTS[id]?.source==='village',teacher=village?s.npcWorld.individuals.farmer:schoolTeacher(s);if(!teacher||teacher.life.deathDay)return fail(s,'授艺者已故或岗位空缺；已学武艺仍可自行练习。');if(teacher.life.sickDays||teacher.life.restDay===s.day||teacher.injuryDays||travelBusy(s,teacher.id))return fail(s,'授艺者正在休养或外出，今日不能授课。');if(!village&&!schoolCanTeach(s,id))return fail(s,'现任教习尚不能教授这门武艺。');const successor=!village&&teacher.id!=='master',fee=(MARTIAL_ARTS[id]?.tier||1)*8;if(successor&&(teacher.energy<20||teacher.coins>1000000-fee))return fail(s,'现任教习暂时无法授课。');if(!learnArt(s,id))return false;if(successor){teacher.coins+=fee;teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);saveSchoolTeacher(teacher);}advance(s,60);s.result.push('求学耗时1小时。');return true;}
+ if(kind==='learn'){const village=MARTIAL_ARTS[id]?.source==='village',teacher=village?s.npcWorld.individuals.farmer:schoolTeacher(s);if(!teacher||teacher.life.deathDay)return fail(s,'授艺者已故或岗位空缺；已学武艺仍可自行练习。');if(teacher.retirement.active)return fail(s,'授艺者已退养，不能授课；已学武艺仍可自行练习。');if(teacher.life.sickDays||teacher.life.restDay===s.day||teacher.injuryDays||travelBusy(s,teacher.id))return fail(s,'授艺者正在休养或外出，今日不能授课。');if(!village&&!schoolCanTeach(s,id))return fail(s,'现任教习尚不能教授这门武艺。');const successor=!village&&teacher.id!=='master',fee=(MARTIAL_ARTS[id]?.tier||1)*8;if(successor&&(teacher.energy<20||teacher.coins>1000000-fee))return fail(s,'现任教习暂时无法授课。');if(!learnArt(s,id))return false;if(successor){teacher.coins+=fee;teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);saveSchoolTeacher(teacher);}advance(s,60);s.result.push('求学耗时1小时。');return true;}
  if(kind==='equip')return equipArt(s,id);
  if(kind==='train'){if(!trainArt(s,id))return false;advance(s,120);s.result.push('练习耗时2小时。');return true;}
  if(kind==='challenge'){
