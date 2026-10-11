@@ -75,6 +75,21 @@ test('higher martial tiers cannot be purchased without prerequisite practice',()
  s.martial.practice.qinghe_fist=120;s.martial.practice.spring_kick=119;
  assert.equal(martialAction(s,'learn','stone_palm'),false);
  s.martial.practice.spring_kick=120;
+ assert.equal(martialAction(s,'learn','stone_palm'),false);
+ s.relations.master=5;
  assert.equal(martialAction(s,'learn','stone_palm'),true);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('martial teachers demand the appropriate place and trust',()=>{
+ const s=fresh();s.coins=500;s.place='school';
+ assert.equal(martialAction(s,'learn','wood_knife'),false);
+ s.place='village';assert.equal(martialAction(s,'learn','wood_knife'),true);
+ assert.equal(martialAction(s,'learn','qinghe_fist'),false);
+ s.place='school';assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ assert.equal(martialAction(s,'learn','spring_kick'),true);
+ s.martial.practice.qinghe_fist=120;s.martial.practice.spring_kick=120;
+ assert.equal(martialAction(s,'learn','stone_palm'),false);
+ s.relations.master=5;assert.equal(martialAction(s,'learn','stone_palm'),true);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
