@@ -1,13 +1,14 @@
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.7.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.7.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.7.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop} from './npc-economy.js?v=4.7.0';
-import {familyOf} from './npc-households.js?v=4.7.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.8.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.8.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.8.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.8.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop} from './npc-economy.js?v=4.8.0';
+import {familyOf} from './npc-households.js?v=4.8.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
 export const makeLineage=(day=1)=>({lastDay:day,courtshipDay:0,marriedDay:0,conceivedDay:0,children:[]});
-export const makeChildLivelihood=(id='chen-child-1',day=1)=>({outlook:makeOutlook(id,day),coins:0,food:0,cargo:0,energy:100,workDays:0,unemployedDays:0,injuryDays:0,occupation:'original',careerSkills:{craft:0,trade:0,carry:0,forage:0},history:[]});
+export const makeChildLivelihood=(id='chen-child-1',day=1)=>({study:makeStudy(day),outlook:makeOutlook(id,day),coins:0,food:0,cargo:0,energy:100,workDays:0,unemployedDays:0,injuryDays:0,occupation:'original',careerSkills:{craft:0,trade:0,carry:0,forage:0},history:[]});
 const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
 const integer=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 export const childAge=(c,day)=>Math.floor(((c.life?.deathDay||day)-c.bornDay)/360);
@@ -27,7 +28,7 @@ export function lineageValid(s){
  (!l.conceivedDay||l.children.length<2);
 }
 function childLivelihoodValid(v,day){
- return obj(v)&&Object.keys(v).length===11&&outlookValid(v.outlook,day)&&integer(v.cargo,5)&&integer(v.coins,1000000)&&integer(v.food,100)&&integer(v.energy,100)&&
+ return obj(v)&&Object.keys(v).length===12&&studyValid(v.study,day)&&outlookValid(v.outlook,day)&&integer(v.cargo,5)&&integer(v.coins,1000000)&&integer(v.food,100)&&integer(v.energy,100)&&
  integer(v.workDays,100000)&&integer(v.unemployedDays,100000)&&integer(v.injuryDays,30)&&
  ['original','carrier','shopworker','farmer'].includes(v.occupation)&&obj(v.careerSkills)&&Object.keys(v.careerSkills).length===4&&
  ['craft','trade','carry','forage'].every(k=>integer(v.careerSkills[k],500))&&Array.isArray(v.history)&&v.history.length<=8&&v.history.every(t=>typeof t==='string'&&t.length<=180);
@@ -88,6 +89,7 @@ export function lineageDay(s,day){
    const worker={...v,life:c.life,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),home:'market',level:'ordinary',hunger:c.hunger};
    if(!health.resting)npcCareerDay(s,worker,day);npcBuyFood(s,worker,day);
    ambitionDay(s,worker,day,npcApplyShop);
+   npcStudyDay(s,worker,age,day);
    for(const key of Object.keys(v))v[key]=worker[key];
    const needy=ps.find(p=>(p.age>=60||p.injuryDays>=2||p.unemployedDays>=4||p.hunger>=55)&&(p.coins<12||p.food===0));
    if(needy&&c.hunger<40){
@@ -105,7 +107,7 @@ export function lineageDay(s,day){
 }
 export function lineageSummary(s){
  const l=s.npcWorld.lineage;
- return [...parents(s).map(p=>p.name+' · '+p.age+'岁 · '+(p.age>=65?'老年，体力恢复减慢':'在世')+' · 衰弱'+p.life.frailty+'/100 · '+healthSummary(p,s.day)+' · '+outlookSummary(p)+'。'),...['farmhand01','shopassistant'].filter(id=>!alive(s.npcWorld.individuals[id])).map(id=>s.npcWorld.individuals[id].name+'：第'+s.npcWorld.individuals[id].life.deathDay+'日去世，原有经历保留；未转交钱粮'+s.npcWorld.individuals[id].coins+'文、'+s.npcWorld.individuals[id].food+'份；原有待售产物'+s.npcWorld.individuals[id].cargo+'份保留在遗物中。'),l.marriedDay?'陈二与小莲：夫妻，第'+l.marriedDay+'日结亲。':l.courtshipDay?'陈二与小莲：正在商议成家。':'陈二与小莲：尚未结亲，关系和生计条件仍需积累。',
+ return [...parents(s).map(p=>p.name+' · '+p.age+'岁 · '+(p.age>=65?'老年，体力恢复减慢':'在世')+' · 衰弱'+p.life.frailty+'/100 · '+healthSummary(p,s.day)+' · '+outlookSummary(p)+' · '+studySummary(p)+'。'),...['farmhand01','shopassistant'].filter(id=>!alive(s.npcWorld.individuals[id])).map(id=>s.npcWorld.individuals[id].name+'：第'+s.npcWorld.individuals[id].life.deathDay+'日去世，原有经历保留；未转交钱粮'+s.npcWorld.individuals[id].coins+'文、'+s.npcWorld.individuals[id].food+'份；原有待售产物'+s.npcWorld.individuals[id].cargo+'份保留在遗物中。'),l.marriedDay?'陈二与小莲：夫妻，第'+l.marriedDay+'日结亲。':l.courtshipDay?'陈二与小莲：正在商议成家。':'陈二与小莲：尚未结亲，关系和生计条件仍需积累。',
  ...(l.conceivedDay?['正在孕育孩子，预计第'+(l.conceivedDay+270)+'日出生。']:[]),
- ...l.children.map((c,i)=>'孩子'+(i+1)+' · '+childAge(c,s.day)+'岁 · '+(alive(c)?childStage(c,s.day):'已故，第'+c.life.deathDay+'日去世')+' · '+(c.hunger>=60?'缺粮':c.hunger>=40?'口粮不足':'饮食尚稳')+' · '+healthSummary(c,s.day)+' · '+outlookSummary(c.livelihood)+' · 学习积累'+c.learning+(!alive(c)?' · 未转交钱粮'+c.livelihood.coins+'文、'+c.livelihood.food+'份':childAge(c,s.day)>=16?' · '+({original:'求职中',carrier:'运输短工',shopworker:'商铺伙计',farmer:'接班农户'}[c.livelihood.occupation])+' · '+npcCareer({...c.livelihood,id:c.id}).label+' · 积蓄'+c.livelihood.coins+'文 · 劳动'+c.livelihood.workDays+'日 · 待售蔬菜'+c.livelihood.cargo+'份':'')+'。')];
+ ...l.children.map((c,i)=>'孩子'+(i+1)+' · '+childAge(c,s.day)+'岁 · '+(alive(c)?childStage(c,s.day):'已故，第'+c.life.deathDay+'日去世')+' · '+(c.hunger>=60?'缺粮':c.hunger>=40?'口粮不足':'饮食尚稳')+' · '+healthSummary(c,s.day)+' · '+outlookSummary(c.livelihood)+' · '+studySummary(c.livelihood)+' · 学习积累'+c.learning+(!alive(c)?' · 未转交钱粮'+c.livelihood.coins+'文、'+c.livelihood.food+'份':childAge(c,s.day)>=16?' · '+({original:'求职中',carrier:'运输短工',shopworker:'商铺伙计',farmer:'接班农户'}[c.livelihood.occupation])+' · '+npcCareer({...c.livelihood,id:c.id}).label+' · 积蓄'+c.livelihood.coins+'文 · 劳动'+c.livelihood.workDays+'日 · 待售蔬菜'+c.livelihood.cargo+'份':'')+'。')];
 }
