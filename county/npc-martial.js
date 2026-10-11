@@ -1,18 +1,18 @@
-import {alive} from './npc-mortality.js?v=4.12.1';
-import {MARTIAL_ARTS} from './martial-data.js?v=4.12.1';
-import {canLearn,learn,train} from './martial-progression.js?v=4.12.1';
-import {people} from './content.js?v=4.12.1';
+import {alive} from './npc-mortality.js?v=4.13.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=4.13.0';
+import {canLearn,learn,train} from './martial-progression.js?v=4.13.0';
+import {people} from './content.js?v=4.13.0';
 export const NPC_ART='qinghe_fist';
-export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day,otherArts:{},teacherTrust:0});
+export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day,otherArts:{},teacherTrust:0,experience:0,mastery:0,lastSparDay:0});
 const obj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const bounded=(v,max)=>Number.isSafeInteger(v)&&v>=0&&v<=max;
-export const studyValid=(v,day)=>obj(v)&&Object.keys(v).length===6&&
+export const studyValid=(v,day)=>obj(v)&&Object.keys(v).length===9&&
  ['learnedDay','practice','insight','lastDay'].every(k=>bounded(v[k],['practice','insight'].includes(k)?2400:day))&&
- v.lastDay>=1&&v.learnedDay<=v.lastDay&&bounded(v.teacherTrust,100)&&obj(v.otherArts)&&
+ v.lastDay>=1&&v.learnedDay<=v.lastDay&&bounded(v.experience,2400)&&bounded(v.mastery,2400)&&bounded(v.lastSparDay,v.lastDay)&&(!v.lastSparDay||v.lastSparDay>=v.learnedDay)&&bounded(v.teacherTrust,100)&&obj(v.otherArts)&&
  Object.entries(v.otherArts).every(([id,a])=>Object.hasOwn(MARTIAL_ARTS,id)&&id!==NPC_ART&&obj(a)&&Object.keys(a).length===3&&a.learnedDay>=v.learnedDay&&a.learnedDay>0&&bounded(a.learnedDay,v.lastDay)&&bounded(a.practice,2400)&&bounded(a.insight,2400))&&
- (v.learnedDay>0||v.practice===0&&v.insight===0&&v.teacherTrust===0&&Object.keys(v.otherArts).length===0);
+ (v.learnedDay>0||v.practice===0&&v.insight===0&&v.teacherTrust===0&&v.experience===0&&v.mastery===0&&v.lastSparDay===0&&Object.keys(v.otherArts).length===0);
 const arts=v=>v.learnedDay?[[NPC_ART,v],...Object.entries(v.otherArts)]:[];
-export const studySummary=p=>p.id==='master'?'武馆教习':p.study.learnedDay?arts(p.study).map(([id,a])=>MARTIAL_ARTS[id].name+' · 熟练'+a.practice+' · 领悟'+a.insight).join('；')+' · 教习信任'+p.study.teacherTrust:'尚未习武';
+export const studySummary=p=>p.id==='master'?'武馆教习':p.study.learnedDay?arts(p.study).map(([id,a])=>MARTIAL_ARTS[id].name+' · 熟练'+a.practice+' · 领悟'+a.insight).join('；')+' · 实战'+p.study.experience+' · 掌握'+p.study.mastery+' · 教习信任'+p.study.teacherTrust+(p.study.lastSparDay?' · 最近切磋第'+p.study.lastSparDay+'日':''):'尚未习武';
 const record=(p,day,line)=>{p.history=['第'+day+'日'+line,...p.history].slice(0,8);};
 export function npcStudyDay(s,p,age,day){
  const v=p.study;if(!alive(p)||v.lastDay>=day)return false;v.lastDay=day;
