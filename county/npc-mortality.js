@@ -1,6 +1,6 @@
-import {HOUSEHOLD_MEMBERS,familyOf} from './npc-households.js?v=4.17.0';
-import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.17.0';
-import {districtStatus} from './society.js?v=4.17.0';
+import {HOUSEHOLD_MEMBERS,familyOf} from './npc-households.js?v=4.18.0';
+import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.18.0';
+import {districtStatus} from './society.js?v=4.18.0';
 // The Chen family retains its spouse/child succession; all other named NPCs age daily.
 export const TRACKED_PARENTS=['farmhand01','shopassistant'];
 export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0,sickDays:0,healthDay:0,restDay:0,illnessDays:0,careDays:0});

@@ -1,7 +1,8 @@
-import {alive} from './npc-mortality.js?v=4.17.0';
-import {people} from './content.js?v=4.17.0';
-import {marketPrice,stockAt} from './commerce.js?v=4.17.0';
-import {districtStatus} from './society.js?v=4.17.0';
+import {clinicDoctor,payClinic} from './npc-clinic.js?v=4.18.0';
+import {saveResident} from './npc-residents.js?v=4.18.0';
+import {alive} from './npc-mortality.js?v=4.18.0';
+import {people} from './content.js?v=4.18.0';
+import {marketPrice} from './commerce.js?v=4.18.0';
 const record=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 // Daily appointments are simulated inside the doctor's existing 08:00–18:00 hours.
 // Rain/undernutrition can cause a short illness; no extra world RNG is consumed.
@@ -23,14 +24,14 @@ export function npcHealthDay(s,p,age,day,guardians=[]){
  if(resting){
   life.restDay=day;
   p.energy=Math.max(0,p.energy-12);
-  const doctor=s.npcWorld.individuals.doctor,clinic=people.doctor,quote=marketPrice(s,'market','buy','herb');
+  const doctor=clinicDoctor(s),clinic=people.doctor,quote=marketPrice(s,'market','buy','herb');
   const payer=age<16?guardians.find(g=>alive(g)&&g.coins>=8)??p:p;
   // The eight-coin fee goes to the doctor; the doctor purchases one real herb
   // from the market at its current quote. The consumed herb is never duplicated.
-  if(payer.coins>=8&&alive(doctor)&&!doctor.retirement?.active&&!doctor.life.sickDays&&doctor.injuryDays===0&&doctor.energy>=10&&clinic.open<=600&&clinic.close>=660&&
-   !districtStatus(s,'market').closed&&quote!==null&&stockAt(s,'market','herb')>0&&doctor.coins+8-quote>=0&&doctor.coins+8-quote<=1000000&&s.commerce.budget.market+quote<=1000000){
-   payer.coins-=8;doctor.energy-=10;doctor.workDays=Math.min(100000,doctor.workDays+1);doctor.coins+=8-quote;s.commerce.budget.market+=quote;s.commerce.stock.market.herb--;
+  const paid=clinic.open<=600&&clinic.close>=660?payClinic(s,payer,doctor):null;
+  if(paid!==null){
    record(doctor,'第'+day+'日为'+p.name+'诊治，收诊金8文，购药耗费'+quote+'文并用去药材1份。');
+   saveResident(doctor);
    if(life.illnessDays)life.careDays++;else life.sickDays=Math.max(0,life.sickDays-3);p.energy=Math.max(0,p.energy-10);
    record(p,'第'+day+'日到河湾村付诊金8文，医者购入并消耗常见药材1份；今日继续休养。');
    notes.push(p.name+'付费就医，消耗现有药材，今日仍休养。');
