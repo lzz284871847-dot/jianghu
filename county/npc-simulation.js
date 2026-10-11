@@ -1,5 +1,5 @@
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.4.0';
-import {people,places} from './content.js?v=1.4.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.5.0';
+import {people,places} from './content.js?v=1.5.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
@@ -25,7 +25,7 @@ export function npcWorldValid(s){
  if(Object.keys(root.individuals).length!==Object.keys(canonical.individuals).length)return false;
  for(const [id,p] of Object.entries(root.individuals)){
   const init=canonical.individuals[id];
-  if(!init||!p||p.id!==id||p.name!==init.name||p.home!==init.home||p.role!==init.role||!Object.hasOwn(places,p.place)||!NPC_LEVELS.includes(p.level)||!bounded(p.age,130)||!bounded(p.coins,1000000)||!bounded(p.food,100)||!bounded(p.cargo,5)||!['original','carrier'].includes(p.occupation)||!bounded(p.unemployedDays,100000)||!bounded(p.energy,100)||!bounded(p.hunger,100)||!bounded(p.workDays,100000)||!bounded(p.lastDay,s.day)||p.lastDay<1||!Array.isArray(p.history)||p.history.length>8||p.history.some(t=>typeof t!=='string'||t.length>180))return false;
+  if(!init||!p||p.id!==id||p.name!==init.name||p.home!==init.home||p.role!==init.role||!Object.hasOwn(places,p.place)||!NPC_LEVELS.includes(p.level)||!bounded(p.age,130)||!bounded(p.coins,1000000)||!bounded(p.food,100)||!bounded(p.cargo,5)||!['original','carrier','shopworker','craftsman'].includes(p.occupation)||!bounded(p.unemployedDays,100000)||!bounded(p.energy,100)||!bounded(p.hunger,100)||!bounded(p.workDays,100000)||!bounded(p.lastDay,s.day)||p.lastDay<1||!Array.isArray(p.history)||p.history.length>8||p.history.some(t=>typeof t!=='string'||t.length>180))return false;
  }
  if(!root.background||typeof root.background!=='object'||Array.isArray(root.background)||Object.keys(root.background).length!==3)return false;
  return Object.entries(canonical.background).every(([area])=>{const b=root.background[area];return !!b&&bounded(b.population,1000000)&&bounded(b.families,300000)&&b.families<=b.population;});

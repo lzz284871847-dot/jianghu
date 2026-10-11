@@ -1,6 +1,6 @@
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=1.4.0';
-import {MARKET_LIMIT} from './commerce.js?v=1.4.0';
-import {districtStatus} from './society.js?v=1.4.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=1.5.0';
+import {MARKET_LIMIT} from './commerce.js?v=1.5.0';
+import {districtStatus} from './society.js?v=1.5.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -9,13 +9,14 @@ export const POSITIONS=Object.freeze({
 });
 const remember=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 export function npcWork(s,p,day){
- const pos=POSITIONS[p.id];if(!pos||p.energy<20||p.hunger>=80)return false;
- const shop=pos.market;
- if(districtStatus(s,shop).closed||budgetAt(s,shop)<pos.pay+25)return false;
+ const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];if(!pos||p.energy<20||p.hunger>=80)return false;
+ const shop=pos.market,craft=p.id==='smithapprentice'&&p.occupation==='craftsman';
+ const pay=craft?6:pos.pay;
+ if(districtStatus(s,shop).closed||budgetAt(s,shop)<pay+25)return false;
  // An employer spends its own cash, so no money is created by this action.
- s.commerce.budget[shop]-=pos.pay;p.coins+=pos.pay;
+ s.commerce.budget[shop]-=pay;p.coins+=pay;
  p.workDays++;p.energy=Math.max(0,p.energy-15);
- if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日在'+(shop==='market'?'县城':'柳溪')+'商铺做工，领到'+pos.pay+'文。');
+ if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日在'+(shop==='market'?'县城':'柳溪')+'商铺做工，领到'+pay+'文。');
  return true;
 }
 export function npcBuyFood(s,p,day){
@@ -68,9 +69,27 @@ export function npcFindWork(s,p,day){
  return npcTransport(s,p,day);
 }
 
+// Vacancy is derived from persisted employees; applications do not invent jobs.
+export const SHOP_CAPACITY=Object.freeze({market:3,liuxi:2});
+export function npcApplyShop(s,p,day){
+ if(p.level!=='ordinary'||!['original','carrier'].includes(p.occupation)||p.hunger>=80)return false;
+ const shop=p.home==='liuxi'?'liuxi':'market';
+ if(districtStatus(s,shop).closed||budgetAt(s,shop)<70)return false;
+ const employees=Object.values(s.npcWorld.individuals).filter(n=>
+  n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
+  n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
+  n.occupation==='craftsman'&&n.id==='smithapprentice'&&shop==='market'
+ ).length;
+ if(employees>=SHOP_CAPACITY[shop])return false;
+ p.occupation='shopworker';p.unemployedDays=0;
+ remember(p,'第'+day+'日应聘成功，成为'+(shop==='market'?'县城':'柳溪')+'商铺伙计。');
+ return true;
+}
 export function npcCareerDay(s,p,day){
  const before=p.workDays;
- if(p.occupation==='carrier'){
+ if(p.occupation==='shopworker'||p.occupation==='craftsman'){
+  npcWork(s,p,day);
+ }else if(p.occupation==='carrier'){
   // Career conversion has the same finite merchant payroll as normal carters.
   const shop=p.home==='liuxi'?'liuxi':'market',pay=3;
   if(p.energy>=22&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
@@ -83,8 +102,10 @@ export function npcCareerDay(s,p,day){
   npcSellProduce(s,p,day);
   npcTransport(s,p,day);
  }
+ if(p.id==='smithapprentice'&&p.occupation==='original'&&p.workDays>=20){p.occupation='craftsman';remember(p,'第'+day+'日学徒满二十次实际工，成为正式铁匠，工钱随手艺提升。');}
  if(p.workDays>before){p.unemployedDays=0;return true;}
  p.unemployedDays=Math.min(100000,p.unemployedDays+1);
+ if(['original','carrier'].includes(p.occupation)&&p.unemployedDays>=3&&npcApplyShop(s,p,day))return false;
  if(p.occupation==='original'&&p.level==='ordinary'&&p.unemployedDays>=3&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
