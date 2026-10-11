@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.1.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.1.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.1.0';
-import {districtStatus} from './society.js?v=3.1.0';
+import {bondBetween} from './npc-social.js?v=3.2.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.2.0';
+import {MARKET_LIMIT} from './commerce.js?v=3.2.0';
+import {districtStatus} from './society.js?v=3.2.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -12,7 +12,9 @@ export const POSITIONS=Object.freeze({
 const remember=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 const train=(p,key,amount=1)=>{p.careerSkills[key]=Math.min(500,p.careerSkills[key]+amount);};
 export function npcWork(s,p,day){
- const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];if(!pos||p.injuryDays>0||p.energy<20||p.hunger>=80)return false;
+ const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];
+ const effort=p.careerSkills.trade>=20?13:15;
+ if(!pos||p.injuryDays>0||p.energy<Math.max(20,effort)||p.hunger>=80)return false;
  const shop=pos.market,craft=p.id==='smithapprentice'&&p.occupation==='craftsman';
  const pay=craft?6:pos.pay;
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<pay+25)return false;
@@ -30,7 +32,7 @@ export function npcWork(s,p,day){
  }
  // An employer spends its own cash, so no money is created by this action.
  s.commerce.budget[shop]-=pay;p.coins+=pay;
- p.workDays++;p.energy=Math.max(0,p.energy-15);
+ p.workDays++;p.energy=Math.max(0,p.energy-effort);
  train(p,p.id==='smithapprentice'?'craft':'trade');
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日在'+(shop==='market'?'县城':'柳溪')+'商铺做工，领到'+pay+'文。');
  return true;
@@ -74,9 +76,10 @@ export function npcSellProduce(s,p,day){
 }
 export function npcTransport(s,p,day){
  const shop=TRANSPORTERS[p.id];
- if(!shop||p.injuryDays>0||p.energy<22||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
+ const effort=p.careerSkills.carry>=20?20:22;
+ if(!shop||p.injuryDays>0||p.energy<effort||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
  // Merchant pays documented carriage charges; no cargo is conjured into existence.
- const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=22;p.workDays++;train(p,'carry');
+ const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
  if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日替商户搬运现有货物，领到'+pay+'文运费。');
  return true;
