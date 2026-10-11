@@ -23,7 +23,8 @@ export function npcWork(s,p,day){
   const skill=p.careerSkills.craft;
   const badWeather=s.weather==='雨'?1:0;
   const tired=p.energy<50?1:0;
-  const threshold=Math.max(2,7-Math.floor(skill/8)-badWeather-tired);
+  // Practice reduces assessment errors, but rain and fatigue still carry risk.
+  const threshold=Math.max(2,7+Math.min(3,Math.floor(skill/20))-badWeather-tired);
   if((day+p.id.length)%threshold===0){
    p.energy=Math.max(0,p.energy-12);
    remember(p,'第'+day+'日锻造工序失误，未通过验收；耗费精力，未得工钱。');
