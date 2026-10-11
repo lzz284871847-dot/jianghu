@@ -1,0 +1,47 @@
+// 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
+export const EQUIPMENT=Object.freeze({
+ wood_staff:{name:'木棍',slot:'weapon',kind:'棍法',tier:1,attack:2,defense:0,durability:35,materials:{wood:2},fee:2},
+ farm_knife:{name:'柴刀',slot:'weapon',kind:'刀法',tier:1,attack:3,defense:0,durability:40,materials:{wood:1,iron:1},fee:3},
+ iron_sword:{name:'铁剑',slot:'weapon',kind:'剑法',tier:2,attack:6,defense:0,durability:55,materials:{iron:3,wood:1},fee:10},
+ ash_spear:{name:'白蜡枪',slot:'weapon',kind:'枪法',tier:2,attack:6,defense:0,durability:50,materials:{wood:3,iron:2},fee:10},
+ steel_blade:{name:'精钢刀',slot:'weapon',kind:'刀法',tier:3,attack:10,defense:0,durability:70,materials:{iron:8,wood:2},fee:30},
+ refined_sword:{name:'百炼剑',slot:'weapon',kind:'剑法',tier:3,attack:11,defense:0,durability:75,materials:{iron:10,wood:2},fee:35},
+ river_spear:{name:'追风长枪',slot:'weapon',kind:'枪法',tier:4,attack:15,defense:0,durability:85,materials:{iron:16,wood:5},fee:80},
+ master_blade:{name:'名匠断水刀',slot:'weapon',kind:'刀法',tier:4,attack:17,defense:0,durability:90,materials:{iron:18,wood:4},fee:95},
+ heirloom_sword:{name:'镇岳古剑',slot:'weapon',kind:'剑法',tier:5,attack:22,defense:0,durability:100,materials:{iron:32,wood:8},fee:180},
+ dragon_staff:{name:'玄铁重棍',slot:'weapon',kind:'棍法',tier:5,attack:20,defense:0,durability:110,materials:{iron:35,wood:5},fee:170},
+ coarse_cloth:{name:'粗布衣',slot:'armor',kind:'',tier:1,attack:0,defense:1,durability:30,materials:{wood:1},fee:2},
+ padded_coat:{name:'厚棉袄',slot:'armor',kind:'',tier:1,attack:0,defense:2,durability:35,materials:{wood:2},fee:3},
+ leather_vest:{name:'皮背心',slot:'armor',kind:'',tier:2,attack:0,defense:4,durability:45,materials:{wood:3},fee:9},
+ iron_vest:{name:'铁片护胸',slot:'armor',kind:'',tier:2,attack:0,defense:5,durability:55,materials:{iron:4},fee:12},
+ guard_armor:{name:'镖局轻甲',slot:'armor',kind:'',tier:3,attack:0,defense:8,durability:65,materials:{iron:7,wood:2},fee:27},
+ scale_armor:{name:'鱼鳞甲',slot:'armor',kind:'',tier:3,attack:0,defense:9,durability:70,materials:{iron:10},fee:35},
+ steel_armor:{name:'精钢护甲',slot:'armor',kind:'',tier:4,attack:0,defense:12,durability:85,materials:{iron:20},fee:90},
+ guard_robe:{name:'名匠护身衣',slot:'armor',kind:'',tier:4,attack:0,defense:13,durability:85,materials:{iron:16,wood:6},fee:85},
+ iron_scale:{name:'玄铁鳞甲',slot:'armor',kind:'',tier:5,attack:0,defense:18,durability:105,materials:{iron:34},fee:185},
+ hero_robe:{name:'百工护身袍',slot:'armor',kind:'',tier:5,attack:0,defense:16,durability:100,materials:{iron:25,wood:10},fee:165}
+});
+export const makeEquipment=()=>({owned:{},equipped:{weapon:null,armor:null}});
+export function ensureEquipment(s){s.equipment??=makeEquipment();return s.equipment;}
+export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'||Array.isArray(e)||!e.owned||typeof e.owned!=='object'||Array.isArray(e.owned)||!e.equipped||typeof e.equipped!=='object'||Array.isArray(e.equipped))return false;
+ for(const [id,d] of Object.entries(e.owned))if(!EQUIPMENT[id]||!Number.isSafeInteger(d)||d<0||d>EQUIPMENT[id].durability)return false;
+ for(const slot of ['weapon','armor']){const id=e.equipped[slot];if(id!==null&&(!EQUIPMENT[id]||EQUIPMENT[id].slot!==slot||!Object.hasOwn(e.owned,id)))return false;}return true;
+}
+export function equipmentBonuses(s){const e=ensureEquipment(s);let attack=0,defense=0;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){attack+=item.attack;defense+=item.defense;}}return {attack,defense};}
+export function equipmentAction(s,kind,id){const e=ensureEquipment(s),item=EQUIPMENT[id];if(!item){s.result=['没有这种装备。'];return false;}
+ if(kind==='equip'){if(!Object.hasOwn(e.owned,id)||e.owned[id]===0){s.result=['装备不存在或已损坏。'];return false;}e.equipped[item.slot]=id;s.result=['已装备'+item.name];return true;}
+ if(kind==='unequip'){if(e.equipped[item.slot]!==id){s.result=['目前没有穿戴此物。'];return false;}e.equipped[item.slot]=null;s.result=['已卸下'+item.name];return true;}
+ if(!['craft','repair'].includes(kind)){s.result=['未知装备行动。'];return false;}
+ if(s.place!=='workshop'){s.result=['请到作坊街使用铁匠炉。'];return false;}
+ if(s.combat||s.pending||s.dead){s.result=['当前无法操作装备。'];return false;}
+ if(kind==='craft'&&Object.hasOwn(e.owned,id)){s.result=['背包已有此装备，暂不支持重复制备。'];return false;}
+ if(kind==='repair'&&(!Object.hasOwn(e.owned,id)||e.owned[id]===item.durability)){s.result=['没有需要修理的装备。'];return false;}
+ const materials=Object.entries(item.materials).map(([k,n])=>[k,kind==='repair'?Math.max(1,Math.ceil(n/3)):n]);
+ const fee=kind==='repair'?Math.max(1,Math.ceil(item.fee/4)):item.fee;
+ if(s.coins<fee||materials.some(([k,n])=>(s.bag[k]||0)<n)){s.result=['铜钱或材料不足。'];return false;}
+ // High tier equipment is in the world catalogue but requires expert trust and preparation.
+ if(item.tier>=3&&(s.relations?.smith||0)<(item.tier-2)*8){s.result=['高阶打造需要铁匠信任与技艺认可。'];return false;}
+ for(const [k,n] of materials)s.bag[k]-=n;s.coins-=fee;e.owned[id]=item.durability;
+ s.result=[(kind==='craft'?'打造':'修复')+item.name+'成功。','花费'+fee+'文，材料已扣除。'];return true;
+}
+export function wearEquipment(s,slot,amount=1){const e=ensureEquipment(s),id=e.equipped[slot];if(!id||e.owned[id]<=0)return null;e.owned[id]=Math.max(0,e.owned[id]-amount);return e.owned[id]===0?EQUIPMENT[id].name+'耐久耗尽，已失效。':null;}
