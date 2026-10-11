@@ -19,3 +19,12 @@ test('autonomous loan respects need, trust and existing debt',async()=>{
  s.day=10;s.npcWorld.social.bonds['farmhand01:shopassistant'].resentment=50;
  assert.equal(autonomousLoans(s,l,10).length,0);
 });
+
+test('debt reputation applies only once on replay',async()=>{
+ const {applyContractReputation}=await import('./npc-contracts.js');
+ const bond={trust:55,resentment:0};
+ const s={npcWorld:{social:{bonds:{'farmhand01:shopassistant':bond}}}};
+ const ledger={entries:[{dueDay:4,lender:'shopassistant',borrower:'farmhand01',status:'defaulted'}]};
+ applyContractReputation(s,ledger,4);applyContractReputation(s,ledger,4);
+ assert.equal(bond.trust,40);assert.equal(bond.resentment,20);
+});
