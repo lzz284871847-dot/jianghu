@@ -600,3 +600,18 @@ test('skilled apprentice can rebuild mentor trust through demonstrated craft',as
  assert.ok(bond.history.some(x=>x.includes('重新赢得师傅认可')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('friends reconcile after recovery without creating money or food',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
+ const left=s.npcWorld.individuals.farmhand01,right=s.npcWorld.individuals.shopassistant;
+ left.coins=8;left.hunger=20;bond.trust=35;bond.resentment=4;
+ const before=[left.coins,right.coins,left.food,right.food];
+ s.day=7;for(const node of Object.values(s.nodes))node.refreshDay=9;
+ socialDay(s,7);
+ assert.equal(bond.trust,36);assert.equal(bond.resentment,3);
+ assert.deepEqual([left.coins,right.coins,left.food,right.food],before);
+ const snapshot=JSON.stringify(s.npcWorld.social);
+ socialDay(s,7);assert.equal(JSON.stringify(s.npcWorld.social),snapshot);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
