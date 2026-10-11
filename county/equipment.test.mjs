@@ -179,3 +179,49 @@ test('repair consumes fewer resources but advances clock and preserves fine qual
  assert.equal(s.equipment.quality.wood_staff,2);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('routine high-tier repairs use common materials and preserve scarce ore',()=>{
+ const s=fresh();s.place='workshop';s.coins=500;s.relations.smith=24;s.bag.iron=100;s.bag.wood=20;s.bag.meteor_ore=2;
+ assert.equal(equipmentAction(s,'craft','heirloom_sword',()=>.5),true);
+ assert.equal(s.bag.meteor_ore,0);
+ s.equipment.owned.heirloom_sword=70;
+ assert.equal(equipmentAction(s,'repair','heirloom_sword'),true);
+ assert.equal(s.equipment.owned.heirloom_sword,100);
+ assert.equal(s.bag.meteor_ore,0);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('mining to forge to actual combat wear to repair can be played end to end',async()=>{
+ const {move,act,choose,martialAction}=await import('./engine.js');
+ const {advance}=await import('./world.js');
+ const s=fresh();
+ assert.equal(move(s,'market'),true);
+ assert.equal((await import('./engine.js')).trade(s,'buy','pick'),true);
+ for(const to of ['county','road','foot'])assert.equal(move(s,to),true);
+ assert.equal(act(s,'wood',()=>.5),true);
+ assert.equal(s.bag.wood,2);
+ for(const to of ['hill','mine'])assert.equal(move(s,to),true);
+ for(let i=0;i<2;i++){
+  assert.equal(act(s,'ore'),true);
+  assert.equal(choose(s,'gather',()=>.5),true);
+ }
+ assert.equal(s.bag.ore,4);
+ for(const to of ['hill','foot','road','county','workshop'])assert.equal(move(s,to),true);
+ advance(s,1440-s.minute+480);
+ assert.equal(act(s,'smelt'),true);
+ assert.equal(equipmentAction(s,'craft','farm_knife',()=>.5),true);
+ assert.equal(equipmentAction(s,'equip','farm_knife'),true);
+ for(const to of ['county','village'])assert.equal(move(s,to),true);
+ assert.equal(martialAction(s,'learn','wood_knife'),true);
+ assert.equal(martialAction(s,'equip','wood_knife'),true);
+ for(const to of ['county','school'])assert.equal(move(s,to),true);
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ s.combat.distance=1;
+ assert.equal(martialAction(s,'turn','strike',()=>.1),true);
+ assert.equal(s.equipment.owned.farm_knife,EQUIPMENT.farm_knife.durability-1);
+ assert.equal(martialAction(s,'turn','flee',()=>.1),true);
+ assert.equal(s.combat,null);
+ for(const to of ['county','workshop'])assert.equal(move(s,to),true);
+ assert.equal(equipmentAction(s,'repair','farm_knife'),true);
+ assert.equal(s.equipment.owned.farm_knife,EQUIPMENT.farm_knife.durability);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
