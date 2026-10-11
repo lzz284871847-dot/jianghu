@@ -15,7 +15,7 @@ const setup=()=>{
 };
 const cash=s=>Object.values(s.npcWorld.individuals).reduce((n,p)=>n+p.coins,0)+s.npcWorld.lineage.children.reduce((n,c)=>n+c.livelihood.coins,0);
 const food=s=>Object.values(s.npcWorld.individuals).reduce((n,p)=>n+p.food,0)+s.npcWorld.lineage.children.reduce((n,c)=>n+c.livelihood.food,0);
-const kill=p=>{p.life={frailty:100,starvationDays:0,deathDay:7000,estateDay:0};};
+const kill=p=>{p.life={...makeLife(),frailty:100,deathDay:7000};};
 
 test('old age reduces recovery and advances bounded frailty only on scheduled days',()=>{
  const p={life:makeLife()};assert.equal(recoveryFor(64),25);assert.equal(recoveryFor(65),18);assert.equal(recoveryFor(75),12);

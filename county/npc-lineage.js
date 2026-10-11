@@ -1,6 +1,7 @@
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.5.0';
-import {npcCareerDay,npcBuyFood,npcCareer} from './npc-economy.js?v=4.5.0';
-import {familyOf} from './npc-households.js?v=4.5.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.6.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.6.0';
+import {npcCareerDay,npcBuyFood,npcCareer} from './npc-economy.js?v=4.6.0';
+import {familyOf} from './npc-households.js?v=4.6.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -70,18 +71,21 @@ export function lineageDay(s,day){
   if(!alive(c)){c.lastDay=day;continue;}
   const age=childAge(c,day);
   if(mortality(c,age,c.hunger,day)){c.lastDay=day;notes.push('陈家孩子'+(l.children.indexOf(c)+1)+'去世，停止谋生，钱粮转交在世家人。');continue;}
+  const v=c.livelihood;
+  const patient={...v,life:c.life,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),hunger:c.hunger};
+  const health=npcHealthDay(s,patient,age,day,ps);notes.push(...health.notes);
+  for(const key of Object.keys(v))v[key]=patient[key];
   if(age>=16){
-   const v=c.livelihood;
    // One available family farm position, released by the father's death. No copied skill.
-   if(!alive(s.npcWorld.individuals.farmhand01)&&c.learning>=20&&v.occupation==='original'&&!l.children.some(x=>x!==c&&alive(x)&&x.livelihood.occupation==='farmer')){
+   if(!health.resting&&!alive(s.npcWorld.individuals.farmhand01)&&c.learning>=20&&v.occupation==='original'&&!l.children.some(x=>x!==c&&alive(x)&&x.livelihood.occupation==='farmer')){
     v.occupation='farmer';v.unemployedDays=0;
     v.history=['第'+day+'日接手父亲留下的农事岗位，从自己的采收经验开始。',...v.history].slice(0,8);
     notes.push('陈家孩子'+(l.children.indexOf(c)+1)+'接手家中农事，能否收成与出售仍有风险。');
    }
    if(v.injuryDays>0){v.injuryDays--;v.energy=Math.min(100,v.energy+12);}else v.energy=Math.min(100,v.energy+recoveryFor(age));
    // The adapter uses the child's persisted purse and skills. No new NPC wallet is minted.
-   const worker={...v,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),home:'market',level:'ordinary',hunger:c.hunger};
-   npcCareerDay(s,worker,day);npcBuyFood(s,worker,day);
+   const worker={...v,life:c.life,id:c.id,name:'陈家孩子'+(l.children.indexOf(c)+1),home:'market',level:'ordinary',hunger:c.hunger};
+   if(!health.resting)npcCareerDay(s,worker,day);npcBuyFood(s,worker,day);
    for(const key of Object.keys(v))v[key]=worker[key];
    const needy=ps.find(p=>(p.age>=60||p.injuryDays>=2||p.unemployedDays>=4||p.hunger>=55)&&(p.coins<12||p.food===0));
    if(needy&&c.hunger<40){
@@ -90,8 +94,8 @@ export function lineageDay(s,day){
    }
   }
   c.hunger=feed(s,c)?Math.max(0,c.hunger-12):Math.min(100,c.hunger+22);
-  const teacher=ps.find(p=>p.energy>=20&&p.hunger<40);
-  if(age>=6&&age<16&&c.hunger<40&&teacher&&day%3===0){teacher.energy-=2;c.learning=Math.min(500,c.learning+1);}
+  const teacher=ps.find(p=>!p.life.sickDays&&p.life.restDay!==day&&p.energy>=20&&p.hunger<40);
+  if(!health.resting&&age>=6&&age<16&&c.hunger<40&&teacher&&day%3===0){teacher.energy-=2;c.learning=Math.min(500,c.learning+1);}
   if(age>=16&&childAge(c,c.lastDay)<16)notes.push('陈二与小莲的孩子成年，开始自行寻找谋生岗位。');
   c.lastDay=day;
  }
@@ -99,7 +103,7 @@ export function lineageDay(s,day){
 }
 export function lineageSummary(s){
  const l=s.npcWorld.lineage;
- return [...parents(s).map(p=>p.name+' · '+p.age+'岁 · '+(p.age>=65?'老年，体力恢复减慢':'在世')+' · 衰弱'+p.life.frailty+'/100。'),...['farmhand01','shopassistant'].filter(id=>!alive(s.npcWorld.individuals[id])).map(id=>s.npcWorld.individuals[id].name+'：第'+s.npcWorld.individuals[id].life.deathDay+'日去世，原有经历保留；未转交钱粮'+s.npcWorld.individuals[id].coins+'文、'+s.npcWorld.individuals[id].food+'份；原有待售产物'+s.npcWorld.individuals[id].cargo+'份保留在遗物中。'),l.marriedDay?'陈二与小莲：夫妻，第'+l.marriedDay+'日结亲。':l.courtshipDay?'陈二与小莲：正在商议成家。':'陈二与小莲：尚未结亲，关系和生计条件仍需积累。',
+ return [...parents(s).map(p=>p.name+' · '+p.age+'岁 · '+(p.age>=65?'老年，体力恢复减慢':'在世')+' · 衰弱'+p.life.frailty+'/100 · '+healthSummary(p,s.day)+'。'),...['farmhand01','shopassistant'].filter(id=>!alive(s.npcWorld.individuals[id])).map(id=>s.npcWorld.individuals[id].name+'：第'+s.npcWorld.individuals[id].life.deathDay+'日去世，原有经历保留；未转交钱粮'+s.npcWorld.individuals[id].coins+'文、'+s.npcWorld.individuals[id].food+'份；原有待售产物'+s.npcWorld.individuals[id].cargo+'份保留在遗物中。'),l.marriedDay?'陈二与小莲：夫妻，第'+l.marriedDay+'日结亲。':l.courtshipDay?'陈二与小莲：正在商议成家。':'陈二与小莲：尚未结亲，关系和生计条件仍需积累。',
  ...(l.conceivedDay?['正在孕育孩子，预计第'+(l.conceivedDay+270)+'日出生。']:[]),
- ...l.children.map((c,i)=>'孩子'+(i+1)+' · '+childAge(c,s.day)+'岁 · '+(alive(c)?childStage(c,s.day):'已故，第'+c.life.deathDay+'日去世')+' · '+(c.hunger>=60?'缺粮':c.hunger>=40?'口粮不足':'饮食尚稳')+' · 学习积累'+c.learning+(!alive(c)?' · 未转交钱粮'+c.livelihood.coins+'文、'+c.livelihood.food+'份':childAge(c,s.day)>=16?' · '+({original:'求职中',carrier:'运输短工',shopworker:'商铺伙计',farmer:'接班农户'}[c.livelihood.occupation])+' · '+npcCareer({...c.livelihood,id:c.id}).label+' · 积蓄'+c.livelihood.coins+'文 · 劳动'+c.livelihood.workDays+'日 · 待售蔬菜'+c.livelihood.cargo+'份':'')+'。')];
+ ...l.children.map((c,i)=>'孩子'+(i+1)+' · '+childAge(c,s.day)+'岁 · '+(alive(c)?childStage(c,s.day):'已故，第'+c.life.deathDay+'日去世')+' · '+(c.hunger>=60?'缺粮':c.hunger>=40?'口粮不足':'饮食尚稳')+' · '+healthSummary(c,s.day)+' · 学习积累'+c.learning+(!alive(c)?' · 未转交钱粮'+c.livelihood.coins+'文、'+c.livelihood.food+'份':childAge(c,s.day)>=16?' · '+({original:'求职中',carrier:'运输短工',shopworker:'商铺伙计',farmer:'接班农户'}[c.livelihood.occupation])+' · '+npcCareer({...c.livelihood,id:c.id}).label+' · 积蓄'+c.livelihood.coins+'文 · 劳动'+c.livelihood.workDays+'日 · 待售蔬菜'+c.livelihood.cargo+'份':'')+'。')];
 }

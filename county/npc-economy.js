@@ -1,9 +1,9 @@
-import {alive} from './npc-mortality.js?v=4.5.0';
-import {familyOf} from './npc-households.js?v=4.5.0';
-import {bondBetween} from './npc-social.js?v=4.5.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.5.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.5.0';
-import {districtStatus} from './society.js?v=4.5.0';
+import {alive} from './npc-mortality.js?v=4.6.0';
+import {familyOf} from './npc-households.js?v=4.6.0';
+import {bondBetween} from './npc-social.js?v=4.6.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.6.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.6.0';
+import {districtStatus} from './society.js?v=4.6.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -21,7 +21,7 @@ export function npcCareer(p){
  return {key,rank,label:['初入行','熟手','资深'][rank],bonus:key==='forage'?0:rank};
 }
 export function npcWork(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];
  const effort=p.careerSkills.trade>=20?13:15;
  if(!pos||p.injuryDays>0||p.energy<Math.max(20,effort)||p.hunger>=80)return false;
@@ -72,7 +72,7 @@ export const PRODUCERS=Object.freeze({
 export function producerOf(p){return PRODUCERS[p.id]??(/^chen-child-[12]$/.test(p.id)?PRODUCERS.farmhand01:null);}
 export const TRANSPORTERS=Object.freeze({dockhand01:'market',dockhand02:'liuxi',carter:'market',laborer:'market'});
 export function npcProduce(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const job=producerOf(p);const effort=job?Math.max(12,job.effort-(p.careerSkills.forage>=20?2:0)):0;
  if(!job||/^chen-child-/.test(p.id)&&p.occupation!=='farmer'||p.injuryDays>0||day%job.interval!==0||p.energy<effort||p.hunger>=80||p.cargo>=5)return false;
  p.energy-=effort;
@@ -82,7 +82,7 @@ export function npcProduce(s,p,day){
  p.cargo++;train(p,'forage');remember(p,'第'+day+'日采获'+job.item+'，等待集市收购。');return true;
 }
 export function npcSellProduce(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const job=producerOf(p);if(!job||p.cargo<=0)return false;
  const shop=job.market,price=marketPrice(s,shop,'sell',job.item);
  if(districtStatus(s,shop).closed||price===null||stockAt(s,shop,job.item)>=MARKET_LIMIT||budgetAt(s,shop)<price)return false;
@@ -90,7 +90,7 @@ export function npcSellProduce(s,p,day){
  remember(p,'第'+day+'日在集市售出'+job.item+'，得到'+price+'文。');return true;
 }
 export function npcTransport(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const shop=TRANSPORTERS[p.id];
  const effort=p.careerSkills.carry>=20?20:22;
  const injuryPeriod=p.careerSkills.carry>=40?23:17;
@@ -132,10 +132,10 @@ export function npcApplyShop(s,p,day){
 // Skilled masters use a small amount of shop material budget to mentor apprentices.
 // No salary or skill is conjured without real training costs.
 export function npcMentor(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
  if(p.id!=='smith'||day%4!==0||p.injuryDays>0||p.energy<20||districtStatus(s,'market').closed||budgetAt(s,'market')<27)return false;
  const apprentice=s.npcWorld.individuals.smithapprentice;
- if(!apprentice||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
+ if(!apprentice||apprentice.life?.sickDays>0||apprentice.life?.restDay===day||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
  const bond=s.npcWorld.social.bonds[bondBetween(s,'smith','smithapprentice')];
  if(bond.trust<30)return false; // A broken apprenticeship stops consuming materials or awarding skill.
  s.commerce.budget.market-=2;
@@ -144,7 +144,7 @@ export function npcMentor(s,p,day){
  return true;
 }
 export function npcCareerDay(s,p,day){
- if(!alive(p))return false;
+ if(!alive(p)||p.life?.sickDays>0||p.life?.restDay===day)return false;
  if(p.id==='smith')npcMentor(s,p,day);
  const before=p.workDays,rankBefore=npcCareer(p).rank;
  if(p.occupation==='shopworker'||p.occupation==='craftsman'){

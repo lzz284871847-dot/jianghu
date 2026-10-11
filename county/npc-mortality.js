@@ -1,12 +1,12 @@
-import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.5.0';
-import {districtStatus} from './society.js?v=4.5.0';
+import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.6.0';
+import {districtStatus} from './society.js?v=4.6.0';
 // First mortality batch covers the established Chen/Xiao-Lian family only.
 export const TRACKED_PARENTS=['farmhand01','shopassistant'];
-export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0});
+export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0,sickDays:0,healthDay:0,restDay:0});
 export const alive=p=>!p?.life?.deathDay;
-export const lifeValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===4&&
- [['frailty',100],['starvationDays',30],['deathDay',day],['estateDay',day]].every(([k,max])=>Number.isSafeInteger(v[k])&&v[k]>=0&&v[k]<=max)&&
- (!v.deathDay||v.frailty===100||v.starvationDays===30)&&(!v.estateDay||v.deathDay>0&&v.estateDay>=v.deathDay);
+export const lifeValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===7&&
+ [['frailty',100],['starvationDays',30],['deathDay',day],['estateDay',day],['sickDays',6],['healthDay',day],['restDay',day]].every(([k,max])=>Number.isSafeInteger(v[k])&&v[k]>=0&&v[k]<=max)&&
+ (v.restDay<=v.healthDay)&&(!v.deathDay||v.frailty===100||v.starvationDays===30)&&(!v.estateDay||v.deathDay>0&&v.estateDay>=v.deathDay);
 export const recoveryFor=(age,injured=false)=>injured?12:age>=75?12:age>=65?18:25;
 export function mortality(p,age,hunger,day){
  const v=p.life;if(!alive(p))return false;
