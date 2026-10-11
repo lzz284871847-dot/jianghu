@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.9.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.9.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.9.0';
-import {districtStatus} from './society.js?v=3.9.0';
+import {bondBetween} from './npc-social.js?v=4.0.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.0.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.0.0';
+import {districtStatus} from './society.js?v=4.0.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -170,7 +170,9 @@ export function npcCareerDay(s,p,day){
   return false;
  }
  // Repeated failure in carriage work makes a worker more reluctant to switch back; family hardship can override some hesitation.
- const reconsiderDays=familyHardship>=5?3:Math.min(9,5+p.history.filter(x=>/搬运短工长期无着/.test(x)).length*2);
+ // A stable work history earns patience for the original trade, unless family hardship is acute.
+ const establishedWorker=p.workDays>=20&&familyHardship<5;
+ const reconsiderDays=familyHardship>=5?3:Math.min(12,5+p.history.filter(x=>/搬运短工长期无着/.test(x)).length*2+(establishedWorker?3:0));
  const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<reconsiderDays;});
  // Recent injury makes a recovered worker hesitate before returning to heavy carriage work.
  // Severe household hardship shortens (but never erases) the caution after a carriage injury.
