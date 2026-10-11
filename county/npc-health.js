@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=4.16.0';
-import {people} from './content.js?v=4.16.0';
-import {marketPrice,stockAt} from './commerce.js?v=4.16.0';
-import {districtStatus} from './society.js?v=4.16.0';
+import {alive} from './npc-mortality.js?v=4.17.0';
+import {people} from './content.js?v=4.17.0';
+import {marketPrice,stockAt} from './commerce.js?v=4.17.0';
+import {districtStatus} from './society.js?v=4.17.0';
 const record=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 // Daily appointments are simulated inside the doctor's existing 08:00–18:00 hours.
 // Rain/undernutrition can cause a short illness; no extra world RNG is consumed.
