@@ -7,3 +7,15 @@ test('open debt blocks repeated borrowing',()=>{const s={day:1,npcWorld:{individ
 test('unpaid debt defaults without minting coins',()=>{const s={day:1,npcWorld:{individuals:{a:{name:'A',coins:20},b:{name:'B',coins:0}}}};const l=makeContracts();openLoan(s,l,'a','b',5,3);s.npcWorld.individuals.b.coins=0;s.day=3;settleContracts(s,l,3);assert.equal(l.entries[0].status,'defaulted');assert.equal(s.npcWorld.individuals.a.coins,15);assert.deepEqual(settleContracts(s,l,3),[]);});
 
 test('expired debt affects friendship',async()=>{const {applyContractReputation}=await import('./npc-contracts.js');const s={npcWorld:{social:{bonds:{'farmhand01:shopassistant':{trust:55,resentment:0}}}}};const ledger={entries:[{dueDay:4,lender:'shopassistant',borrower:'farmhand01',status:'defaulted'}]};applyContractReputation(s,ledger,4);assert.equal(s.npcWorld.social.bonds['farmhand01:shopassistant'].trust,40);assert.equal(s.npcWorld.social.bonds['farmhand01:shopassistant'].resentment,20);});
+
+test('autonomous loan respects need, trust and existing debt',async()=>{
+ const {autonomousLoans}=await import('./npc-contracts.js');
+ const s={day:5,npcWorld:{individuals:{farmhand01:{name:'陈二',coins:1,hunger:70},shopassistant:{name:'小莲',coins:20}},social:{bonds:{'farmhand01:shopassistant':{trust:55,resentment:0}}}}};
+ const l=makeContracts(4);
+ assert.equal(autonomousLoans(s,l,5).length,1);
+ assert.equal(s.npcWorld.individuals.farmhand01.coins,6);
+ assert.equal(s.npcWorld.individuals.shopassistant.coins,15);
+ assert.equal(autonomousLoans(s,l,5).length,0);
+ s.day=10;s.npcWorld.social.bonds['farmhand01:shopassistant'].resentment=50;
+ assert.equal(autonomousLoans(s,l,10).length,0);
+});
