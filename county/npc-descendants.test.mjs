@@ -63,7 +63,7 @@ test('4.2 children migrate with empty purses, no historical wages and unchanged 
  const s=setup();for(const node of Object.values(s.nodes))node.refreshDay=7001;
  const c=s.npcWorld.lineage.children[0];delete c.livelihood;
  const old=JSON.stringify([s.coins,s.bag,s.commerce,s.npcWorld.individuals,s.npcWorld.households]);
- const x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld.lineage.children[0].livelihood,makeChildLivelihood());
+ const x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld.lineage.children[0].livelihood,makeChildLivelihood(c.id,c.lastDay));
  assert.equal(JSON.stringify([x.coins,x.bag,x.commerce,x.npcWorld.individuals,x.npcWorld.households]),old);
  assert.deepEqual(restore(JSON.stringify(x)).npcWorld.lineage,x.npcWorld.lineage);
 });
