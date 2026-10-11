@@ -24,8 +24,10 @@ test('craft requires location and materials, equip affects combat, durability ru
  assert.equal(equipmentAction(s,'craft','wood_staff'),true);
  assert.equal(s.equipment.owned.wood_staff,35);
  assert.equal(equipmentAction(s,'equip','wood_staff'),true);
+ assert.equal(equipmentBonuses(s).attack,0);
+ s.martial.equipped='staff';
  assert.equal(equipmentBonuses(s).attack,2);
- const c=newCombat('brawler','qinghe_fist');c.distance=1;
+ const c=newCombat('brawler','staff');c.distance=1;
  const before=s.equipment.owned.wood_staff;
  const result=resolve(c,s,'strike',()=>0.1);
  assert.equal(result.enemyHpDelta,-13);
@@ -50,4 +52,22 @@ test('advanced gear needs smith trust; armor reduces incoming damage',()=>{
 test('invalid gear or equipped references cannot be imported',()=>{
  const s=fresh();s.equipment.equipped.weapon='heirloom_sword';
  assert.throws(()=>restore(JSON.stringify(s)),/装备数据无效/);
+});
+
+test('unmatched weapons do not buff fists and named weapon moves respect affinity',async()=>{
+ const {martialAction}=await import('./engine.js');
+ const s=fresh();s.place='workshop';s.bag.wood=20;s.bag.iron=20;
+ assert.equal(equipmentAction(s,'craft','iron_sword'),true);
+ assert.equal(equipmentAction(s,'equip','iron_sword'),true);
+ assert.equal(equipmentBonuses(s).attack,0);
+ s.place='school';
+ assert.equal(martialAction(s,'learn','basic_sword'),true);
+ assert.equal(martialAction(s,'equip','basic_sword'),true);
+ assert.equal(equipmentBonuses(s).attack,6);
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ s.combat.distance=1;
+ const before=s.equipment.owned.iron_sword;
+ assert.equal(martialAction(s,'move','basic_sword_1',()=>.1),true);
+ assert.equal(s.equipment.owned.iron_sword,before-1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
