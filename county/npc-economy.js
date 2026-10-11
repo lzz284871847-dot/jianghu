@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=2.8.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.8.0';
-import {MARKET_LIMIT} from './commerce.js?v=2.8.0';
-import {districtStatus} from './society.js?v=2.8.0';
+import {bondBetween} from './npc-social.js?v=2.9.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.9.0';
+import {MARKET_LIMIT} from './commerce.js?v=2.9.0';
+import {districtStatus} from './society.js?v=2.9.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -148,7 +148,8 @@ export function npcCareerDay(s,p,day){
  p.unemployedDays=Math.min(100000,p.unemployedDays+1);
  const familyId=familyOf(p.id);
  const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
- const searchAfter=familyHardship>=3?1:3;
+ const familyTrust=familyId?s.npcWorld.households[familyId]?.trust??50:50;
+ const searchAfter=familyHardship>=3||familyTrust>=80?1:3;
  if(['original','carrier'].includes(p.occupation)&&p.unemployedDays>=searchAfter&&npcApplyShop(s,p,day))return false;
  const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=20;
  if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
