@@ -1,3 +1,4 @@
+import {MARTIAL_ARTS} from './martial-data.js?v=0.2.1';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
  wood_staff:{name:'木棍',slot:'weapon',kind:'棍法',tier:1,attack:2,defense:0,durability:35,materials:{wood:2},fee:2},
@@ -27,9 +28,9 @@ export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'
  for(const [id,d] of Object.entries(e.owned))if(!EQUIPMENT[id]||!Number.isSafeInteger(d)||d<0||d>EQUIPMENT[id].durability)return false;
  for(const slot of ['weapon','armor']){const id=e.equipped[slot];if(id!==null&&(!EQUIPMENT[id]||EQUIPMENT[id].slot!==slot||!Object.hasOwn(e.owned,id)))return false;}return true;
 }
-export function equipmentBonuses(s){const e=ensureEquipment(s);let attack=0,defense=0;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){attack+=item.attack;defense+=item.defense;}}return {attack,defense};}
+export function equipmentBonuses(s,martialId=s.martial?.equipped){const e=ensureEquipment(s);let attack=0,defense=0;const martialKind=martialId&&MARTIAL_ARTS[martialId]?.category;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){if(item.slot==='weapon'&&item.kind===martialKind)attack+=item.attack;if(item.slot==='armor')defense+=item.defense;}}return {attack,defense};}
 export function equipmentAction(s,kind,id){const e=ensureEquipment(s),item=EQUIPMENT[id];if(!item){s.result=['没有这种装备。'];return false;}
- if(kind==='equip'){if(!Object.hasOwn(e.owned,id)||e.owned[id]===0){s.result=['装备不存在或已损坏。'];return false;}e.equipped[item.slot]=id;s.result=['已装备'+item.name];return true;}
+ if(kind==='equip'){if(!Object.hasOwn(e.owned,id)||e.owned[id]===0){s.result=['装备不存在或已损坏。'];return false;}e.equipped[item.slot]=id;s.result=['已装备'+item.name];if(item.slot==='weapon'&&item.kind!==MARTIAL_ARTS[s.martial?.equipped]?.category)s.result.push('当前武学与兵器不适配，无法获得武器攻击加成。');return true;}
  if(kind==='unequip'){if(e.equipped[item.slot]!==id){s.result=['目前没有穿戴此物。'];return false;}e.equipped[item.slot]=null;s.result=['已卸下'+item.name];return true;}
  if(!['craft','repair'].includes(kind)){s.result=['未知装备行动。'];return false;}
  if(s.place!=='workshop'){s.result=['请到作坊街使用铁匠炉。'];return false;}
