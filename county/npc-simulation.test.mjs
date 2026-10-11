@@ -830,3 +830,20 @@ test('craft experience prevents a novice failure while retaining funded wages',a
  assert.equal(p.coins,noviceCoins+4);assert.equal(s.commerce.budget.market,noviceBudget-4);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('experienced carrier avoids a novice injury but risk remains on other days',async()=>{
+ const {npcTransport}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.injuryDays=0;p.hunger=0;p.energy=100;p.careerSkills.carry=39;
+ const noviceDay=Array.from({length:100},(_,i)=>i+1).find(d=>(d+p.id.length)%17===0&&(d+p.id.length)%23!==0);
+ assert.equal(npcTransport(s,p,noviceDay),true);
+ assert.equal(p.injuryDays,3);
+ p.injuryDays=0;p.energy=100;p.careerSkills.carry=40;
+ assert.equal(npcTransport(s,p,noviceDay),true);
+ assert.equal(p.injuryDays,0);
+ const skilledRiskDay=Array.from({length:100},(_,i)=>i+1).find(d=>(d+p.id.length)%23===0);
+ p.energy=100;
+ assert.equal(npcTransport(s,p,skilledRiskDay),true);
+ assert.equal(p.injuryDays,3);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
