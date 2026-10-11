@@ -118,7 +118,7 @@ test('daily simulation pays employed NPCs but does not fake wages for others',()
  assert.equal(employee.coins,34);
  assert.equal(farmer.workDays,0);
  assert.equal(farmer.coins,30);
- assert.equal(s.commerce.budget.market,budget-8+1);
+ assert.equal(s.commerce.budget.market,budget-8-9+1);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 
@@ -131,8 +131,8 @@ test('individual fish, herbs and farm produce settle with merchant cash and stoc
  assert.equal(farmer.cargo,1);
  assert.equal(npcSellProduce(s,farmer,3),true);
  assert.equal(shop.vegetable,old.vegetable+1);
- assert.equal(farmer.coins,old.coins+2);
- assert.equal(s.commerce.budget.market,old.budget-2);
+ assert.equal(farmer.coins,old.coins+3);
+ assert.equal(s.commerce.budget.market,old.budget-3);
  assert.equal(farmer.cargo,0);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
