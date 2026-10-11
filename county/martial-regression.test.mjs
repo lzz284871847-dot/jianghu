@@ -279,3 +279,18 @@ test('all twelve opponents are accessible and survive save/load',()=>{
   assert.equal(restore(JSON.stringify(s)).combat.opponent,opponent);
  }
 });
+
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+test('county app, modules and offline cache all use the same release version',()=>{
+ const dir=fileURLToPath(new URL('.',import.meta.url));
+ const modules=['index.html','sw.js','app.js','storage.js','commands.js','world.js','engine.js','content.js','progression.js','martial-moves.js','martial-progression.js','combat-core.js','injury.js','manifest.webmanifest'];
+ for(const name of modules){
+  const content=readFileSync(join(dir,name),'utf8');
+  assert.doesNotMatch(content,/\?v=0\.(?:1|2)\.0/,name+' stale cache-buster');
+ }
+ assert.match(readFileSync(join(dir,'sw.js'),'utf8'),/VERSION='0\.2\.1'/);
+ assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='0\.2\.1'/);
+ assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 0\.2\.1/);
+});
