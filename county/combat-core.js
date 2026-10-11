@@ -1,6 +1,6 @@
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=4.30.0';
-import {injuryEffects} from './injury.js?v=4.30.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=4.30.0';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=4.30.1';
+import {injuryEffects} from './injury.js?v=4.30.1';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=4.30.1';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);
@@ -32,7 +32,7 @@ export function resolve(c,player,action,rng=()=>.5){
  if(!legal(c,action))throw Error('当前距离无法执行此行动');
  if(player.dead||player.hp<=0)throw Error('角色已经死亡');
  const energy={strike:5,heavy:11,guard:3,feint:6,sidestep:5,advance:4,retreat:4,flee:6}[action];
- if(c.practice&&action==='flee'){c.ended='escaped';return {round:c.round,action,ended:'escaped',log:['你示意收手，陪练立即停止。'],distanceAfter:c.distance};}
+ if(c.practice&&action==='flee'){c.ended='escaped';return {round:c.round,action,enemyIntent:'停止陪练',ended:'escaped',log:['你示意收手，陪练立即停止。'],distanceAfter:c.distance};}
  if(player.energy<energy)throw Error('精力不足');
  const enemy=intent(c),before={hp:player.hp,energy:player.energy,enemyHp:c.enemyHp};
  const log=[],injuries=player.injuries||{},effects=injuryEffects(player);
