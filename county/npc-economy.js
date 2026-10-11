@@ -1,3 +1,4 @@
+import {familyOf} from './npc-households.js';
 import {bondBetween} from './npc-social.js?v=2.0.0';
 import {marketPrice,stockAt,budgetAt} from './commerce.js?v=2.0.0';
 import {MARKET_LIMIT} from './commerce.js?v=2.0.0';
@@ -136,8 +137,11 @@ export function npcCareerDay(s,p,day){
  if(p.id==='smithapprentice'&&p.occupation==='original'&&p.workDays>=20&&p.careerSkills.craft>=20){p.occupation='craftsman';remember(p,'第'+day+'日学徒完成二十次合格工序并积累足够技艺，成为正式铁匠，工钱随手艺提升。');}
  if(p.workDays>before){p.unemployedDays=0;return true;}
  p.unemployedDays=Math.min(100000,p.unemployedDays+1);
- if(['original','carrier'].includes(p.occupation)&&p.unemployedDays>=3&&npcApplyShop(s,p,day))return false;
- if(p.occupation==='original'&&p.level==='ordinary'&&p.unemployedDays>=3&&p.coins<=35&&p.energy>=22){
+ const familyId=familyOf(p.id);
+ const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
+ const searchAfter=familyHardship>=3?1:3;
+ if(['original','carrier'].includes(p.occupation)&&p.unemployedDays>=searchAfter&&npcApplyShop(s,p,day))return false;
+ if(p.occupation==='original'&&p.level==='ordinary'&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
  }
