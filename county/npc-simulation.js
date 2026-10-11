@@ -11,11 +11,12 @@ const ordinary=[
 export const NPC_LEVELS=['detailed','ordinary','background'];
 const bounded=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
 const makePerson=(id,name,home,role,age,level)=>({id,name,home,place:home,role,age,level,coins:30,food:3,energy:100,hunger:0,workDays:0,lastDay:1,history:[]});
-export function makeNPCWorld(){
+export function makeNPCWorld(day=1){
  const individuals={};
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
  for(const [id,name,place,role,age] of ordinary)individuals[id]=makePerson(id,name,place,role,age,'ordinary');
- return {individuals,background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:1};
+ for(const person of Object.values(individuals))person.lastDay=day;
+ return {individuals,background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
 }
 export function npcWorldValid(s){
  const root=s.npcWorld;if(!root||typeof root!=='object'||Array.isArray(root)||!bounded(root.lastDay,s.day)||root.lastDay<1||!root.individuals||typeof root.individuals!=='object'||Array.isArray(root.individuals))return false;
@@ -41,7 +42,7 @@ export function tickNPCs(s,day){
   else p.hunger=Math.min(100,p.hunger+22);
   const market=p.home==='liuxi'?'liuxi':'market';
   const grain=s.commerce.stock[market]?.grain??0;
-  if(p.food===0&&grain>3&&p.coins>=2){p.coins-=2;p.food=2;record(p,'第'+day+'日自备口粮，花费2文。');}
+  if(p.food===0&&grain>3&&p.coins>=2){p.coins-=2;p.food=2;record(p,'第'+day+'日从乡邻处取得口粮，花费2文。');}
   else if(p.hunger>=60&&p.hunger<82)record(p,'第'+day+'日缺粮，决定寻找新的谋生办法。');
   // Work is not a guaranteed income button: idle residents lose purchasing power.
   p.energy=Math.max(0,p.energy-(p.level==='detailed'?10:15));
