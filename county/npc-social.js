@@ -1,5 +1,5 @@
-import {travelBusy} from './npc-journeys.js?v=4.27.0';
-import {alive} from './npc-mortality.js?v=4.27.0';
+import {travelBusy} from './npc-journeys.js?v=4.28.0';
+import {alive} from './npc-mortality.js?v=4.28.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -11,6 +11,13 @@ export const BONDS=Object.freeze({
 export const SIBLING_BOND='chen-child-1:chen-child-2';
 const siblings=s=>s.npcWorld?.lineage?.children??[];
 const siblingSpec={a:'chen-child-1',b:'chen-child-2',kind:'sibling'};
+const kinSpecs=s=>{
+ const specs={};
+ for(const c of siblings(s))for(const parent of ['farmhand01','shopassistant'])specs[parent+':'+c.id]={a:parent,b:c.id,kind:'parentchild',bornDay:c.bornDay};
+ if(siblings(s).length===2)specs[SIBLING_BOND]={...siblingSpec,bornDay:siblings(s)[1].bornDay};
+ return specs;
+};
+const recordedSpecs=s=>Object.fromEntries(Object.entries(kinSpecs(s)).filter(([id])=>s.npcWorld.social.bonds[id]));
 const validInt=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
 export function makeSocial(day=1){
  return {lastDay:day,bonds:Object.fromEntries(Object.entries(BONDS).map(([id,b])=>[id,{kind:b.kind,trust:b.kind==='competitor'?35:55,resentment:b.kind==='competitor'?20:0,lastEventDay:day,history:[]}]))};
@@ -19,30 +26,34 @@ export function socialValid(s){
  const social=s.npcWorld?.social;
  if(!social||typeof social!=='object'||Array.isArray(social)||!validInt(social.lastDay,s.day)||social.lastDay<1||!social.bonds||typeof social.bonds!=='object'||Array.isArray(social.bonds))return false;
  const extra=Object.keys(social.bonds).filter(id=>!Object.hasOwn(BONDS,id));
- if(extra.some(id=>id!==SIBLING_BOND)||extra.length&&siblings(s).length!==2)return false;
- const specs={...BONDS,...(extra.length?{[SIBLING_BOND]:siblingSpec}:{})};
+ const kin=kinSpecs(s);
+ if(extra.some(id=>!Object.hasOwn(kin,id)))return false;
+ const specs={...BONDS,...recordedSpecs(s)};
  return Object.entries(specs).every(([id,spec])=>{
   const b=social.bonds[id];
-  return (id!==SIBLING_BOND||b?.history?.length>0&&b.lastEventDay>=siblings(s)[1].bornDay&&Object.keys(b).length===5)&&b&&typeof b==='object'&&!Array.isArray(b)&&b.kind===spec.kind&&validInt(b.trust,100)&&validInt(b.resentment,100)&&validInt(b.lastEventDay,s.day)&&b.lastEventDay>=1&&Array.isArray(b.history)&&b.history.length<=6&&b.history.every(x=>typeof x==='string'&&x.length<=160);
+  return (!Object.hasOwn(kin,id)||b?.history?.length>0&&b.lastEventDay>=spec.bornDay&&Object.keys(b).length===5)&&b&&typeof b==='object'&&!Array.isArray(b)&&b.kind===spec.kind&&validInt(b.trust,100)&&validInt(b.resentment,100)&&validInt(b.lastEventDay,s.day)&&b.lastEventDay>=1&&Array.isArray(b.history)&&b.history.length<=6&&b.history.every(x=>typeof x==='string'&&x.length<=160);
  });
 }
 export function bondBetween(s,a,b){
- return Object.entries({...BONDS,...(s.npcWorld.social.bonds[SIBLING_BOND]?{[SIBLING_BOND]:siblingSpec}:{})}).find(([,x])=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a))?.[0]??null;
+ return Object.entries({...BONDS,...recordedSpecs(s)}).find(([,x])=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a))?.[0]??null;
 }
 function event(b,day,text){
  b.history=[text,...b.history].slice(0,6);b.lastEventDay=day;
 }
 // New kinship trust follows recorded help, never retrospective save migration.
-export function recordSiblingBond(s,a,b,day,text){
- const children=siblings(s);
- if(children.length!==2||a===b||![a,b].every(id=>children.some(c=>c.id===id&&alive(c)&&c.bornDay<=day&&!travelBusy(s,id))))return false;
+export function recordFamilyBond(s,a,b,day,text){
+ const match=Object.entries(kinSpecs(s)).find(([,x])=>(x.a===a&&x.b===b)||(x.a===b&&x.b===a));
+ if(!match)return false;
+ const [id,spec]=match,children=siblings(s);
+ if(spec.bornDay>day||![a,b].every(id=>{const p=s.npcWorld.individuals[id]??children.find(c=>c.id===id);return !!p&&alive(p)&&!travelBusy(s,id);}))return false;
  const bonds=s.npcWorld.social.bonds;
- const v=bonds[SIBLING_BOND]??={kind:'sibling',trust:50,resentment:0,lastEventDay:0,history:[]};
+ const v=bonds[id]??={kind:spec.kind,trust:50,resentment:0,lastEventDay:0,history:[]};
  const entry='第'+day+'日'+text;
  if(v.lastEventDay===day&&v.history.includes(entry))return false;
  if(v.lastEventDay!==day){v.trust=Math.min(100,v.trust+1);v.resentment=Math.max(0,v.resentment-1);}
  event(v,day,entry);return true;
 }
+export const recordSiblingBond=(s,a,b,day,text)=>siblings(s).some(c=>c.id===a)&&siblings(s).some(c=>c.id===b)&&recordFamilyBond(s,a,b,day,text);
 export function socialDay(s,day){
  if(s.npcWorld.social.lastDay>=day)return [];
  const notes=[];
@@ -119,7 +130,7 @@ export function ambitionDay(s,p,day,applyShop){
 }
 
 export function socialSummary(s){
- const labels={friend:'朋友',competitor:'谋生竞争',employer:'雇佣',mentor:'手艺师徒',neighbor:'邻里',sibling:'兄弟姐妹'};
+ const labels={friend:'朋友',competitor:'谋生竞争',employer:'雇佣',mentor:'手艺师徒',neighbor:'邻里',sibling:'兄弟姐妹',parentchild:'亲子'};
  const name=id=>s.npcWorld.individuals[id]?.name??'陈家孩子'+(siblings(s).findIndex(c=>c.id===id)+1);
- return Object.entries({...BONDS,...(s.npcWorld.social.bonds[SIBLING_BOND]?{[SIBLING_BOND]:siblingSpec}:{})}).map(([id,b])=>{const v=s.npcWorld.social.bonds[id];return name(b.a)+'与'+name(b.b)+' · '+labels[b.kind]+' · 信任'+v.trust+'/100 · 隔阂'+v.resentment+'/100'+(v.history.length?' · 最近：'+v.history[0]:' · 尚无新的共同经历');});
+ return Object.entries({...BONDS,...recordedSpecs(s)}).map(([id,b])=>{const v=s.npcWorld.social.bonds[id];return name(b.a)+'与'+name(b.b)+' · '+labels[b.kind]+' · 信任'+v.trust+'/100 · 隔阂'+v.resentment+'/100'+(v.history.length?' · 最近：'+v.history[0]:' · 尚无新的共同经历');});
 }
