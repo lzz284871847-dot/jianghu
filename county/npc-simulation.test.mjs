@@ -815,3 +815,18 @@ test('experienced emergency transporter works with conserved effort and funded w
  assert.equal(s.commerce.budget.market,budget-3);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('craft experience prevents a novice failure while retaining funded wages',async()=>{
+ const {npcWork}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.smithapprentice;
+ p.occupation='original';p.injuryDays=0;p.energy=60;p.hunger=0;
+ p.careerSkills.craft=0;
+ const noviceBudget=s.commerce.budget.market,noviceCoins=p.coins;
+ const day=Array.from({length:63},(_,i)=>i+1).find(d=>(d+p.id.length)%7===0&&(d+p.id.length)%9!==0);
+ assert.equal(npcWork(s,p,day),false);
+ assert.equal(p.coins,noviceCoins);assert.equal(s.commerce.budget.market,noviceBudget);
+ p.careerSkills.craft=40;p.energy=60;
+ assert.equal(npcWork(s,p,day),true);
+ assert.equal(p.coins,noviceCoins+4);assert.equal(s.commerce.budget.market,noviceBudget-4);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});

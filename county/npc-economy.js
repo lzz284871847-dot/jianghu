@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.2.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.2.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.2.0';
-import {districtStatus} from './society.js?v=3.2.0';
+import {bondBetween} from './npc-social.js?v=3.3.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.3.0';
+import {MARKET_LIMIT} from './commerce.js?v=3.3.0';
+import {districtStatus} from './society.js?v=3.3.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -23,7 +23,8 @@ export function npcWork(s,p,day){
   const skill=p.careerSkills.craft;
   const badWeather=s.weather==='雨'?1:0;
   const tired=p.energy<50?1:0;
-  const threshold=Math.max(2,7-Math.floor(skill/8)-badWeather-tired);
+  // Practice reduces assessment errors, but rain and fatigue still carry risk.
+  const threshold=Math.max(2,7+Math.min(3,Math.floor(skill/20))-badWeather-tired);
   if((day+p.id.length)%threshold===0){
    p.energy=Math.max(0,p.energy-12);
    remember(p,'第'+day+'日锻造工序失误，未通过验收；耗费精力，未得工钱。');
