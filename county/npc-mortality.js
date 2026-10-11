@@ -1,5 +1,5 @@
-import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.10.0';
-import {districtStatus} from './society.js?v=4.10.0';
+import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.11.0';
+import {districtStatus} from './society.js?v=4.11.0';
 // First mortality batch covers the established Chen/Xiao-Lian family only.
 export const TRACKED_PARENTS=['farmhand01','shopassistant'];
 export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0,sickDays:0,healthDay:0,restDay:0,illnessDays:0,careDays:0});
