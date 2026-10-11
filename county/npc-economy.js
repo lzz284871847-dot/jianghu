@@ -1,4 +1,4 @@
-import {familyOf} from './npc-households.js';
+import {familyOf} from './npc-households.js?v=4.2.0';
 import {bondBetween} from './npc-social.js?v=4.2.0';
 import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.2.0';
 import {MARKET_LIMIT} from './commerce.js?v=4.2.0';

@@ -90,3 +90,12 @@ test('a save with a born child restores without changing parents, family stores 
  for(const node of Object.values(s.nodes))node.refreshDay=s.day%2===0?s.day+1:s.day+2;
  const x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld,s.npcWorld);
 });
+
+test('every county module import uses the current offline version, including storage and commands',async()=>{
+ const {readFile,readdir}=await import('node:fs/promises');
+ const {VERSION}=await import('./content.js');
+ for(const file of (await readdir(new URL('./',import.meta.url))).filter(f=>f.endsWith('.js'))){
+  const source=await readFile(new URL('./'+file,import.meta.url),'utf8');
+  for(const match of source.matchAll(/['"]\.\/[^'"]+\.js(?:\?v=([^'"]+))?['"]/g))assert.equal(match[1],VERSION,file+' has a stale module reference');
+ }
+});

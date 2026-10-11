@@ -1,4 +1,4 @@
-import {stockAt,budgetAt} from './commerce.js?v=2.0.0';
+import {stockAt,budgetAt} from './commerce.js?v=4.2.0';
 // 青河县生计：每日短工名额、雇主履约和天气影响，不由玩家操作自动保底收益。
 export const JOBS=Object.freeze({
  county:{name:'县城杂役',slots:2,base:12,success:.83},
