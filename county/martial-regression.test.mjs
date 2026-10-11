@@ -147,3 +147,18 @@ test('counter fighter punishes reckless heavy strikes but not ordinary strikes',
  assert.equal(intent(w),'heavy');
  assert.doesNotThrow(()=>restore(JSON.stringify(heavy)));
 });
+
+test('feint breaks a guarding expert stance and opens the next strike',()=>{
+ const direct=fresh(),guarding=newCombat('boxer','qinghe_fist');guarding.distance=1;
+ const baseline=resolve(guarding,direct,'strike',()=>0.1);
+ assert.equal(baseline.enemyHpDelta,-3);
+ const clever=fresh(),c=newCombat('boxer','qinghe_fist');c.distance=1;
+ const feint=resolve(c,clever,'feint',()=>0.1);
+ assert.equal(feint.enemyIntent,'guard');
+ assert.equal(c.enemyGuard,0);
+ assert.equal(c.enemyStance,'失衡');
+ const followup=resolve(c,clever,'strike',()=>0.1);
+ assert.equal(followup.enemyHpDelta,-11);
+ assert.equal(c.enemyStance,'守势');
+ assert.doesNotThrow(()=>restore(JSON.stringify(clever)));
+});
