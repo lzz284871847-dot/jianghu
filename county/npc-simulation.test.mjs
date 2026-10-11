@@ -793,3 +793,14 @@ test('experienced forager conserves effort without producing extra cargo',async(
  assert.equal(p.energy,1);assert.equal(p.cargo,1);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('experienced shopworker saves effort without raising merchant-funded wages',async()=>{
+ const {npcWork}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ p.occupation='original';p.injuryDays=0;p.energy=30;p.hunger=0;p.careerSkills.trade=20;
+ const budget=s.commerce.budget.market,coins=p.coins;
+ assert.equal(npcWork(s,p,3),true);
+ assert.equal(p.energy,17);assert.equal(p.coins,coins+4);
+ assert.equal(s.commerce.budget.market,budget-4);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
