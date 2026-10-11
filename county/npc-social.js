@@ -47,6 +47,9 @@ export function socialDay(s,day){
   }else if(b.kind==='employer'&&right.unemployedDays>=3&&day%4===0){
    b.trust=Math.max(0,b.trust-2);b.resentment=Math.min(100,b.resentment+1);
    event(b,day,'连续停工使雇佣关系承压。');
+  }else if(b.kind==='employer'&&right.unemployedDays===0&&b.resentment>0&&day%6===0){
+   b.resentment=Math.max(0,b.resentment-2);b.trust=Math.min(100,b.trust+1);
+   event(b,day,'恢复稳定工作后，雇佣双方逐渐消除旧怨。');
   }else if(b.kind==='mentor'&&right.careerSkills.craft>=20&&b.trust<90&&day%8===0){
    b.trust++;event(b,day,'学徒技艺进步，师徒信任增加。');
   }
