@@ -13,7 +13,7 @@ export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5,action=''){
  
   if(enemy==='advance')c.distance=clamp(c.distance-1,0,4);
   else if(enemy==='retreat')c.distance=clamp(c.distance+1,0,4);
-  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';}
+  else if(enemy==='guard'){c.enemyGuard=5;c.enemyStance='守势';if(['counter','adapt'].includes(OPPONENTS[c.opponent].style)&&action==='heavy'&&c.distance<=2&&rng()<.7){const damage=Math.max(1,12-c.playerGuard);player.hp=Math.max(0,player.hp-damage);log.push('对手看穿重击破绽，守中反击造成'+damage+'点伤害。');}}
   else if(enemy==='feint'){c.playerGuard=0;c.enemyStance='游走';}
   else if(c.distance<= (['reach'].includes(OPPONENTS[c.opponent].style)?3:2)){
    const hit=clamp(.72-(action==='sidestep'?.24:0)-(action==='guard'?.12:0),.12,.9);
