@@ -1,4 +1,4 @@
-import {npcWork,npcBuyFood} from './npc-economy.js?v=1.2.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport} from './npc-economy.js?v=1.2.0';
 import {people,places} from './content.js?v=1.2.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
@@ -11,7 +11,7 @@ const ordinary=[
 ];
 export const NPC_LEVELS=['detailed','ordinary','background'];
 const bounded=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
-const makePerson=(id,name,home,role,age,level)=>({id,name,home,place:home,role,age,level,coins:30,food:3,energy:100,hunger:0,workDays:0,lastDay:1,history:[]});
+const makePerson=(id,name,home,role,age,level)=>({id,name,home,place:home,role,age,level,coins:30,food:3,cargo:0,energy:100,hunger:0,workDays:0,lastDay:1,history:[]});
 export function makeNPCWorld(day=1){
  const individuals={};
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
@@ -25,7 +25,7 @@ export function npcWorldValid(s){
  if(Object.keys(root.individuals).length!==Object.keys(canonical.individuals).length)return false;
  for(const [id,p] of Object.entries(root.individuals)){
   const init=canonical.individuals[id];
-  if(!init||!p||p.id!==id||p.name!==init.name||p.home!==init.home||p.role!==init.role||!Object.hasOwn(places,p.place)||!NPC_LEVELS.includes(p.level)||!bounded(p.age,130)||!bounded(p.coins,1000000)||!bounded(p.food,100)||!bounded(p.energy,100)||!bounded(p.hunger,100)||!bounded(p.workDays,100000)||!bounded(p.lastDay,s.day)||p.lastDay<1||!Array.isArray(p.history)||p.history.length>8||p.history.some(t=>typeof t!=='string'||t.length>180))return false;
+  if(!init||!p||p.id!==id||p.name!==init.name||p.home!==init.home||p.role!==init.role||!Object.hasOwn(places,p.place)||!NPC_LEVELS.includes(p.level)||!bounded(p.age,130)||!bounded(p.coins,1000000)||!bounded(p.food,100)||!bounded(p.cargo,5)||!bounded(p.energy,100)||!bounded(p.hunger,100)||!bounded(p.workDays,100000)||!bounded(p.lastDay,s.day)||p.lastDay<1||!Array.isArray(p.history)||p.history.length>8||p.history.some(t=>typeof t!=='string'||t.length>180))return false;
  }
  if(!root.background||typeof root.background!=='object'||Array.isArray(root.background)||Object.keys(root.background).length!==3)return false;
  return Object.entries(canonical.background).every(([area])=>{const b=root.background[area];return !!b&&bounded(b.population,1000000)&&bounded(b.families,300000)&&b.families<=b.population;});
@@ -42,6 +42,9 @@ export function tickNPCs(s,day){
   // Work and food are settled against real merchant funds and market inventories.
   // A closed or insolvent shop cannot pay wages or sell grain.
   npcWork(s,p,day);
+  npcProduce(s,p,day);
+  npcSellProduce(s,p,day);
+  npcTransport(s,p,day);
   const bought=npcBuyFood(s,p,day);
   if(!bought&&p.hunger>=60&&p.hunger<82)record(p,'第'+day+'日缺粮，决定寻找新的谋生办法。');
   // No fictional workDays gain on days without an actual paid job.
