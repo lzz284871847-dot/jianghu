@@ -290,7 +290,7 @@ test('county app, modules and offline cache all use the same release version',()
   const content=readFileSync(join(dir,name),'utf8');
   assert.doesNotMatch(content,/\?v=0\.(?:1|2)\.0/,name+' stale cache-buster');
  }
- assert.match(readFileSync(join(dir,'sw.js'),'utf8'),/VERSION='4\.11\.0'/);
- assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='4\.11\.0'/);
- assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 4\.11\.0/);
+ assert.match(readFileSync(join(dir,'sw.js'),'utf8'),/VERSION='4\.12\.0'/);
+ assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='4\.12\.0'/);
+ assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 4\.12\.0/);
 });

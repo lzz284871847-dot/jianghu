@@ -101,9 +101,37 @@ test('4.10 study migrates exactly, including adult descendant records, with no t
  const before=cash(s),x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld.individuals.dockhand01.study,{...p.study,otherArts:{},teacherTrust:0});
  assert.deepEqual(x.npcWorld.lineage.children[0].livelihood.study,{...v.study,otherArts:{},teacherTrust:0});assert.equal(cash(x),before);
 });
-test('extended study rejects unknown arts, village teaching, duplicate primary and invalid gains',()=>{
- for(const [id,a] of [['unknown',{learnedDay:14,practice:0,insight:0}],['wood_knife',{learnedDay:14,practice:0,insight:0}],['qinghe_fist',{learnedDay:14,practice:0,insight:0}],['spring_kick',{learnedDay:22,practice:0,insight:0}],['spring_kick',{learnedDay:14,practice:2401,insight:0}]]){
+test('extended study rejects unknown arts, duplicate primary and invalid gains',()=>{
+ for(const [id,a] of [['unknown',{learnedDay:14,practice:0,insight:0}],['qinghe_fist',{learnedDay:14,practice:0,insight:0}],['spring_kick',{learnedDay:22,practice:0,insight:0}],['spring_kick',{learnedDay:14,practice:2401,insight:0}]]){
   const s=setup(),p=pupil(s);p.study.learnedDay=7;p.study.otherArts[id]=a;assert.throws(()=>restore(JSON.stringify(s)),/NPC人生/);
  }
  const s=setup();s.npcWorld.individuals.dockhand01.study.teacherTrust=101;assert.throws(()=>restore(JSON.stringify(s)),/NPC人生/);
+});
+test('forage aspiration funds village arts from the existing farmer without school trust gifts',()=>{
+ const s=setup(),p=s.npcWorld.individuals.farmhand01,farmer=s.npcWorld.individuals.farmer,master=s.npcWorld.individuals.master;
+ p.coins=80;p.workDays=10;p.study.learnedDay=7;p.study.practice=120;p.study.teacherTrust=5;
+ const before=cash(s),fee=farmer.coins,masterCoins=master.coins;assert.equal(npcStudyDay(s,p,19,21),true);
+ assert.deepEqual(p.study.otherArts.wood_knife,{learnedDay:21,practice:0,insight:0});assert.equal(p.coins,72);assert.equal(farmer.coins,fee+8);assert.equal(farmer.energy,80);assert.equal(farmer.workDays,1);assert.equal(master.coins,masterCoins);assert.equal(p.study.teacherTrust,5);assert.equal(cash(s),before);
+ s.day=24;for(const n of Object.values(s.nodes))n.refreshDay=25;npcStudyDay(s,p,19,24);assert.equal(p.study.otherArts.wood_knife.practice,12);assert.equal(p.energy,88);assert.match(studySummary(p),/柴刀法/);
+ assert.deepEqual(restore(JSON.stringify(s)).npcWorld.individuals.farmhand01.study,p.study);
+});
+test('village teaching requires a living healthy funded instructor with finite effort',()=>{
+ for(const block of ['dead','sick','rest','retired','injury','energy','cap','savings']){
+  const s=setup(),p=s.npcWorld.individuals.farmhand01,t=s.npcWorld.individuals.farmer;
+  p.coins=80;p.workDays=10;p.study.learnedDay=7;p.study.practice=120;
+  if(block==='dead')t.life={...makeLife(),frailty:100,deathDay:20};if(block==='sick')t.life.sickDays=1;if(block==='rest')t.life.restDay=21;
+  if(block==='retired')t.retirement={active:true,retiredDay:20,lastDay:20};if(block==='injury')t.injuryDays=1;if(block==='energy')t.energy=19;if(block==='cap')t.coins=1000000;if(block==='savings')p.coins=59;
+  const before=cash(s),coins=t.coins;npcStudyDay(s,p,19,21);assert.equal(p.study.otherArts.wood_knife,undefined,block);assert.equal(t.coins,coins);assert.equal(cash(s),before);
+ }
+});
+test('both existing village arts can be learned once, and teaching effort cannot be shared twice',()=>{
+ const s=setup(),p=s.npcWorld.individuals.farmhand01,t=s.npcWorld.individuals.farmer;p.coins=100;p.workDays=10;p.study.learnedDay=7;p.study.practice=120;
+ npcStudyDay(s,p,19,21);t.energy=20;npcStudyDay(s,p,19,28);assert.ok(p.study.otherArts.staff);assert.equal(t.energy,0);
+ const other=s.npcWorld.individuals.herbalist;other.outlook.ambition='forage';other.coins=100;other.workDays=10;other.study.learnedDay=7;other.study.practice=120;
+ npcStudyDay(s,other,42,28);assert.equal(other.study.otherArts.wood_knife,undefined);
+ const old=p.coins;t.energy=100;npcStudyDay(s,p,19,35);assert.equal(p.study.otherArts.wood_knife.learnedDay,21);assert.equal(p.study.otherArts.staff.learnedDay,28);assert.ok(p.coins<=old);
+});
+test('the village instructor cannot pay himself to learn his own lessons',()=>{
+ const s=setup(),p=s.npcWorld.individuals.farmer;p.outlook.ambition='forage';p.coins=100;p.workDays=10;p.study.learnedDay=7;p.study.practice=120;
+ npcStudyDay(s,p,57,21);assert.equal(p.study.otherArts.wood_knife,undefined);assert.equal(p.study.otherArts.staff,undefined);
 });
