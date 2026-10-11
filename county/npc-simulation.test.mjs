@@ -783,3 +783,13 @@ test('experienced carrier saves effort but receives only merchant-funded pay',as
  assert.equal(s.commerce.budget.market,budget-3);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('experienced forager conserves effort without producing extra cargo',async()=>{
+ const {npcProduce}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01;
+ p.injuryDays=0;p.hunger=0;p.energy=17;p.cargo=0;p.careerSkills.forage=20;
+ const worked=npcProduce(s,p,3);
+ assert.equal(worked,true);
+ assert.equal(p.energy,1);assert.equal(p.cargo,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
