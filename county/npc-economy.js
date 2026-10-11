@@ -153,7 +153,7 @@ export function npcCareerDay(s,p,day){
  // Repeated unemployment and a real injury lead to more urgent job searches, not free wages.
  const recoverySearch=p.injuryDays>=2&&p.unemployedDays>=2;
  if(['original','carrier'].includes(p.occupation)&&(p.unemployedDays>=searchAfter||recoverySearch)&&npcApplyShop(s,p,day))return false;
- const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=20;
+ const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=(familyHardship>=5?35:20);
  if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
   p.occupation='original';
   remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
