@@ -1,16 +1,17 @@
-import {makeJourneys,journeysValid,journeySteps,journeyDepartures,travelBusy} from './npc-journeys.js?v=4.19.0';
-import {makeClinic,clinicValid,clinicDay,clinicTrainingDay} from './npc-clinic.js?v=4.19.0';
-import {makeSchool,schoolValid,schoolDay} from './npc-school.js?v=4.19.0';
-import {npcSparringDay} from './npc-sparring.js?v=4.19.0';
-import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=4.19.0';
-import {npcHealthDay} from './npc-health.js?v=4.19.0';
-import {makeLife,lifeValid,alive,parentMortality,settleEstates,recoveryFor} from './npc-mortality.js?v=4.19.0';
-import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.19.0';
-import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.19.0';
-import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=4.19.0';
-import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.19.0';
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid,npcRetirementDay} from './npc-economy.js?v=4.19.0';
-import {people,places} from './content.js?v=4.19.0';
+import {saveResident} from './npc-residents.js?v=4.20.0';
+import {makeJourneys,journeysValid,journeySteps,journeyDepartures,travelBusy} from './npc-journeys.js?v=4.20.0';
+import {makeClinic,clinicValid,clinicDay,clinicTrainingDay,clinicDoctor} from './npc-clinic.js?v=4.20.0';
+import {makeSchool,schoolValid,schoolDay} from './npc-school.js?v=4.20.0';
+import {npcSparringDay} from './npc-sparring.js?v=4.20.0';
+import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=4.20.0';
+import {npcHealthDay} from './npc-health.js?v=4.20.0';
+import {makeLife,lifeValid,alive,parentMortality,settleEstates,recoveryFor} from './npc-mortality.js?v=4.20.0';
+import {makeLineage,lineageValid,lineageDay} from './npc-lineage.js?v=4.20.0';
+import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js?v=4.20.0';
+import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=4.20.0';
+import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=4.20.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid,npcRetirementDay} from './npc-economy.js?v=4.20.0';
+import {people,places} from './content.js?v=4.20.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
@@ -49,15 +50,21 @@ export function tickNPCs(s,day){
  if(s.npcWorld.lastDay>=day)return [];
  for(const p of Object.values(s.npcWorld.individuals))if(p.lastDay<day&&alive(p)&&day%360===1&&day>1)p.age=Math.min(130,p.age+1);
  const notes=parentMortality(s,day);
- notes.push(...journeySteps(s,day),...schoolDay(s,day),...clinicDay(s,day));
- for(const p of Object.values(s.npcWorld.individuals)){
-  if(p.lastDay>=day)continue;
-  if(!alive(p)){p.lastDay=day;continue;}
+ notes.push(...schoolDay(s,day),...clinicDay(s,day));
+ const residents=Object.values(s.npcWorld.individuals);
+ // Recover before finite clinical effort is spent; the current doctor settles
+ // their own health first, so an ill doctor cannot treat earlier-loop patients.
+ for(const p of residents){
+  if(p.lastDay>=day||!alive(p))continue;
   if(p.injuryDays>0){p.injuryDays--;p.energy=Math.min(100,p.energy+12);}else p.energy=Math.min(100,p.energy+recoveryFor(p.age));
-  // Work and food are settled against real merchant funds and market inventories.
-  // A closed or insolvent shop cannot pay wages or sell grain.
-  const health=['farmhand01','shopassistant'].includes(p.id)?npcHealthDay(s,p,p.age,day):{resting:false,notes:[]};
-  notes.push(...health.notes);
+ }
+ const doctor=clinicDoctor(s);
+ if(doctor?.source){notes.push(...npcHealthDay(s,doctor,doctor.age,day).notes);saveResident(doctor);}
+ for(const p of [...residents].sort((a,b)=>Number(b.id===doctor?.id)-Number(a.id===doctor?.id)))if(p.lastDay<day&&alive(p))notes.push(...npcHealthDay(s,p,p.age,day).notes);
+ notes.push(...journeySteps(s,day));
+ for(const p of residents){
+  if(p.lastDay>=day)continue;
+  const health={resting:p.life.restDay===day};
   if(!alive(p)){p.lastDay=day;continue;}
   if(p.food>0){p.food--;p.hunger=Math.max(0,p.hunger-12);}
   else p.hunger=Math.min(100,p.hunger+22);
