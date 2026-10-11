@@ -81,7 +81,7 @@ export function npcTransport(s,p,day){
  if(!shop||p.injuryDays>0||p.energy<effort||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
  // Merchant pays documented carriage charges; no cargo is conjured into existence.
  const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
- if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
+ if((day+p.id.length)%(p.careerSkills.carry>=40?23:17)===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日替商户搬运现有货物，领到'+pay+'文运费。');
  return true;
 }
@@ -140,7 +140,7 @@ export function npcCareerDay(s,p,day){
   const effort=p.careerSkills.carry>=20?20:22;
   if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=effort&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
    s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
-   if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
+   if((day+p.id.length)%(p.careerSkills.carry>=40?23:17)===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
    if(p.workDays%10===0)remember(p,'第'+day+'日做搬运短工，得到'+pay+'文。');
   }
  }else{
