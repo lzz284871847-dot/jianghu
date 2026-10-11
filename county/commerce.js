@@ -1,6 +1,6 @@
-import {societyDay} from './society.js?v=1.4.0';
-import {farmDelivery} from './agriculture.js?v=1.4.0';
-import {markets} from './content.js?v=1.4.0';
+import {societyDay} from './society.js?v=1.5.0';
+import {farmDelivery} from './agriculture.js?v=1.5.0';
+import {markets} from './content.js?v=1.5.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
