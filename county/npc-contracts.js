@@ -43,7 +43,7 @@ export function applyContractReputation(s,ledger,day){
  if(!bond)return [];
  const notes=[];
  for(const loan of ledger.entries){
-  if(loan.dueDay!==day||loan.lender!=='shopassistant'||loan.borrower!=='farmhand01'||loan.reputationApplied)continue;
+  if(loan.dueDay>day||loan.lender!=='shopassistant'||loan.borrower!=='farmhand01'||loan.reputationApplied)continue;
   if(loan.status==='defaulted'){
    bond.trust=Math.max(0,bond.trust-15);
    bond.resentment=Math.min(100,bond.resentment+20);

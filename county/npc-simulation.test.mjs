@@ -441,3 +441,76 @@ test('social bonds migrate older saves, reject tampering, and influence recruitm
  bond.trust=101;
  assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
 });
+
+test('family hardship speeds up career search but cannot invent a paid job',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ s.npcWorld.households.market.hardshipDays=3;
+ s.society.districts.market.closedUntil=4;
+ const coins=p.coins,budget=s.commerce.budget.market;
+ s.day=2;
+ assert.equal(npcCareerDay(s,p,2),false);
+ assert.equal(p.occupation,'carrier');
+ assert.equal(p.coins,coins);
+ assert.equal(s.commerce.budget.market,budget);
+ assert.equal(p.workDays,0);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('without household hardship an unemployed NPC still waits three days',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ s.society.districts.market.closedUntil=4;
+ s.day=2;npcCareerDay(s,p,2);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.unemployedDays,1);
+ s.day=3;npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.unemployedDays,2);
+});
+
+test('hungry household member receives existing food without creating supplies',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),needy=s.npcWorld.individuals.farmhand01,donor=s.npcWorld.individuals.farmhand02;
+ needy.food=0;needy.hunger=70;needy.coins=0;donor.food=3;
+ const total=needy.food+donor.food+s.npcWorld.households.chen.food;
+ const coins=needy.coins+donor.coins+s.npcWorld.households.chen.coins;
+ const notes=familyResponsibility(s,2);
+ assert.equal(needy.food,1);assert.equal(donor.food,2);
+ assert.equal(needy.hunger,58);
+ assert.equal(needy.food+donor.food+s.npcWorld.households.chen.food,total);
+ assert.equal(needy.coins+donor.coins+s.npcWorld.households.chen.coins,coins);
+ assert.ok(notes.some(x=>x.includes('分粮')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('household sharing cannot take the last food unit from another member',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),needy=s.npcWorld.individuals.farmhand01,donor=s.npcWorld.individuals.farmhand02;
+ needy.food=0;needy.hunger=70;needy.coins=20;donor.food=1;
+ familyResponsibility(s,2);
+ assert.equal(needy.food,0);assert.equal(donor.food,1);
+});
+
+test('unresolved household hardship escalates strain and records lasting memories',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),needy=s.npcWorld.individuals.farmhand01,relative=s.npcWorld.individuals.farmhand02;
+ needy.food=0;needy.hunger=70;needy.coins=0;needy.injuryDays=3;
+ relative.food=1;relative.coins=9;
+ const h=s.npcWorld.households.chen;h.food=0;h.coins=0;h.hardshipDays=7;
+ const original=h.trust;
+ familyResponsibility(s,2);
+ assert.equal(h.hardshipDays,8);assert.equal(h.trust,original);
+ familyResponsibility(s,3);
+ assert.equal(h.hardshipDays,9);assert.equal(h.trust,original-2);
+ assert.ok(needy.history.some(x=>x.includes('生计困难')));
+ assert.ok(relative.history.some(x=>x.includes('生计困难')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('household trust never drops below zero under prolonged distress',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),p=s.npcWorld.individuals.farmhand01,relative=s.npcWorld.individuals.farmhand02;
+ p.food=0;p.hunger=70;p.coins=0;p.injuryDays=3;relative.food=1;relative.coins=9;
+ const h=s.npcWorld.households.chen;h.trust=1;h.hardshipDays=8;
+ familyResponsibility(s,2);
+ assert.equal(h.trust,0);
+ assert.ok(h.hardshipDays>=9);
+});
