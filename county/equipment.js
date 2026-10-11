@@ -25,14 +25,17 @@ export const EQUIPMENT=Object.freeze({
 
 const RARE_MATERIAL=Object.freeze({3:{fine_ore:2},4:{cold_ore:2},5:{meteor_ore:2}});
 for(const item of Object.values(EQUIPMENT))if(item.tier>=3)Object.assign(item.materials,RARE_MATERIAL[item.tier]);
-export const makeEquipment=()=>({owned:{},equipped:{weapon:null,armor:null}});
+export const craftFailureChance=item=>item.tier<=2?0:Math.min(.35,.08+(item.tier-3)*.10);
+export const makeEquipment=()=>({owned:{},quality:{},equipped:{weapon:null,armor:null}});
 export function ensureEquipment(s){s.equipment??=makeEquipment();return s.equipment;}
 export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'||Array.isArray(e)||!e.owned||typeof e.owned!=='object'||Array.isArray(e.owned)||!e.equipped||typeof e.equipped!=='object'||Array.isArray(e.equipped))return false;
+ if(!e.quality||typeof e.quality!=='object'||Array.isArray(e.quality))return false;
  for(const [id,d] of Object.entries(e.owned))if(!EQUIPMENT[id]||!Number.isSafeInteger(d)||d<0||d>EQUIPMENT[id].durability)return false;
+ for(const [id,q] of Object.entries(e.quality))if(!Object.hasOwn(e.owned,id)||![1,2].includes(q))return false;
  for(const slot of ['weapon','armor']){const id=e.equipped[slot];if(id!==null&&(!EQUIPMENT[id]||EQUIPMENT[id].slot!==slot||!Object.hasOwn(e.owned,id)))return false;}return true;
 }
-export function equipmentBonuses(s,martialId=s.martial?.equipped){const e=ensureEquipment(s);let attack=0,defense=0;const martialKind=martialId&&MARTIAL_ARTS[martialId]?.category;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){if(item.slot==='weapon'&&item.kind===martialKind)attack+=item.attack;if(item.slot==='armor')defense+=item.defense;}}return {attack,defense};}
-export function equipmentAction(s,kind,id){const e=ensureEquipment(s),item=EQUIPMENT[id];if(!item){s.result=['没有这种装备。'];return false;}
+export function equipmentBonuses(s,martialId=s.martial?.equipped){const e=ensureEquipment(s);let attack=0,defense=0;const martialKind=martialId&&MARTIAL_ARTS[martialId]?.category;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){if(item.slot==='weapon'&&item.kind===martialKind)attack+=item.attack+(e.quality[id]===2?1:0);if(item.slot==='armor')defense+=item.defense+(e.quality[id]===2?1:0);}}return {attack,defense};}
+export function equipmentAction(s,kind,id,rng=()=>.5){const e=ensureEquipment(s),item=EQUIPMENT[id];if(!item){s.result=['没有这种装备。'];return false;}
  if(kind==='equip'){if(!Object.hasOwn(e.owned,id)||e.owned[id]===0){s.result=['装备不存在或已损坏。'];return false;}e.equipped[item.slot]=id;s.result=['已装备'+item.name];if(item.slot==='weapon'&&item.kind!==MARTIAL_ARTS[s.martial?.equipped]?.category)s.result.push('当前武学与兵器不适配，无法获得武器攻击加成。');return true;}
  if(kind==='unequip'){if(e.equipped[item.slot]!==id){s.result=['目前没有穿戴此物。'];return false;}e.equipped[item.slot]=null;s.result=['已卸下'+item.name];return true;}
  if(!['craft','repair'].includes(kind)){s.result=['未知装备行动。'];return false;}
@@ -45,7 +48,13 @@ export function equipmentAction(s,kind,id){const e=ensureEquipment(s),item=EQUIP
  if(s.coins<fee||materials.some(([k,n])=>(s.bag[k]||0)<n)){s.result=['铜钱或材料不足。'];return false;}
  // High tier equipment is in the world catalogue but requires expert trust and preparation.
  if(item.tier>=3&&(s.relations?.smith||0)<(item.tier-2)*8){s.result=['高阶打造需要铁匠信任与技艺认可。'];return false;}
- for(const [k,n] of materials)s.bag[k]-=n;s.coins-=fee;e.owned[id]=item.durability;
- s.result=[(kind==='craft'?'打造':'修复')+item.name+'成功。','花费'+fee+'文，材料已扣除。'];return true;
+ for(const [k,n] of materials)s.bag[k]-=n;s.coins-=fee;
+ if(kind==='craft'){
+  const roll=rng(),failure=craftFailureChance(item);
+  if(roll<failure){s.result=['锻造'+item.name+'失败，投入的材料和工钱已经损失。','失败概率'+Math.round(failure*100)+'%；矿材不会退还。'];return true;}
+  e.owned[id]=item.durability;e.quality[id]=roll>=.95?2:1;
+  s.result=['锻造'+item.name+'成功，品质：'+(e.quality[id]===2?'精良':'普通')+'。','消耗'+fee+'文和投入材料。'];return true;
+ }
+ e.owned[id]=item.durability;s.result=['修复'+item.name+'成功。','花费'+fee+'文，材料已扣除；原有品质保留。'];return true;
 }
 export function wearEquipment(s,slot,amount=1){const e=ensureEquipment(s),id=e.equipped[slot];if(!id||e.owned[id]<=0)return null;e.owned[id]=Math.max(0,e.owned[id]-amount);return e.owned[id]===0?EQUIPMENT[id].name+'耐久耗尽，已失效。':null;}
