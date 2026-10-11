@@ -1,4 +1,5 @@
-import {markets} from './content.js?v=0.6.0';
+import {farmDelivery} from './agriculture.js?v=0.7.0';
+import {markets} from './content.js?v=0.7.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
@@ -39,6 +40,7 @@ export function dailyCommerce(s){
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+(place==='market'?24:18));
    }
   }
+  messages.push(...farmDelivery(s,day,s.weather,MARKET_LIMIT));
   if(day%2===1)messages.push('县城和柳溪的商贩补充了一批日常货物；居民也会自行购买粮药。');
  }
  commerce.lastDay=s.day;
