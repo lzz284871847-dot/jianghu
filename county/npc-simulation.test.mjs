@@ -118,6 +118,53 @@ test('daily simulation pays employed NPCs but does not fake wages for others',()
  assert.equal(employee.coins,34);
  assert.equal(farmer.workDays,0);
  assert.equal(farmer.coins,30);
- assert.equal(s.commerce.budget.market,budget-8+1);
+ assert.equal(s.commerce.budget.market,budget-8-9+1);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('individual fish, herbs and farm produce settle with merchant cash and stock',async()=>{
+ const {npcProduce,npcSellProduce}=await import('./npc-economy.js');
+ const s=fresh(),farmer=s.npcWorld.individuals.farmhand01;
+ const shop=s.commerce.stock.market;
+ const old={coins:farmer.coins,vegetable:shop.vegetable,budget:s.commerce.budget.market};
+ assert.equal(npcProduce(s,farmer,3),true);
+ assert.equal(farmer.cargo,1);
+ assert.equal(npcSellProduce(s,farmer,3),true);
+ assert.equal(shop.vegetable,old.vegetable+1);
+ assert.equal(farmer.coins,old.coins+3);
+ assert.equal(s.commerce.budget.market,old.budget-3);
+ assert.equal(farmer.cargo,0);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('market insolvency and full shelves preserve an NPC producer cargo',async()=>{
+ const {npcSellProduce}=await import('./npc-economy.js');
+ const s=fresh(),fisher=s.npcWorld.individuals.fisher;
+ fisher.cargo=1;
+ s.commerce.stock.liuxi.fish=30;
+ assert.equal(npcSellProduce(s,fisher,2),false);
+ assert.equal(fisher.cargo,1);
+ s.commerce.stock.liuxi.fish=0;s.commerce.budget.liuxi=0;
+ assert.equal(npcSellProduce(s,fisher,2),false);
+ assert.equal(fisher.cargo,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('transporters earn only by debiting a shop; shop closure blocks payment',async()=>{
+ const {npcTransport}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ const before=s.commerce.budget.market;
+ assert.equal(npcTransport(s,p,2),true);
+ assert.equal(s.commerce.budget.market,before-3);
+ assert.equal(p.coins,33);
+ assert.equal(p.workDays,1);
+ s.society.districts.market.closedUntil=1;
+ assert.equal(npcTransport(s,p,1),false);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('legacy NPC saves without cargo get safe zero-inventory migration',()=>{
+ const s=fresh();
+ for(const p of Object.values(s.npcWorld.individuals))delete p.cargo;
+ const migrated=restore(JSON.stringify(s));
+ assert.ok(Object.values(migrated.npcWorld.individuals).every(p=>p.cargo===0));
+ migrated.npcWorld.individuals.fisher.cargo=-1;
+ assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
 });
