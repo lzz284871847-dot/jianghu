@@ -10,7 +10,19 @@ export function equip(s,id){const m=ensureMartial(s);if(!m.known[id]){s.result=[
 export function train(s,id){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!art||!m.known[id]){s.result=['需要先学会这门武学。'];return false;}if(s.energy<12||s.hp<25){s.result=['身体状态不允许继续练习。'];return false;}s.energy-=12;m.practice[id]=Math.min(MAX,(m.practice[id]||0)+12);m.insight[id]=Math.min(MAX,(m.insight[id]||0)+3);s.result=['练习'+art.name,'精力 -12；熟练 +12；领悟 +3。'];return true;}
 export function availableMoves(s,id){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!art||!m.known[id])return [];const points=(m.practice[id]||0)+(m.insight[id]||0)+(m.experience[id]||0)+(m.mastery[id]||0);return art.moves.filter((move,i)=>i===0||points>=i*120);}
 export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s);if(!m.known[m.equipped])throw Error('尚未学会当前武学');if(s.combat)throw Error('交手尚未结束');s.combat=newCombat(opponent,m.equipped);s.result=['与'+opponent+'交手。撤退并不保证成功。'];}
-export function martialTurn(s,action,rng){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng);const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}if(result.ended){s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
+// Victory grants limited insight, not free equipment or money. Flight and death grant no victory reward.
+function finalizeCombat(s,c,log){
+ if(c.ended==='victory'){
+  const narrow=s.hp<=30;
+  const gain=narrow?6:s.hp<=60?4:2;
+  const m=ensureMartial(s),id=c.martial;
+  m.insight[id]=Math.min(MAX,(m.insight[id]||0)+gain);
+  log.push(narrow?'险胜保命，伤势沉重，需尽快疗伤。':s.hp<=60?'苦战取胜，伤势不轻。':'交手获胜，仍须提防下一场恶战。');
+  log.push('实战领悟 +'+gain+'；没有额外钱财或神兵掉落。');
+ }else if(c.ended==='escaped')log.push('成功脱身，未获得胜利奖励；气血和伤势保留。');
+ else if(c.ended==='death')log.push('战败身亡，这段人生结束。');
+}
+export function martialTurn(s,action,rng){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng);const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}if(result.ended){finalizeCombat(s,s.combat,result.log);s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
 
 // Move turns resolve the chosen technique and an actual enemy response in one transaction.
 export function martialMoveTurn(s,moveId,rng=()=>.5){
@@ -25,6 +37,7 @@ export function martialMoveTurn(s,moveId,rng=()=>.5){
  const log=[...move.log,...response];
  c.history.push({round:c.round,move:moveId,enemyIntent:enemy,log});
  if(c.history.length>30)c.history.shift();
+ if(c.ended)finalizeCombat(s,c,log);
  s.result=log;
  if(c.ended)s.combat=null;
  return {move,ended:c.ended||null,log};
