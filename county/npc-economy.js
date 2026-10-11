@@ -150,6 +150,12 @@ export function npcCareerDay(s,p,day){
  const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
  const searchAfter=familyHardship>=3?1:3;
  if(['original','carrier'].includes(p.occupation)&&p.unemployedDays>=searchAfter&&npcApplyShop(s,p,day))return false;
+ const prolongedSearch=p.unemployedDays>=7&&p.coins<=20;
+ if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
+  p.occupation='original';
+  remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
+  return false;
+ }
  if(p.occupation==='original'&&p.level==='ordinary'&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
