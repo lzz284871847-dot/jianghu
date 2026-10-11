@@ -36,3 +36,17 @@ test('older Qinghe saves acquire an empty contract ledger',async()=>{
  assert.equal(loaded.npcWorld.contracts.version,1);
  assert.equal(loaded.npcWorld.contracts.entries.length,0);
 });
+
+test('contract ledger rejects zero-value loans',async()=>{
+ const {contractsValid}=await import('./npc-contracts.js');
+ const ledger=makeContracts(1);
+ ledger.entries.push({id:'a:b:1',lender:'a',borrower:'b',amount:0,dueDay:3,status:'open'});
+ assert.equal(contractsValid(ledger,3),false);
+});
+test('completed debts are eventually removed from ledger',()=>{
+ const s={day:1,npcWorld:{individuals:{a:{name:'A',coins:20},b:{name:'B',coins:0}}}};
+ const ledger=makeContracts();openLoan(s,ledger,'a','b',5,3);
+ s.day=3;settleContracts(s,ledger,3);
+ s.day=34;settleContracts(s,ledger,34);
+ assert.equal(ledger.entries.length,0);
+});
