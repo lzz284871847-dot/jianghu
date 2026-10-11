@@ -441,3 +441,29 @@ test('social bonds migrate older saves, reject tampering, and influence recruitm
  bond.trust=101;
  assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
 });
+
+test('family hardship speeds up career search but cannot invent a paid job',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ s.npcWorld.households.market.hardshipDays=3;
+ s.society.districts.market.closedUntil=4;
+ const coins=p.coins,budget=s.commerce.budget.market;
+ s.day=2;
+ assert.equal(npcCareerDay(s,p,2),false);
+ assert.equal(p.occupation,'carrier');
+ assert.equal(p.coins,coins);
+ assert.equal(s.commerce.budget.market,budget);
+ assert.equal(p.workDays,0);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('without household hardship an unemployed NPC still waits three days',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ s.society.districts.market.closedUntil=4;
+ s.day=2;npcCareerDay(s,p,2);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.unemployedDays,1);
+ s.day=3;npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.unemployedDays,2);
+});
