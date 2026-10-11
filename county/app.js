@@ -39,7 +39,7 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  for(const [id,art] of Object.entries(MARTIAL_ARTS)){
   const row=el('article','');row.append(el('p',art.name+' · '+art.category+' · 第'+art.tier+'阶'+(known[id]?' · 已学':'')));
   if(known[id]){row.append(button('使用',()=>martialAction(s,'equip',id),!!blocked||s.martial.equipped===id),button('练习 · 精力12',()=>martialAction(s,'train',id),!!blocked||s.energy<12));}
-  else if(['school','village'].includes(s.place))row.append(button('求学 · '+art.tier*8+'文',()=>martialAction(s,'learn',id),!!blocked||s.coins<art.tier*8));
+  else {const teachAt=art.source==='village'?'village':'school';row.append(el('p','授艺地点：'+(teachAt==='village'?'河湾村':'县城武馆')+(art.tier>1?' · 教习信任至少'+(art.tier===2?5:12):''),'muted'));if(s.place===teachAt)row.append(button('求学 · '+art.tier*8+'文',()=>martialAction(s,'learn',id),!!blocked||s.coins<art.tier*8));}
   martialBox.append(row);
  }
  if(!blocked&&['school','oldroad'].includes(s.place))martialBox.append(button('试与普通拳手交手',()=>martialAction(s,'challenge','brawler'),!known[s.martial?.equipped]));
