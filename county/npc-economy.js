@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=4.0.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.0.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.0.0';
-import {districtStatus} from './society.js?v=4.0.0';
+import {bondBetween} from './npc-social.js?v=4.1.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.1.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.1.0';
+import {districtStatus} from './society.js?v=4.1.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -11,12 +11,20 @@ export const POSITIONS=Object.freeze({
 });
 const remember=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 const train=(p,key,amount=1)=>{p.careerSkills[key]=Math.min(500,p.careerSkills[key]+amount);};
+// Rank uses persisted, actually earned skills; restoring an old save grants no money.
+export function npcCareer(p){
+ const key=p.occupation==='carrier'?'carry':p.occupation==='shopworker'?'trade':
+ p.id==='smithapprentice'?'craft':POSITIONS[p.id]?'trade':TRANSPORTERS[p.id]?'carry':PRODUCERS[p.id]?'forage':null;
+ const skill=key?p.careerSkills[key]:0;
+ const rank=skill>=100?2:skill>=40?1:0;
+ return {key,rank,label:['初入行','熟手','资深'][rank],bonus:key==='forage'?0:rank};
+}
 export function npcWork(s,p,day){
  const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];
  const effort=p.careerSkills.trade>=20?13:15;
  if(!pos||p.injuryDays>0||p.energy<Math.max(20,effort)||p.hunger>=80)return false;
  const shop=pos.market,craft=p.id==='smithapprentice'&&p.occupation==='craftsman';
- const pay=craft?6:pos.pay;
+ const pay=(craft?6:pos.pay)+npcCareer(p).bonus;
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<pay+25)return false;
  // Craft assessments have genuine failures: effort is spent, but no wage or skill is awarded.
  if(p.id==='smithapprentice'&&p.occupation==='original'){
@@ -81,7 +89,7 @@ export function npcTransport(s,p,day){
  const injuryPeriod=p.careerSkills.carry>=40?23:17;
  if(!shop||p.injuryDays>0||p.energy<effort||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
  // Merchant pays documented carriage charges; no cargo is conjured into existence.
- const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
+ const pay=3+npcCareer(p).bonus;if(budgetAt(s,shop)<pay+27)return false;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
  if((day+p.id.length)%injuryPeriod===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日替商户搬运现有货物，领到'+pay+'文运费。');
  return true;
@@ -128,19 +136,19 @@ export function npcMentor(s,p,day){
 }
 export function npcCareerDay(s,p,day){
  if(p.id==='smith')npcMentor(s,p,day);
- const before=p.workDays;
+ const before=p.workDays,rankBefore=npcCareer(p).rank;
  if(p.occupation==='shopworker'||p.occupation==='craftsman'){
   npcWork(s,p,day);
  }else if(p.occupation==='carrier'){
   // Career conversion has the same finite merchant payroll as normal carters.
-  const shop=p.home==='liuxi'?'liuxi':'market',pay=3;
+  const shop=p.home==='liuxi'?'liuxi':'market',pay=3+npcCareer(p).bonus;
   const rivalId=p.id==='dockhand01'?'carter':p.id==='carter'?'dockhand01':null;
   const rivalry=rivalId?s.npcWorld.social.bonds[bondBetween(s,p.id,rivalId)]:null;
   const refusesSharedRoute=rivalry&&rivalry.resentment>=70&&day%2===0;
   if(refusesSharedRoute){remember(p,'第'+day+'日因与同行积怨过深，避开共同搬运的短工。');}
   const effort=p.careerSkills.carry>=20?20:22;
   const injuryPeriod=p.careerSkills.carry>=40?23:17;
-  if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=effort&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
+  if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=effort&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=pay+27){
    s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
    if((day+p.id.length)%injuryPeriod===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
    if(p.workDays%10===0)remember(p,'第'+day+'日做搬运短工，得到'+pay+'文。');
@@ -152,8 +160,17 @@ export function npcCareerDay(s,p,day){
   npcTransport(s,p,day);
  }
  if(p.id==='smithapprentice'&&p.occupation==='original'&&p.workDays>=20&&p.careerSkills.craft>=20){p.occupation='craftsman';remember(p,'第'+day+'日学徒完成二十次合格工序并积累足够技艺，成为正式铁匠，工钱随手艺提升。');}
- if(p.workDays>before){p.unemployedDays=0;return true;}
+ if(p.workDays>before){p.unemployedDays=0;if(npcCareer(p).rank>rankBefore)remember(p,'第'+day+'日凭实际劳作晋升为'+npcCareer(p).label+'，今后工钱按熟练程度结算。');return true;}
  p.unemployedDays=Math.min(100000,p.unemployedDays+1);
+ // Only an unfunded/closed employer releases shop employees; illness alone is not dismissal.
+ if(p.occupation==='shopworker'&&p.unemployedDays>=7){
+  const shop=p.home==='liuxi'?'liuxi':'market';
+  if(districtStatus(s,shop).closed||budgetAt(s,shop)<29+npcCareer(p).bonus){
+   p.occupation='original';
+   remember(p,'第'+day+'日商铺长期停工，离职另寻生计，保留已学手艺与积蓄。');
+   return false;
+  }
+ }
  const familyId=familyOf(p.id);
  const familyHardship=familyId?s.npcWorld.households[familyId]?.hardshipDays??0:0;
  const familyTrust=familyId?s.npcWorld.households[familyId]?.trust??50:50;

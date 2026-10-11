@@ -827,7 +827,7 @@ test('craft experience prevents a novice failure while retaining funded wages',a
  assert.equal(p.coins,noviceCoins);assert.equal(s.commerce.budget.market,noviceBudget);
  p.careerSkills.craft=40;p.energy=60;
  assert.equal(npcWork(s,p,day),true);
- assert.equal(p.coins,noviceCoins+4);assert.equal(s.commerce.budget.market,noviceBudget-4);
+ assert.equal(p.coins,noviceCoins+5);assert.equal(s.commerce.budget.market,noviceBudget-5);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 
