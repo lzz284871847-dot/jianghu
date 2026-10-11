@@ -1,9 +1,9 @@
-import {alive} from './npc-mortality.js?v=4.20.0';
-import {familyOf} from './npc-households.js?v=4.20.0';
-import {bondBetween} from './npc-social.js?v=4.20.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.20.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.20.0';
-import {districtStatus} from './society.js?v=4.20.0';
+import {alive} from './npc-mortality.js?v=4.21.0';
+import {familyOf} from './npc-households.js?v=4.21.0';
+import {bondBetween} from './npc-social.js?v=4.21.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.21.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.21.0';
+import {districtStatus} from './society.js?v=4.21.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -214,20 +214,19 @@ export function npcCareerDay(s,p,day){
  return false;
 }
 
-// First retirement batch follows the same Chen family as mortality and inheritance.
+// All named residents retire against their own earned reserves, without pensions.
 export const makeRetirement=(day=1)=>({active:false,retiredDay:0,lastDay:day});
 export const retirementValid=(r,day)=>!!r&&typeof r==='object'&&!Array.isArray(r)&&Object.keys(r).length===3&&typeof r.active==='boolean'&&
  Number.isSafeInteger(r.lastDay)&&r.lastDay>=1&&r.lastDay<=day&&Number.isSafeInteger(r.retiredDay)&&r.retiredDay>=0&&r.retiredDay<=r.lastDay&&(!r.active||r.retiredDay>0);
 export const retirementSummary=p=>p.retirement.active?'退养中，使用自己的钱粮':p.retirement.retiredDay?'曾退养，现重新谋生':'尚未退养';
 export function npcRetirementDay(s,p,age,day){
  const r=p.retirement;if(!alive(p)||r.lastDay>=day)return false;r.lastDay=day;
- if(!['farmhand01','shopassistant'].includes(p.id)&&!/^chen-child-[12]$/.test(p.id))return false;
  if(r.active){
   if(p.coins>=30&&p.hunger<40)return false;
   r.active=false;
   // An old employer/family farm slot may have been taken while this person rested.
   // Return as a job seeker rather than silently evicting the replacement employee.
-  if(p.occupation==='shopworker'||p.occupation==='craftsman'||p.occupation==='farmer'||POSITIONS[p.id])p.occupation='carrier';
+  p.occupation='carrier';
   p.unemployedDays=0;remember(p,'第'+day+'日退养钱粮不足，重新谋生；旧有技艺与经历保留，商铺职位须重新应聘。');return true;
  }
  if(age<65||p.workDays<20||p.coins<120||p.food<2||p.hunger>=40||p.injuryDays||p.life?.sickDays||p.life?.restDay===day)return false;
