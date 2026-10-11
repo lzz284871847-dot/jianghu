@@ -1,8 +1,8 @@
-import {travelBusy} from './npc-journeys.js?v=4.28.0';
-import {alive} from './npc-mortality.js?v=4.28.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=4.28.0';
-import {marketPrice,stockAt} from './commerce.js?v=4.28.0';
-import {districtStatus} from './society.js?v=4.28.0';
+import {travelBusy} from './npc-journeys.js?v=4.29.0';
+import {alive} from './npc-mortality.js?v=4.29.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=4.29.0';
+import {marketPrice,stockAt} from './commerce.js?v=4.29.0';
+import {districtStatus} from './society.js?v=4.29.0';
 export const makeClinic=(day=1)=>({holder:'doctor',appointedDay:0,lastDay:day,learners:{}});
 export const clinicDoctor=s=>namedResidents(s).find(p=>p.id===s.npcWorld.clinic.holder);
 const fit=(p,day)=>!!p&&alive(p)&&!p.retirement.active&&!p.life.sickDays&&!p.injuryDays&&p.life.restDay!==day;
@@ -20,20 +20,4 @@ export function payClinic(s,payer,doctor){
  const quote=clinicQuote(s,payer,doctor);if(quote===null)return null;
  payer.coins-=8;doctor.coins+=8-quote;doctor.energy-=10;doctor.workDays=Math.min(100000,doctor.workDays+1);s.commerce.budget.market+=quote;s.commerce.stock.market.herb--;saveResident(doctor);return quote;
 }
-const record=(p,day,text)=>{p.history=['第'+day+'日'+text,...p.history].slice(0,8);saveResident(p);};
-export function clinicDay(s,day){
- const c=s.npcWorld.clinic;if(c.lastDay>=day)return [];c.lastDay=day;const old=clinicDoctor(s);if(old&&alive(old)&&!old.retirement.active)return [];
- c.holder='';const p=namedResidents(s).filter(p=>!travelBusy(s,p.id)&&fit(p,day)&&p.age>=16&&p.age<65&&p.hunger<40&&c.learners[p.id]?.practice>=20).sort((a,b)=>c.learners[b.id].practice-c.learners[a.id].practice||a.id.localeCompare(b.id))[0];
- if(!p)return [];c.holder=p.id;c.appointedDay=day;record(p,day,'凭自己已完成的'+c.learners[p.id].practice+'次实际跟诊接任河湾村医者；不获额外医术、药材或钱物。');return [p.name+'凭真实跟诊积累接任河湾村医者。'];
-}
-export function clinicTrainingDay(s,day){
- if(day%7)return [];const c=s.npcWorld.clinic,notes=[];
- for(const p of namedResidents(s)){
-  const progress=c.learners[p.id];if(travelBusy(s,p.id)||p.id===c.holder||progress?.lastDay>=day||progress?.practice>=500||!(p.id==='herbalist'||p.id.startsWith('chen-child-')&&['forage','craft'].includes(p.outlook.ambition))||!fit(p,day)||p.age<16||p.age>=65||p.hunger>=40||p.food<2||p.workDays<40||p.energy<24)continue;
-  const reserve={enterprising:40,cautious:80,steadfast:60}[p.outlook.temperament];if(p.coins<reserve+8)continue;
-  const doctor=clinicDoctor(s),quote=payClinic(s,p,doctor);if(quote===null)continue;
-  p.energy-=12;c.learners[p.id]={practice:(progress?.practice||0)+1,lastDay:day};record(p,day,'自行付费8文跟诊，实际消耗药材1份、精力12，跟诊积累'+c.learners[p.id].practice+'次。');record(doctor,day,'指导'+p.name+'跟诊，收学费8文，购药'+quote+'文、用药1份，消耗精力10。');notes.push(p.name+'自行到河湾村付费跟诊学习。');
- }
- return notes;
-}
-export function clinicSummary(s){const d=clinicDoctor(s);return [d&&alive(d)?'河湾村医者：'+d.name+(d.retirement.active?'，已退养，等待合格居民接班。':d.life.sickDays||d.life.restDay===s.day||d.injuryDays?'，今日休养，暂停诊治。':'')+(d.id==='doctor'?'，原有医者。':'，第'+s.npcWorld.clinic.appointedDay+'日接任。'):'河湾村医者空缺，等待已有20次实际跟诊积累的在世居民接任。',...Object.entries(s.npcWorld.clinic.learners).map(([id,v])=>namedResidents(s).find(p=>p.id===id).name+' · 跟诊积累'+v.practice+'次 · 最近跟诊第'+v.lastDay+'日')];}
+export function clinicSummary(s){const d=clinicDoctor(s);return [d&&alive(d)?'河湾村医者：'+d.name+(d.retirement.active?'，旧档中的休养记录。':d.life.sickDays||d.life.restDay===s.day||d.injuryDays?'，今日休养，暂停诊治。':'')+(d.id==='doctor'?'，原有医者。':'，第'+s.npcWorld.clinic.appointedDay+'日接任。'):'河湾村医者空缺，旧档记录保留，本版不自动接班。'];}

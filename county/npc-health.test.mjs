@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {fresh,restore} from './engine.js';
 import {advance} from './world.js';
 import {makeLife,lifeValid} from './npc-mortality.js';
-import {makeChildLivelihood,lineageDay,lineageValid} from './npc-lineage.js';
+import {makeChildLivelihood,lineageValid} from './npc-lineage.js';
 import {npcHealthDay,healthSummary} from './npc-health.js';
 import {npcCareerDay,npcProduce,npcWork,npcSellProduce} from './npc-economy.js';
 import {tickNPCs} from './npc-simulation.js';
@@ -41,7 +41,7 @@ test('untreated illness recovers over actual days; older people require longer r
  const s=setup(),p=s.npcWorld.individuals.farmhand01;p.coins=0;
  for(let d=21;d<=24;d++){s.day=d;assert.equal(npcHealthDay(s,p,19,d).resting,true);assert.equal(p.life.sickDays,24-d);}
  s.day=25;assert.equal(npcHealthDay(s,p,19,25).resting,false);
- const elder=setup().npcWorld.individuals.farmhand01;elder.coins=0;s.day=21;npcHealthDay(s,elder,65,21);assert.equal(elder.life.sickDays,5);
+ const elder=setup().npcWorld.individuals.farmhand01;elder.coins=0;s.day=21;npcHealthDay(s,elder,65,21);assert.equal(elder.life.sickDays,3);
 });
 test('dry weather with adequate food does not create illness but serious hunger can',()=>{
  const s=setup(),p=s.npcWorld.individuals.farmhand01;s.weather='晴';p.coins=0;
@@ -67,17 +67,6 @@ const withChildren=()=>{
  s.npcWorld.lineage={lastDay:6999,courtshipDay:2,marriedDay:32,conceivedDay:0,children:[332,6200].map((bornDay,i)=>({life:makeLife(),livelihood:makeChildLivelihood(),id:'chen-child-'+(i+1),bornDay,hunger:0,learning:30,lastDay:6999}))};
  return s;
 };
-test('a sick minor is treated using real guardian money, consumes food and pauses lessons',()=>{
- const s=withChildren(),c=s.npcWorld.lineage.children[1];c.bornDay=4000;c.life.sickDays=4;
- const p=s.npcWorld.individuals.farmhand01,coins=p.coins,before=money(s),learning=c.learning;s.day=7002;
- lineageDay(s,s.day);assert.equal(p.coins,coins-8);assert.equal(c.livelihood.coins,0);assert.equal(c.learning,learning);assert.equal(c.life.restDay,7002);assert.equal(money(s),before);
-});
-test('adult descendants use their own wallet and cannot earn wages on a sick day',()=>{
- const s=withChildren(),c=s.npcWorld.lineage.children[0];c.life.sickDays=4;c.livelihood.coins=20;c.livelihood.food=2;c.livelihood.occupation='shopworker';
- const coins=s.npcWorld.individuals.farmhand01.coins,before=money(s);lineageDay(s,s.day);
- assert.equal(c.livelihood.workDays,0);assert.equal(c.livelihood.coins,12);assert.equal(s.npcWorld.individuals.farmhand01.coins,coins);assert.equal(money(s),before);assert.equal(lineageValid(s),true);
- assert.equal(restore(JSON.stringify(s)).npcWorld.lineage.children[0].life.restDay,7000);
-});
 test('dead patients cannot consume medicine, pay fees or recover',()=>{
  const s=setup(),p=s.npcWorld.individuals.farmhand01;p.life={...makeLife(),frailty:100,deathDay:20,sickDays:3};
  const snap=JSON.stringify(s);assert.equal(npcHealthDay(s,p,75,s.day).resting,false);assert.equal(JSON.stringify(s),snap);

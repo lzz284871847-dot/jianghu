@@ -25,11 +25,3 @@ test('ill original doctor refuses player treatment with no fee, time, healing or
 test('school and village teachers pause player lessons through recovery day',()=>{
  for(const [teacher,place,art] of [['master','school','qinghe_fist'],['farmer','village','staff']]){const s=setup(),p=s.npcWorld.individuals[teacher];p.life.restDay=28;p.life.healthDay=28;s.place=place;s.minute=480;const before=[s.coins,s.minute,s.energy];assert.equal(martialAction(s,'learn',art),false);assert.deepEqual([s.coins,s.minute,s.energy],before);assert.equal(s.martial.known[art],undefined);assert.match(s.result.join(' '),/休养/);if(teacher==='master'){assert.equal(schoolCanTeach(s,art),false);assert.match(schoolSummary(s),/暂停授课/);}}
 });
-test('unfunded severe illness in another household causes death and conserves inherited balances',()=>{
- const s=setup(),p=s.npcWorld.individuals.dockhand01,heir=s.npcWorld.individuals.dockhand02;p.life={...makeLife(),sickDays:4,illnessDays:29};p.coins=7;p.food=5;heir.coins=10;heir.life.sickDays=4;s.commerce.stock.market.herb=0;tickNPCs(s,28);assert.equal(p.life.deathDay,28);assert.equal(p.workDays,0);assert.equal(p.coins,0);assert.equal(heir.coins,17);assert.equal(heir.workDays,0);assert.deepEqual(restore(JSON.stringify(s)).npcWorld,s.npcWorld);
-});
-test('successive real diagnoses cure a non-family resident severe illness, each consuming one herb',()=>{
- const s=setup(),p=s.npcWorld.individuals.hunter;p.life.sickDays=4;p.life.illnessDays=1;p.coins=500;p.food=10;s.npcWorld.individuals.herbalist.retirement.active=true;
- for(let day=28;day<=30;day++){s.day=day;const stock=s.commerce.stock.market.herb;tickNPCs(s,day);assert.equal(s.commerce.stock.market.herb,stock-1);assert.equal(p.workDays,0);assert.equal(p.life.restDay,day);}
- assert.equal(p.life.illnessDays,0);assert.equal(p.life.careDays,0);assert.equal(p.life.sickDays,0);assert.equal(p.life.deathDay,0);
-});

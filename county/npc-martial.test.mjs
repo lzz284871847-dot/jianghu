@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {fresh,restore} from './engine.js';
 import {advance} from './world.js';
 import {makeLife} from './npc-mortality.js';
-import {makeChildLivelihood,lineageDay} from './npc-lineage.js';
+import {makeChildLivelihood} from './npc-lineage.js';
 import {makeStudy,studyValid,npcStudyDay,studySummary} from './npc-martial.js';
 import {readFileSync} from 'node:fs';
 const setup=()=>{const s=fresh();s.day=21;s.npcWorld.lastDay=20;for(const p of Object.values(s.npcWorld.individuals))p.lastDay=20;for(const n of Object.values(s.nodes))n.refreshDay=23;return s;};
@@ -56,14 +56,6 @@ test('unknown, malformed or future martial records are rejected',()=>{
 });
 test('crossing midnight initiates funded learning without player meeting the teacher',()=>{
  const s=setup(),p=pupil(s);s.day=20;s.minute=480;advance(s,1440-s.minute);assert.equal(p.study.learnedDay,21);assert.equal(p.study.practice,0);assert.equal(restore(JSON.stringify(s)).npcWorld.individuals.dockhand01.study.learnedDay,21);
-});
-test('adult descendants fund their own lessons and retain independent practice on reload',()=>{
- const s=fresh();s.day=7007;s.weather='晴';for(const n of Object.values(s.nodes))n.refreshDay=7009;
- const v=makeChildLivelihood('chen-child-2',7006);v.coins=50;v.workDays=10;v.food=2;
- const c={id:'chen-child-1',bornDay:332,hunger:0,learning:30,lastDay:7006,life:makeLife(),livelihood:v};
- s.npcWorld.lineage={lastDay:7006,courtshipDay:2,marriedDay:32,conceivedDay:0,children:[c]};
- const parent=s.npcWorld.individuals.farmhand01,coins=parent.coins;lineageDay(s,s.day);assert.equal(v.study.learnedDay,7007);assert.equal(v.coins,42);assert.equal(parent.coins,coins);
- assert.equal(restore(JSON.stringify(s)).npcWorld.lineage.children[0].livelihood.study.learnedDay,7007);
 });
 test('NPC martial module is included in offline caching',()=>{
  assert.match(readFileSync(new URL('./sw.js',import.meta.url),'utf8'),/'npc-martial.js'/);

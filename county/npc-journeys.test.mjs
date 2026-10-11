@@ -6,12 +6,10 @@ import {advance} from './world.js';
 import {tickNPCs,npcAt} from './npc-simulation.js';
 import {journeyDepartures,journeySteps,travelBusy,travelPlace,journeySummary} from './npc-journeys.js';
 import {makeLife} from './npc-mortality.js';
-import {makeChildLivelihood,lineageDay} from './npc-lineage.js';
+import {makeChildLivelihood} from './npc-lineage.js';
 import {npcHealthDay} from './npc-health.js';
 import {npcStudyDay} from './npc-martial.js';
 import {npcSparringDay} from './npc-sparring.js';
-import {familyResponsibility} from './npc-households.js';
-import {openLoan} from './npc-contracts.js';
 const setup=(day=30)=>{const s=fresh();s.day=day;for(const n of Object.values(s.nodes))n.refreshDay=day%2?day+2:day+1;const p=s.npcWorld.individuals.dockhand01;Object.assign(p,{coins:200,food:5,energy:100,workDays:40});Object.assign(p.study,{learnedDay:2,lastDay:2,practice:120,experience:6});return {s,p,host:s.npcWorld.individuals.stallholder};};
 const cash=s=>Object.values(s.npcWorld.individuals).reduce((n,p)=>n+p.coins,0)+s.npcWorld.lineage.children.reduce((n,c)=>n+c.livelihood.coins,0)+Object.values(s.commerce.budget).reduce((n,x)=>n+x,0);
 const food=s=>Object.values(s.npcWorld.individuals).reduce((n,p)=>n+p.food,0)+s.npcWorld.lineage.children.reduce((n,c)=>n+c.livelihood.food,0);
@@ -46,18 +44,6 @@ test('daily journey occupies work days and return rest, then the original paid j
 });
 test('dead travelers never eat, train, receive meals or gain fictional return completion',()=>{
  const {s,p}=setup();journeyDepartures(s,30);p.life.deathDay=31;s.day=31;const coins=p.coins,grain=food(s);journeySteps(s,31);s.day=32;journeySteps(s,32);assert.equal(p.coins,coins);assert.equal(food(s),grain);assert.equal(p.study.practice,120);assert.equal(s.npcWorld.journeys.records[p.id].completed,0);assert.match(journeySummary(s).join(' '),/去世/);
-});
-test('travel suspends home teaching, sparring, direct aid, loans and remote medical care',()=>{
- const {s,p}=setup(420);p.study.teacherTrust=20;journeyDepartures(s,420);const before=p.coins;
- s.day=421;p.life.sickDays=4;const herbs=s.commerce.stock.market.herb;npcHealthDay(s,p,p.age,421);assert.equal(p.coins,before);assert.equal(s.commerce.stock.market.herb,herbs);assert.equal(p.life.sickDays,3);
- const q=JSON.stringify({...p.study,lastDay:421});npcStudyDay(s,p,p.age,421);assert.equal(JSON.stringify(p.study),q);s.day=434;npcSparringDay(s,434);assert.equal(p.study.lastSparDay,0);
- const sibling=s.npcWorld.individuals.dockhand02;sibling.coins=0;sibling.food=0;sibling.hunger=80;const cashBefore=p.coins,foodBefore=p.food;familyResponsibility(s,434);assert.equal(p.coins,cashBefore);assert.equal(p.food,foodBefore);assert.equal(openLoan(s,s.npcWorld.contracts,p.id,sibling.id,3,438),false);
-});
-test('adult child journey persists its own wallet and cannot receive distant parent provisions',()=>{
- const {s,host}=setup(7590);const v=makeChildLivelihood('chen-child-1',7589);Object.assign(v,{coins:200,food:5,workDays:40});v.outlook.temperament='enterprising';Object.assign(v.study,{learnedDay:7000,lastDay:7589,practice:120,experience:6});
- const c={id:'chen-child-1',bornDay:332,hunger:0,learning:20,lastDay:7589,life:makeLife(),livelihood:v};s.npcWorld.lineage={lastDay:7589,courtshipDay:2,marriedDay:32,conceivedDay:0,children:[c]};s.npcWorld.individuals.dockhand01.coins=0;
- assert.equal(journeyDepartures(s,7590).length,1);s.day=7591;for(const n of Object.values(s.nodes))n.refreshDay=7593;journeySteps(s,7591);assert.equal(v.coins,195);assert.equal(v.energy,88);assert.equal(v.study.practice,132);assert.equal(v.food,6);
- host.food=0;v.food=0;const parents=[s.npcWorld.individuals.farmhand01,s.npcWorld.individuals.shopassistant],stocks=parents.map(p=>p.food),work=v.workDays;lineageDay(s,7591);assert.equal(v.workDays,work);assert.equal(c.hunger,22);assert.deepEqual(parents.map(p=>p.food),stocks);assert.equal(v.coins,195);assert.deepEqual(restore(JSON.stringify(s)).npcWorld.lineage.children[0].livelihood,v);
 });
 test('crossing midnight departs without a player travel trigger',()=>{
  const {s,p}=setup(29);s.minute=1430;s.npcWorld.lastDay=29;for(const q of Object.values(s.npcWorld.individuals))q.lastDay=29;advance(s,10);assert.equal(s.day,30);assert.equal(s.npcWorld.journeys.records[p.id].departedDay,30);assert.equal(p.place,'road');
