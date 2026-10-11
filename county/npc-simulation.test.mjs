@@ -889,3 +889,21 @@ test('recent carriage injury makes a recovered worker hesitate before returning'
  assert.equal(p.occupation,'carrier');
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('household hardship shortens but does not erase post-injury career caution',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const {familyOf}=await import('./npc-households.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ s.commerce.budget.market=0;
+ p.occupation='original';p.level='ordinary';p.injuryDays=0;
+ p.unemployedDays=4;p.energy=80;p.hunger=0;p.coins=10;
+ p.history=['第2日搬运时受伤，需休养三日。'];
+ const household=s.npcWorld.households[familyOf(p.id)];
+ household.hardshipDays=5;
+ npcCareerDay(s,p,4);
+ assert.equal(p.occupation,'original');
+ p.energy=80;p.unemployedDays=4;
+ npcCareerDay(s,p,5);
+ assert.equal(p.occupation,'carrier');
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});

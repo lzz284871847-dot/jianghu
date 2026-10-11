@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.7.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.7.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.7.0';
-import {districtStatus} from './society.js?v=3.7.0';
+import {bondBetween} from './npc-social.js?v=3.8.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.8.0';
+import {MARKET_LIMIT} from './commerce.js?v=3.8.0';
+import {districtStatus} from './society.js?v=3.8.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -171,7 +171,9 @@ export function npcCareerDay(s,p,day){
  }
  const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<5;});
  // Recent injury makes a recovered worker hesitate before returning to heavy carriage work.
- const recentInjury=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运时(?:扭伤|受伤)/);return match&&day-Number(match[1])<7;});
+ // Severe household hardship shortens (but never erases) the caution after a carriage injury.
+ const injuryCautionDays=familyHardship>=5?3:7;
+ const recentInjury=p.history.some(x=>{const match=x.match(/^第(\d+)日搬运时(?:扭伤|受伤)/);return match&&day-Number(match[1])<injuryCautionDays;});
  if(p.occupation==='original'&&p.level==='ordinary'&&p.injuryDays===0&&!recentlyReconsidered&&!recentInjury&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
