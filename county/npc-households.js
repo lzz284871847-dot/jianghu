@@ -65,7 +65,9 @@ export function familyResponsibility(s,day){
    }
   }
   if(h.hardshipDays>=3&&h.hardshipDays%3===0){
-   h.trust=Math.max(0,h.trust-1);
+   const loss=h.hardshipDays>=9?2:1;
+   h.trust=Math.max(0,h.trust-loss);
+   for(const member of members){member.history=['第'+day+'日家中长期生计困难，家人关系承受压力。',...member.history].slice(0,8);}
    notes.push(family+'家庭连续面临困难，成员之间的压力有所增加。');
   }
  }
