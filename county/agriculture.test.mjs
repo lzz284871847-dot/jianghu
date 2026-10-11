@@ -40,7 +40,7 @@ test('a rain-hit harvest produces a shortage report and less grain',()=>{
 
 test('rain-shortage explanation remains in the limited world-news feed',async()=>{
  const {dailyCommerce}=await import('./commerce.js');
- const s=fresh();s.day=3;s.weather='雨';s.commerce.lastDay=2;
+ const s=fresh();s.day=3;s.weather='雨';s.commerce.lastDay=2;for(const node of Object.values(s.nodes))node.refreshDay=5;
  const news=dailyCommerce(s);
  assert.ok(news.some(line=>line.includes('收成偏低')),news.join(' / '));
  assert.equal(news.length<=2,true);
