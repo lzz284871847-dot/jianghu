@@ -759,3 +759,16 @@ test('injured long-term unemployed NPC seeks real jobs without guaranteed income
  assert.ok(p.unemployedDays>=3);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('sustained family hardship makes an unemployed carrier reconsider before poverty',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='carrier';p.level='ordinary';p.unemployedDays=4;
+ p.coins=30;p.energy=10;p.hunger=90;
+ s.npcWorld.households.dock.hardshipDays=5;
+ npcCareerDay(s,p,3);
+ assert.equal(p.occupation,'original');
+ assert.equal(p.coins,30);
+ assert.ok(p.history.some(x=>x.includes('重新尝试本行')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
