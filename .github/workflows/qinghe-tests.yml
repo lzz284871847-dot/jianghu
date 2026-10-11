@@ -28,5 +28,8 @@ jobs:
       - name: Rebuild test group
         continue-on-error: true
         run: node --test tests/rebuild*.test.js
+      - name: Serial full repository tests
+        continue-on-error: true
+        run: node --test --test-concurrency=1
       - name: Full repository tests
         run: npm test
