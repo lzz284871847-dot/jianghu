@@ -156,7 +156,8 @@ export function npcCareerDay(s,p,day){
   remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
   return false;
  }
- if(p.occupation==='original'&&p.level==='ordinary'&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
+ const recentlyReconsidered=p.history.some(x=>{const match=x.match(/^第(\\d+)日搬运短工长期无着/);return match&&day-Number(match[1])<5;});
+ if(p.occupation==='original'&&p.level==='ordinary'&&!recentlyReconsidered&&p.unemployedDays>=searchAfter&&p.coins<=35&&p.energy>=22){
   p.occupation='carrier';p.unemployedDays=0;
   remember(p,'第'+day+'日连续无法谋生，改找运输短工；能否领工钱仍取决于商铺资金。');
  }
