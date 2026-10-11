@@ -255,3 +255,18 @@ test('every advanced recipe requires the correct deep ore and no tier is unreach
   if(item.tier>=3)assert.equal(item.materials[rare[item.tier]],2,item.name);
  }
 });
+
+test('mobile release uses uniform version and preloads equipment logic offline',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const dir=new URL('.',import.meta.url);
+ const paths=['sw.js','index.html','manifest.webmanifest','app.js','engine.js','storage.js','commands.js','world.js','progression.js','martial-moves.js','martial-progression.js','combat-core.js','injury.js','equipment.js'];
+ for(const path of paths){
+  const txt=readFileSync(fileURLToPath(new URL(path,dir)),'utf8');
+  assert.doesNotMatch(txt,/\?v=0\.(?:1\.0|2\.[01])/,path+' stale module version');
+ }
+ const sw=readFileSync(fileURLToPath(new URL('sw.js',dir)),'utf8');
+ assert.match(sw,/VERSION='0\.3\.0'/);
+ assert.match(sw,/'equipment\.js'/);
+ assert.match(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8'),/青河县 0\.3\.0/);
+});
