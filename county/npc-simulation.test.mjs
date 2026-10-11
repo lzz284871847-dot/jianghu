@@ -588,3 +588,15 @@ test('stable employment gradually repairs a strained employer relationship',asyn
  socialDay(s,6);assert.equal(JSON.stringify(s.npcWorld.social),snapshot);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('skilled apprentice can rebuild mentor trust through demonstrated craft',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['smith:smithapprentice'];
+ const apprentice=s.npcWorld.individuals.smithapprentice;
+ bond.trust=28;bond.resentment=6;apprentice.careerSkills.craft=40;
+ s.day=8;for(const node of Object.values(s.nodes))node.refreshDay=9;
+ socialDay(s,8);
+ assert.equal(bond.trust,30);assert.equal(bond.resentment,5);
+ assert.ok(bond.history.some(x=>x.includes('重新赢得师傅认可')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
