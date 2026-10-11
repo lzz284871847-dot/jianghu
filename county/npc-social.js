@@ -1,3 +1,4 @@
+import {alive} from './npc-mortality.js?v=4.4.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -30,6 +31,7 @@ export function socialDay(s,day){
  const notes=[];
  for(const [id,spec] of Object.entries(BONDS)){
   const b=s.npcWorld.social.bonds[id],left=s.npcWorld.individuals[spec.a],right=s.npcWorld.individuals[spec.b];
+  if(!alive(left)||!alive(right))continue;
   if(b.kind==='friend'&&left.coins<=4&&left.hunger>=50&&right.coins>=12&&b.trust>=40){
    // A friend really pays. This is not a free rescue or random wealth creation.
    right.coins-=3;left.coins+=3;b.trust=Math.min(100,b.trust+3);

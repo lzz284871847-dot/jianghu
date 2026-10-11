@@ -1,3 +1,4 @@
+import {alive} from './npc-mortality.js?v=4.4.0';
 // Deterministic, bounded social contracts. No virtual money is created.
 export const CONTRACT_VERSION=1;
 const integer=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
@@ -7,7 +8,7 @@ export function contractsValid(root,day){
 }
 export function openLoan(s,ledger,lenderId,borrowerId,amount,dueDay){
  const people=s.npcWorld.individuals,lender=people[lenderId],borrower=people[borrowerId];
- if(!lender||!borrower||lender===borrower||!integer(amount,1000000)||amount===0||!integer(dueDay,1000000)||dueDay<=s.day||lender.coins<amount||borrower.coins>1000000-amount||ledger.entries.length>=32)return false;
+ if(!lender||!borrower||!alive(lender)||!alive(borrower)||lender===borrower||!integer(amount,1000000)||amount===0||!integer(dueDay,1000000)||dueDay<=s.day||lender.coins<amount||borrower.coins>1000000-amount||ledger.entries.length>=32)return false;
  const id=lenderId+':'+borrowerId+':'+s.day;
  if(ledger.entries.some(x=>x.id===id||(x.status==='open'&&x.lender===lenderId&&x.borrower===borrowerId)))return false;
  lender.coins-=amount;borrower.coins+=amount;
@@ -20,9 +21,9 @@ export function settleContracts(s,ledger,day){
  if(ledger.lastDay>=day)return [];
  const notes=[];
  for(const c of ledger.entries){
-  if(c.status!=='open'||day<c.dueDay)continue;
+  if(c.status!=='open')continue;
   const lender=s.npcWorld.individuals[c.lender],borrower=s.npcWorld.individuals[c.borrower];
-  if(!lender||!borrower)continue;
+  if(!lender||!borrower||day<c.dueDay&&alive(borrower))continue;
   if(borrower.coins>=c.amount){borrower.coins-=c.amount;lender.coins+=c.amount;c.status='repaid';notes.push(borrower.name+'按约归还'+c.amount+'文。');}
   else {c.status='defaulted';notes.push(borrower.name+'无力偿还'+lender.name+'的'+c.amount+'文借款，留下违约记录。');}
  }
@@ -32,15 +33,15 @@ export function settleContracts(s,ledger,day){
 
 export function autonomousLoans(s,ledger,day){
  const bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
- const borrower=s.npcWorld.individuals.farmhand01;
- const lender=s.npcWorld.individuals.shopassistant;
+ const borrower=s.npcWorld.individuals?.farmhand01;
+ const lender=s.npcWorld.individuals?.shopassistant;
  if(day%5!==0||!bond||!borrower||!lender||bond.trust<45||bond.resentment>=45||borrower.hunger<50||borrower.coins>3||lender.coins<15)return [];
  return openLoan(s,ledger,'shopassistant','farmhand01',5,day+4)?['小莲借给陈二五文钱。']:[];
 }
 
 export function applyContractReputation(s,ledger,day){
  const bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
- if(!bond)return [];
+ if(!bond||!alive(s.npcWorld.individuals?.farmhand01)||!alive(s.npcWorld.individuals?.shopassistant))return [];
  const notes=[];
  for(const loan of ledger.entries){
   if(loan.dueDay>day||loan.lender!=='shopassistant'||loan.borrower!=='farmhand01'||loan.reputationApplied)continue;

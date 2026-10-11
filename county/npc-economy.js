@@ -1,8 +1,9 @@
-import {familyOf} from './npc-households.js?v=4.3.0';
-import {bondBetween} from './npc-social.js?v=4.3.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.3.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.3.0';
-import {districtStatus} from './society.js?v=4.3.0';
+import {alive} from './npc-mortality.js?v=4.4.0';
+import {familyOf} from './npc-households.js?v=4.4.0';
+import {bondBetween} from './npc-social.js?v=4.4.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.4.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.4.0';
+import {districtStatus} from './society.js?v=4.4.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -20,6 +21,7 @@ export function npcCareer(p){
  return {key,rank,label:['初入行','熟手','资深'][rank],bonus:key==='forage'?0:rank};
 }
 export function npcWork(s,p,day){
+ if(!alive(p))return false;
  const pos=p.occupation==='shopworker'?{market:p.home==='liuxi'?'liuxi':'market',pay:4}:POSITIONS[p.id];
  const effort=p.careerSkills.trade>=20?13:15;
  if(!pos||p.injuryDays>0||p.energy<Math.max(20,effort)||p.hunger>=80)return false;
@@ -47,6 +49,7 @@ export function npcWork(s,p,day){
  return true;
 }
 export function npcBuyFood(s,p,day){
+ if(!alive(p))return false;
  const shop=p.home==='liuxi'?'liuxi':'market';
  if(districtStatus(s,shop).closed)return false;
  // The same shop stock and player purchase quote are used for NPCs.
@@ -68,6 +71,7 @@ export const PRODUCERS=Object.freeze({
 });
 export const TRANSPORTERS=Object.freeze({dockhand01:'market',dockhand02:'liuxi',carter:'market',laborer:'market'});
 export function npcProduce(s,p,day){
+ if(!alive(p))return false;
  const job=PRODUCERS[p.id];const effort=job?Math.max(12,job.effort-(p.careerSkills.forage>=20?2:0)):0;
  if(!job||p.injuryDays>0||day%job.interval!==0||p.energy<effort||p.hunger>=80||p.cargo>=5)return false;
  p.energy-=effort;
@@ -77,6 +81,7 @@ export function npcProduce(s,p,day){
  p.cargo++;train(p,'forage');remember(p,'第'+day+'日采获'+job.item+'，等待集市收购。');return true;
 }
 export function npcSellProduce(s,p,day){
+ if(!alive(p))return false;
  const job=PRODUCERS[p.id];if(!job||p.cargo<=0)return false;
  const shop=job.market,price=marketPrice(s,shop,'sell',job.item);
  if(districtStatus(s,shop).closed||price===null||stockAt(s,shop,job.item)>=MARKET_LIMIT||budgetAt(s,shop)<price)return false;
@@ -84,6 +89,7 @@ export function npcSellProduce(s,p,day){
  remember(p,'第'+day+'日在集市售出'+job.item+'，得到'+price+'文。');return true;
 }
 export function npcTransport(s,p,day){
+ if(!alive(p))return false;
  const shop=TRANSPORTERS[p.id];
  const effort=p.careerSkills.carry>=20?20:22;
  const injuryPeriod=p.careerSkills.carry>=40?23:17;
@@ -103,6 +109,7 @@ export function npcFindWork(s,p,day){
 // Vacancy is derived from persisted employees; applications do not invent jobs.
 export const SHOP_CAPACITY=Object.freeze({market:3,liuxi:2});
 export function npcApplyShop(s,p,day){
+ if(!alive(p))return false;
  if(p.level!=='ordinary'||!['original','carrier'].includes(p.occupation)||p.hunger>=80)return false;
  const shop=p.home==='liuxi'?'liuxi':'market';
  if(districtStatus(s,shop).closed||budgetAt(s,shop)<70)return false;
@@ -111,7 +118,7 @@ export function npcApplyShop(s,p,day){
   const bond=s.npcWorld.social.bonds[bondKey];
   if(bond.trust<30||bond.resentment>=70)return false;
  }
- const employees=[...Object.values(s.npcWorld.individuals),...(s.npcWorld.lineage?.children??[]).filter(c=>s.day-c.bornDay>=16*360).map(c=>({...c.livelihood,home:'market'}))].filter(n=>
+ const employees=[...Object.values(s.npcWorld.individuals),...(s.npcWorld.lineage?.children??[]).filter(c=>alive(c)&&s.day-c.bornDay>=16*360).map(c=>({...c.livelihood,home:'market'}))].filter(n=>alive(n)).filter(n=>
   n.occupation==='shopworker'&&(n.home==='liuxi'?'liuxi':'market')===shop||
   n.occupation==='original'&&POSITIONS[n.id]?.market===shop||
   n.occupation==='craftsman'&&n.id==='smithapprentice'&&shop==='market'
@@ -124,6 +131,7 @@ export function npcApplyShop(s,p,day){
 // Skilled masters use a small amount of shop material budget to mentor apprentices.
 // No salary or skill is conjured without real training costs.
 export function npcMentor(s,p,day){
+ if(!alive(p))return false;
  if(p.id!=='smith'||day%4!==0||p.injuryDays>0||p.energy<20||districtStatus(s,'market').closed||budgetAt(s,'market')<27)return false;
  const apprentice=s.npcWorld.individuals.smithapprentice;
  if(!apprentice||apprentice.occupation!=='original'||apprentice.injuryDays>0||apprentice.careerSkills.craft>=500)return false;
@@ -135,6 +143,7 @@ export function npcMentor(s,p,day){
  return true;
 }
 export function npcCareerDay(s,p,day){
+ if(!alive(p))return false;
  if(p.id==='smith')npcMentor(s,p,day);
  const before=p.workDays,rankBefore=npcCareer(p).rank;
  if(p.occupation==='shopworker'||p.occupation==='craftsman'){

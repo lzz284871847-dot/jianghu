@@ -1,3 +1,4 @@
+import {makeLife} from './npc-mortality.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fresh,restore} from './engine.js';
@@ -5,7 +6,7 @@ import {makeChildLivelihood,lineageDay,lineageValid,lineageSummary} from './npc-
 import {npcApplyShop} from './npc-economy.js';
 const setup=(count=1)=>{
  const s=fresh();s.day=7000;
- s.npcWorld.lineage={lastDay:6999,courtshipDay:2,marriedDay:32,conceivedDay:0,children:Array.from({length:count},(_,i)=>({id:'chen-child-'+(i+1),bornDay:332+i*360,hunger:0,learning:40,lastDay:6999,livelihood:makeChildLivelihood()}))};
+ s.npcWorld.lineage={lastDay:6999,courtshipDay:2,marriedDay:32,conceivedDay:0,children:Array.from({length:count},(_,i)=>({life:makeLife(),id:'chen-child-'+(i+1),bornDay:332+i*360,hunger:0,learning:40,lastDay:6999,livelihood:makeChildLivelihood()}))};
  return s;
 };
 const step=s=>{lineageDay(s,s.day);s.day++;};

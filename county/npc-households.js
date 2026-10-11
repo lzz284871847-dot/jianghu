@@ -1,3 +1,4 @@
+import {alive} from './npc-mortality.js?v=4.4.0';
 // Stable household links and accountable mutual aid; no new goods or cash are minted.
 export const HOUSEHOLD_MEMBERS=Object.freeze({
   chen:['farmhand01','farmhand02'],
@@ -19,6 +20,7 @@ export function householdsValid(s){
 }
 export function familyOf(id){return Object.keys(HOUSEHOLD_MEMBERS).find(k=>HOUSEHOLD_MEMBERS[k].includes(id))??null;}
 export function familySupport(s,p,day){
+ if(!alive(p))return false;
  const id=familyOf(p.id);if(!id)return false;
  const household=s.npcWorld.households[id];
  // Contribute actual private surplus to a family-managed store.
@@ -39,7 +41,7 @@ export function familySupport(s,p,day){
 export function familyResponsibility(s,day){
  const notes=[];
  for(const [family,ids] of Object.entries(HOUSEHOLD_MEMBERS)){
-  const h=s.npcWorld.households[family],members=ids.map(id=>s.npcWorld.individuals[id]);
+  const h=s.npcWorld.households[family],members=ids.map(id=>s.npcWorld.individuals[id]).filter(alive);
   const needy=members.find(p=>p.injuryDays>=2||p.hunger>=55||p.unemployedDays>=4);
   if(!needy){
    h.hardshipDays=Math.max(0,h.hardshipDays-1);
