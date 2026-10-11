@@ -1,3 +1,4 @@
+import {npcWork,npcBuyFood} from './npc-economy.js?v=1.2.0';
 import {people,places} from './content.js?v=1.1.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
@@ -35,18 +36,15 @@ export function tickNPCs(s,day){
  const notes=[];
  for(const p of Object.values(s.npcWorld.individuals)){
   if(p.lastDay>=day)continue;
-  // Fixed income is not fabricated: this foundation models private savings and
-  // existing food stores. Real wage transfers and stock purchases are a later integration.
   p.energy=Math.min(100,p.energy+25);
   if(p.food>0){p.food--;p.hunger=Math.max(0,p.hunger-12);}
   else p.hunger=Math.min(100,p.hunger+22);
-  const market=p.home==='liuxi'?'liuxi':'market';
-  const grain=s.commerce.stock[market]?.grain??0;
-  if(p.food===0&&grain>3&&p.coins>=2){p.coins-=2;p.food=2;record(p,'第'+day+'日从乡邻处取得口粮，花费2文。');}
-  else if(p.hunger>=60&&p.hunger<82)record(p,'第'+day+'日缺粮，决定寻找新的谋生办法。');
-  // Work is not a guaranteed income button: idle residents lose purchasing power.
-  p.energy=Math.max(0,p.energy-(p.level==='detailed'?10:15));
-  p.workDays+=(p.hunger<65&&p.energy>=20?1:0);
+  // Work and food are settled against real merchant funds and market inventories.
+  // A closed or insolvent shop cannot pay wages or sell grain.
+  npcWork(s,p,day);
+  const bought=npcBuyFood(s,p,day);
+  if(!bought&&p.hunger>=60&&p.hunger<82)record(p,'第'+day+'日缺粮，决定寻找新的谋生办法。');
+  // No fictional workDays gain on days without an actual paid job.
   if(day%360===1&&day>1)p.age=Math.min(130,p.age+1);
   if(p.level==='ordinary'&&p.hunger>=80){p.level='detailed';record(p,'第'+day+'日经历严重缺粮，转入重要人物跟踪。');}
   p.lastDay=day;
