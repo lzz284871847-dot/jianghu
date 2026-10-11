@@ -177,3 +177,45 @@ test('footwork creates space against brawlers but spear reach still threatens',(
  assert.equal(boxer.hp,100,'ordinary brawler cannot reach through the created gap');
  assert.doesNotThrow(()=>restore(JSON.stringify(foot)));
 });
+
+test('narrow martial victory grants more insight than an easy victory',()=>{
+ function win(hp){
+  const s=fresh();s.place='school';
+  assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+  assert.equal(martialAction(s,'challenge','brawler'),true);
+  s.hp=hp;s.combat.distance=1;s.combat.enemyHp=1;
+  assert.equal(martialAction(s,'turn','strike',()=>0.1),true);
+  assert.equal(s.combat,null);
+  assert.equal(s.hp,hp);
+  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+  return s;
+ }
+ const easy=win(100),narrow=win(25);
+ assert.equal(easy.martial.insight.qinghe_fist,2);
+ assert.equal(narrow.martial.insight.qinghe_fist,6);
+ assert.equal(easy.coins,22);
+ assert.equal(narrow.coins,22);
+ assert.ok(narrow.result.some(x=>x.includes('险胜保命')));
+});
+test('victory earned by martial technique receives the same one-time outcome',()=>{
+ const s=fresh();s.place='school';
+ assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ s.combat.distance=1;s.combat.enemyHp=1;
+ assert.equal(martialAction(s,'move','qinghe_fist_1',()=>0.1),true);
+ assert.equal(s.combat,null);
+ assert.equal(s.martial.insight.qinghe_fist,2);
+ assert.equal(s.result.filter(x=>x.includes('实战领悟 +')).length,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('successful retreat leaves injuries and gives no victory bonus',()=>{
+ const s=fresh();s.place='school';assert.equal(martialAction(s,'learn','qinghe_fist'),true);
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ s.hp=45;s.injuries={bruise:1};s.combat.distance=3;
+ assert.equal(martialAction(s,'turn','flee',()=>0.1),true);
+ assert.equal(s.combat,null);assert.equal(s.hp,45);
+ assert.equal(s.injuries.bruise,1);
+ assert.equal(s.martial.insight.qinghe_fist,0);
+ assert.ok(s.result.some(x=>x.includes('未获得胜利奖励')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
