@@ -48,6 +48,9 @@ export function socialDay(s,day){
    b.resentment=Math.min(100,b.resentment+2);b.trust=Math.max(0,b.trust-1);
    event(b,day,right.name+'因'+left.name+'较容易获得活计而心生不满。');
    notes.push('码头工人因谋生机会发生竞争。');
+  }else if(b.kind==='competitor'&&left.unemployedDays===0&&right.unemployedDays===0&&b.resentment>0&&day%6===0){
+   b.resentment=Math.max(0,b.resentment-1);b.trust=Math.min(100,b.trust+1);
+   event(b,day,'双方都重新有了活计，谋生竞争暂时缓和。');
   }else if(b.kind==='employer'&&right.unemployedDays>=3&&day%4===0){
    b.trust=Math.max(0,b.trust-2);b.resentment=Math.min(100,b.resentment+1);
    event(b,day,'连续停工使雇佣关系承压。');
