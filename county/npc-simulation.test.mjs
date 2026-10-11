@@ -631,3 +631,18 @@ test('employed competitors gradually reconcile without transferring resources',a
  socialDay(s,6);assert.equal(JSON.stringify(s.npcWorld.social),snapshot);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('bitter rival carriers decline an otherwise payable shift without consuming payroll',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ const bond=s.npcWorld.social.bonds['dockhand01:carter'];
+ p.occupation='carrier';p.energy=90;p.hunger=0;p.injuryDays=0;
+ bond.resentment=70;
+ const shop=p.home==='liuxi'?'liuxi':'market';
+ s.commerce.budget[shop]=100;
+ const before=[p.coins,p.workDays,s.commerce.budget[shop]];
+ npcCareerDay(s,p,2);
+ assert.deepEqual([p.coins,p.workDays,s.commerce.budget[shop]],before);
+ assert.ok(p.history.some(x=>x.includes('避开共同搬运')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
