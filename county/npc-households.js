@@ -22,8 +22,8 @@ export function familySupport(s,p,day){
  const id=familyOf(p.id);if(!id)return false;
  const household=s.npcWorld.households[id];
  // Contribute actual private surplus to a family-managed store.
- if(p.food>=3&&household.food<90){p.food--;household.food++;}
- if(p.coins>=50&&household.coins<=999990){p.coins-=5;household.coins+=5;}
+ if(p.food>=3&&household.food<90){p.food--;household.food++;household.trust=Math.min(100,household.trust+1);p.history=['第'+day+'日主动向家中储粮贡献一份口粮。',...p.history].slice(0,8);}
+ if(p.coins>=50&&household.coins<=999990){p.coins-=5;household.coins+=5;household.trust=Math.min(100,household.trust+1);p.history=['第'+day+'日主动向家中积蓄贡献5文。',...p.history].slice(0,8);}
  if(p.food===0&&household.food>0){
   household.food--;p.food++;p.hunger=Math.max(0,p.hunger-12);household.trust=Math.min(100,household.trust+1);
   p.history=['第'+day+'日从家中领取一份口粮。',...p.history].slice(0,8);return true;
@@ -52,9 +52,9 @@ export function familyResponsibility(s,day){
    notes.push(foodDonor.name+'分粮接济'+needy.name+'，缓解家庭缺粮。');
    continue;
   }
-  const donor=members.find(p=>p!==needy&&p.coins>=12);
+  const donor=members.find(p=>p!==needy&&p.coins>=(h.trust>=70?10:12));
   if(donor&&needy.coins<12){
-   const amount=Math.min(3,donor.coins-9,12-needy.coins);
+   const amount=Math.min(3,donor.coins-(h.trust>=70?7:9),12-needy.coins);
    if(amount>0){
     donor.coins-=amount;needy.coins+=amount;
     h.trust=Math.min(100,h.trust+2);h.hardshipDays=Math.max(0,h.hardshipDays-1);
