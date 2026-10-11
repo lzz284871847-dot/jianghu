@@ -41,7 +41,7 @@ test('advanced gear needs smith trust; armor reduces incoming damage',()=>{
  const s=fresh();s.place='workshop';s.coins=500;s.bag.iron=100;s.bag.wood=100;s.bag.fine_ore=4;
  assert.equal(equipmentAction(s,'craft','steel_blade'),false);
  s.relations.smith=8;
- assert.equal(equipmentAction(s,'craft','steel_blade'),true);
+ assert.equal(equipmentAction(s,'craft','steel_blade',()=>.5),true);
  assert.equal(equipmentAction(s,'craft','iron_vest'),true);
  assert.equal(equipmentAction(s,'equip','iron_vest'),true);
  const c=newCombat('brawler','qinghe_fist');c.distance=1;
@@ -95,12 +95,43 @@ test('higher tier crafting cannot bypass rare ore with cash and iron alone',()=>
  s.bag.iron=100;s.bag.wood=100;
  assert.equal(equipmentAction(s,'craft','steel_blade'),false);
  s.bag.fine_ore=2;
- assert.equal(equipmentAction(s,'craft','steel_blade'),true);
+ assert.equal(equipmentAction(s,'craft','steel_blade',()=>.5),true);
  assert.equal(equipmentAction(s,'craft','master_blade'),false);
  s.bag.cold_ore=2;
- assert.equal(equipmentAction(s,'craft','master_blade'),true);
+ assert.equal(equipmentAction(s,'craft','master_blade',()=>.5),true);
  assert.equal(equipmentAction(s,'craft','heirloom_sword'),false);
  s.bag.meteor_ore=2;
- assert.equal(equipmentAction(s,'craft','heirloom_sword'),true);
+ assert.equal(equipmentAction(s,'craft','heirloom_sword',()=>.5),true);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('high tier forge failure consumes inputs without creating equipment',()=>{
+ const s=fresh();s.place='workshop';s.coins=500;s.relations.smith=30;
+ s.bag.iron=30;s.bag.wood=10;s.bag.fine_ore=2;
+ const coin=s.coins,ore=s.bag.fine_ore;
+ assert.equal(equipmentAction(s,'craft','steel_blade',()=>0),true);
+ assert.equal(s.equipment.owned.steel_blade,undefined);
+ assert.equal(s.bag.fine_ore,ore-2);
+ assert.equal(s.coins,coin-30);
+ assert.match(s.result.join(''),/锻造.*失败/);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('fine quality improves matched attack and survives repair and save',()=>{
+ const s=fresh();s.place='workshop';s.bag.iron=20;s.bag.wood=10;
+ assert.equal(equipmentAction(s,'craft','iron_sword',()=>.99),true);
+ assert.equal(s.equipment.quality.iron_sword,2);
+ assert.equal(equipmentAction(s,'equip','iron_sword'),true);
+ s.martial.equipped='basic_sword';
+ assert.equal(equipmentBonuses(s).attack,7);
+ s.equipment.owned.iron_sword=25;
+ assert.equal(equipmentAction(s,'repair','iron_sword'),true);
+ assert.equal(s.equipment.quality.iron_sword,2);
+ assert.equal(restore(JSON.stringify(s)).equipment.quality.iron_sword,2);
+});
+test('old equipment save without quality is migrated as ordinary',()=>{
+ const s=fresh();s.equipment.owned.wood_staff=20;
+ delete s.equipment.quality;
+ const restored=restore(JSON.stringify(s));
+ assert.equal(restored.equipment.quality.wood_staff,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(restored)));
 });
