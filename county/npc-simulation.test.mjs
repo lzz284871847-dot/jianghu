@@ -514,3 +514,21 @@ test('household trust never drops below zero under prolonged distress',async()=>
  assert.equal(h.trust,0);
  assert.ok(h.hardshipDays>=9);
 });
+
+test('a friend with low trust refuses aid without moving any money',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
+ const needy=s.npcWorld.individuals.farmhand01,friend=s.npcWorld.individuals.shopassistant;
+ needy.coins=1;needy.hunger=70;friend.coins=30;bond.trust=39;
+ const total=needy.coins+friend.coins;
+ s.day=3;
+ const notes=socialDay(s,3);
+ assert.equal(needy.coins+friend.coins,total);
+ assert.equal(needy.coins,1);
+ assert.equal(bond.resentment,1);
+ assert.ok(notes.some(x=>x.includes('求助未果')));
+ const copy=JSON.stringify(s.npcWorld.social);
+ socialDay(s,3);
+ assert.equal(JSON.stringify(s.npcWorld.social),copy);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
