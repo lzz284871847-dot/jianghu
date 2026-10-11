@@ -239,3 +239,21 @@ test('repeated victories against the same opponent give no extra insight that da
  assert.equal(s.martial.insight.qinghe_fist,4);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('lasting injuries reduce attack reliability and make escape harder',()=>{
+ const healthy=fresh(),wounded=fresh();
+ const a=newCombat('brawler','qinghe_fist'),b=newCombat('brawler','qinghe_fist');
+ a.distance=1;b.distance=1;
+ wounded.injuries={strain:2,fracture:1};
+ const clean=resolve(a,healthy,'strike',()=>0.65);
+ const hurt=resolve(b,wounded,'strike',()=>0.65);
+ assert.ok(clean.enemyHpDelta<0);
+ assert.equal(hurt.enemyHpDelta,0);
+ const normalFlee=newCombat('brawler','qinghe_fist'),injuredFlee=newCombat('brawler','qinghe_fist');
+ normalFlee.distance=3;injuredFlee.distance=3;
+ const safe=fresh(),limping=fresh();limping.injuries={fracture:2};
+ assert.equal(resolve(normalFlee,safe,'flee',()=>0.5).ended,'escaped');
+ assert.equal(resolve(injuredFlee,limping,'flee',()=>0.5).ended,null);
+ assert.ok(limping.combat===null);
+ assert.doesNotThrow(()=>restore(JSON.stringify(limping)));
+});
