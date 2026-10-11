@@ -1,6 +1,6 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=0.8.0';
-import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=0.8.0';
-import {useMove,usableMoves} from './martial-moves.js?v=0.8.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=0.9.0';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=0.9.0';
+import {useMove,usableMoves} from './martial-moves.js?v=0.9.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
