@@ -1,4 +1,4 @@
-import {makeContracts,contractsValid,settleContracts,autonomousLoans} from './npc-contracts.js';
+import {makeContracts,contractsValid,settleContracts,autonomousLoans,applyContractReputation} from './npc-contracts.js';
 import {makeSocial,socialValid,socialDay} from './npc-social.js?v=2.0.0';
 import {makeHouseholds,householdsValid,familySupport,familyResponsibility} from './npc-households.js?v=2.0.0';
 import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=2.0.0';
@@ -58,6 +58,7 @@ export function tickNPCs(s,day){
  notes.push(...familyResponsibility(s,day));
  notes.push(...socialDay(s,day));
  notes.push(...settleContracts(s,s.npcWorld.contracts,day));
+ notes.push(...applyContractReputation(s,s.npcWorld.contracts,day));
  notes.push(...autonomousLoans(s,s.npcWorld.contracts,day));
  s.npcWorld.lastDay=day;
  return notes.slice(0,2);
