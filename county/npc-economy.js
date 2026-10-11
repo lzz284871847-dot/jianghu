@@ -1,8 +1,8 @@
 import {familyOf} from './npc-households.js';
-import {bondBetween} from './npc-social.js?v=3.3.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.3.0';
-import {MARKET_LIMIT} from './commerce.js?v=3.3.0';
-import {districtStatus} from './society.js?v=3.3.0';
+import {bondBetween} from './npc-social.js?v=3.4.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=3.4.0';
+import {MARKET_LIMIT} from './commerce.js?v=3.4.0';
+import {districtStatus} from './society.js?v=3.4.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -78,10 +78,11 @@ export function npcSellProduce(s,p,day){
 export function npcTransport(s,p,day){
  const shop=TRANSPORTERS[p.id];
  const effort=p.careerSkills.carry>=20?20:22;
+ const injuryPeriod=p.careerSkills.carry>=40?23:17;
  if(!shop||p.injuryDays>0||p.energy<effort||p.hunger>=80||districtStatus(s,shop).closed||budgetAt(s,shop)<30)return false;
  // Merchant pays documented carriage charges; no cargo is conjured into existence.
  const pay=3;s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
- if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
+ if((day+p.id.length)%injuryPeriod===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时扭伤，需休养三日。');}
  if(p.workDays===1||p.workDays%10===0)remember(p,'第'+day+'日替商户搬运现有货物，领到'+pay+'文运费。');
  return true;
 }
@@ -138,9 +139,10 @@ export function npcCareerDay(s,p,day){
   const refusesSharedRoute=rivalry&&rivalry.resentment>=70&&day%2===0;
   if(refusesSharedRoute){remember(p,'第'+day+'日因与同行积怨过深，避开共同搬运的短工。');}
   const effort=p.careerSkills.carry>=20?20:22;
+  const injuryPeriod=p.careerSkills.carry>=40?23:17;
   if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=effort&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
    s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
-   if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
+   if((day+p.id.length)%injuryPeriod===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
    if(p.workDays%10===0)remember(p,'第'+day+'日做搬运短工，得到'+pay+'文。');
   }
  }else{
