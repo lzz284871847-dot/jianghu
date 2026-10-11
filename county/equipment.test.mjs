@@ -229,3 +229,29 @@ test('mining to forge to actual combat wear to repair can be played end to end',
  assert.equal(s.equipment.owned.farm_knife,EQUIPMENT.farm_knife.durability);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('deep ore refreshes only after its two-day cycle and survives save/load',async()=>{
+ const {act,choose,resourceBlocker}=await import('./engine.js');
+ const {advance}=await import('./world.js');
+ const s=fresh();s.place='mine';s.bag.pick=1;s.skills.mining=1000;
+ const node=s.nodes['mine:meteor_ore'];assert.equal(node.left,1);
+ assert.equal(act(s,'meteor_ore'),true);
+ assert.equal(choose(s,'gather',()=>0.5),true); // deterministic failure still consumes a node
+ assert.equal(node.left,0);
+ assert.match(resourceBlocker(s,'meteor_ore'),/暂时采尽/);
+ const saved=restore(JSON.stringify(s));
+ assert.equal(saved.nodes['mine:meteor_ore'].left,0);
+ advance(saved,1440-saved.minute);
+ assert.equal(saved.day,2);assert.equal(saved.nodes['mine:meteor_ore'].left,0);
+ advance(saved,1440);
+ assert.equal(saved.day,3);assert.equal(saved.nodes['mine:meteor_ore'].left,1);
+ assert.equal(resourceBlocker(saved,'meteor_ore'),null);
+ assert.doesNotThrow(()=>restore(JSON.stringify(saved)));
+});
+test('every advanced recipe requires the correct deep ore and no tier is unreachable by recipe',()=>{
+ const rare={3:'fine_ore',4:'cold_ore',5:'meteor_ore'};
+ for(const item of Object.values(EQUIPMENT)){
+  for(const [key,n] of Object.entries(item.materials))assert.ok(n>0,'positive quantity '+key);
+  if(item.tier>=3)assert.equal(item.materials[rare[item.tier]],2,item.name);
+ }
+});
