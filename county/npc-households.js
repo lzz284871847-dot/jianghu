@@ -41,7 +41,14 @@ export function familyResponsibility(s,day){
  for(const [family,ids] of Object.entries(HOUSEHOLD_MEMBERS)){
   const h=s.npcWorld.households[family],members=ids.map(id=>s.npcWorld.individuals[id]);
   const needy=members.find(p=>p.injuryDays>=2||p.hunger>=55||p.unemployedDays>=4);
-  if(!needy){h.hardshipDays=Math.max(0,h.hardshipDays-1);continue;}
+  if(!needy){
+   h.hardshipDays=Math.max(0,h.hardshipDays-1);
+   if(h.hardshipDays===0&&h.trust>=80&&day%7===0){
+    for(const member of members){member.history=['第'+day+'日家中生计安稳，家人彼此信赖。',...member.history].slice(0,8);}
+    notes.push(family+'家庭生计稳定，家人关系更加稳固。');
+   }
+   continue;
+  }
   h.hardshipDays=Math.min(100000,h.hardshipDays+1);
   const foodDonor=members.find(p=>p!==needy&&p.food>=2);
   if(needy.food===0&&foodDonor){
