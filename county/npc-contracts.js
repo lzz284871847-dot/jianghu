@@ -29,3 +29,11 @@ export function settleContracts(s,ledger,day){
  ledger.history.unshift(...notes);ledger.history=ledger.history.slice(0,24);ledger.lastDay=day;
  return notes;
 }
+
+export function autonomousLoans(s,ledger,day){
+ const bond=s.npcWorld.social.bonds['farmhand01:shopassistant'];
+ const borrower=s.npcWorld.individuals.farmhand01;
+ const lender=s.npcWorld.individuals.shopassistant;
+ if(day%5!==0||!bond||!borrower||!lender||bond.trust<45||borrower.hunger<50||borrower.coins>3||lender.coins<15)return [];
+ return openLoan(s,ledger,'shopassistant','farmhand01',5,day+4)?['小莲借给陈二五文钱。']:[];
+}
