@@ -26,6 +26,7 @@ export const EQUIPMENT=Object.freeze({
 const RARE_MATERIAL=Object.freeze({3:{fine_ore:2},4:{cold_ore:2},5:{meteor_ore:2}});
 for(const item of Object.values(EQUIPMENT))if(item.tier>=3)Object.assign(item.materials,RARE_MATERIAL[item.tier]);
 export const craftFailureChance=item=>item.tier<=2?0:Math.min(.35,.08+(item.tier-3)*.10);
+export const equipmentWorkCost=(item,kind)=>({minutes:kind==='craft'?45+15*item.tier:20+10*item.tier,energy:kind==='craft'?4+2*item.tier:2+item.tier});
 export const makeEquipment=()=>({owned:{},quality:{},equipped:{weapon:null,armor:null}});
 export function ensureEquipment(s){s.equipment??=makeEquipment();return s.equipment;}
 export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'||Array.isArray(e)||!e.owned||typeof e.owned!=='object'||Array.isArray(e.owned)||!e.equipped||typeof e.equipped!=='object'||Array.isArray(e.equipped))return false;
@@ -43,6 +44,9 @@ export function equipmentAction(s,kind,id,rng=()=>.5){const e=ensureEquipment(s)
  if(s.combat||s.pending||s.dead){s.result=['当前无法操作装备。'];return false;}
  if(kind==='craft'&&Object.hasOwn(e.owned,id)){s.result=['背包已有此装备，暂不支持重复制备。'];return false;}
  if(kind==='repair'&&(!Object.hasOwn(e.owned,id)||e.owned[id]===item.durability)){s.result=['没有需要修理的装备。'];return false;}
+ const work=equipmentWorkCost(item,kind);
+ if(s.minute<420||s.minute+work.minutes>1080){s.result=['铁匠铺07:00–18:00营业，剩余时间不足以完成本次'+(kind==='craft'?'打造':'修理')+'。'];return false;}
+ if(s.energy<work.energy){s.result=['精力不足以完成装备作业，需要'+work.energy+'点精力。'];return false;}
  const materials=Object.entries(item.materials).map(([k,n])=>[k,kind==='repair'?Math.max(1,Math.ceil(n/3)):n]);
  const fee=kind==='repair'?Math.max(1,Math.ceil(item.fee/4)):item.fee;
  if(s.coins<fee||materials.some(([k,n])=>(s.bag[k]||0)<n)){s.result=['铜钱或材料不足。'];return false;}
