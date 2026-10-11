@@ -522,7 +522,7 @@ test('a friend with low trust refuses aid without moving any money',async()=>{
  needy.coins=1;needy.hunger=70;friend.coins=30;bond.trust=39;
  const total=needy.coins+friend.coins;
  s.day=3;
- for(const node of Object.values(s.nodes))node.refreshDay=3;
+ for(const node of Object.values(s.nodes))node.refreshDay=4;
  const notes=socialDay(s,3);
  assert.equal(needy.coins+friend.coins,total);
  assert.equal(needy.coins,1);
@@ -540,7 +540,7 @@ test('long unemployment damages the persistent employer relationship',async()=>{
  const worker=s.npcWorld.individuals.shopassistant;
  worker.unemployedDays=4;
  const trust=bond.trust,resentment=bond.resentment;
- s.day=4;for(const node of Object.values(s.nodes))node.refreshDay=4;
+ s.day=4;for(const node of Object.values(s.nodes))node.refreshDay=5;
  socialDay(s,4);
  assert.equal(bond.trust,trust-2);
  assert.equal(bond.resentment,resentment+1);
