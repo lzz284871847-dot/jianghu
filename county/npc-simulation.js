@@ -1,5 +1,5 @@
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.5.0';
-import {people,places} from './content.js?v=1.5.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay} from './npc-economy.js?v=1.6.0';
+import {people,places} from './content.js?v=1.6.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
@@ -11,7 +11,7 @@ const ordinary=[
 ];
 export const NPC_LEVELS=['detailed','ordinary','background'];
 const bounded=(n,max)=>Number.isSafeInteger(n)&&n>=0&&n<=max;
-const makePerson=(id,name,home,role,age,level)=>({id,name,home,place:home,role,age,level,coins:30,food:3,cargo:0,occupation:'original',unemployedDays:0,energy:100,hunger:0,workDays:0,lastDay:1,history:[]});
+const makePerson=(id,name,home,role,age,level)=>({id,name,home,place:home,role,age,level,coins:30,food:3,cargo:0,occupation:'original',unemployedDays:0,careerSkills:{craft:0,trade:0,carry:0,forage:0},energy:100,hunger:0,workDays:0,lastDay:1,history:[]});
 export function makeNPCWorld(day=1){
  const individuals={};
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
@@ -25,7 +25,7 @@ export function npcWorldValid(s){
  if(Object.keys(root.individuals).length!==Object.keys(canonical.individuals).length)return false;
  for(const [id,p] of Object.entries(root.individuals)){
   const init=canonical.individuals[id];
-  if(!init||!p||p.id!==id||p.name!==init.name||p.home!==init.home||p.role!==init.role||!Object.hasOwn(places,p.place)||!NPC_LEVELS.includes(p.level)||!bounded(p.age,130)||!bounded(p.coins,1000000)||!bounded(p.food,100)||!bounded(p.cargo,5)||!['original','carrier','shopworker','craftsman'].includes(p.occupation)||!bounded(p.unemployedDays,100000)||!bounded(p.energy,100)||!bounded(p.hunger,100)||!bounded(p.workDays,100000)||!bounded(p.lastDay,s.day)||p.lastDay<1||!Array.isArray(p.history)||p.history.length>8||p.history.some(t=>typeof t!=='string'||t.length>180))return false;
+  if(!init||!p||p.id!==id||p.name!==init.name||p.home!==init.home||p.role!==init.role||!Object.hasOwn(places,p.place)||!NPC_LEVELS.includes(p.level)||!bounded(p.age,130)||!bounded(p.coins,1000000)||!bounded(p.food,100)||!bounded(p.cargo,5)||!['original','carrier','shopworker','craftsman'].includes(p.occupation)||!bounded(p.unemployedDays,100000)||!p.careerSkills||typeof p.careerSkills!=='object'||Array.isArray(p.careerSkills)||Object.keys(p.careerSkills).length!==4||!['craft','trade','carry','forage'].every(k=>bounded(p.careerSkills[k],500))||!bounded(p.energy,100)||!bounded(p.hunger,100)||!bounded(p.workDays,100000)||!bounded(p.lastDay,s.day)||p.lastDay<1||!Array.isArray(p.history)||p.history.length>8||p.history.some(t=>typeof t!=='string'||t.length>180))return false;
  }
  if(!root.background||typeof root.background!=='object'||Array.isArray(root.background)||Object.keys(root.background).length!==3)return false;
  return Object.entries(canonical.background).every(([area])=>{const b=root.background[area];return !!b&&bounded(b.population,1000000)&&bounded(b.families,300000)&&b.families<=b.population;});

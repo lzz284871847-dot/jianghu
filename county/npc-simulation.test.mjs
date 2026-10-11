@@ -227,17 +227,53 @@ test('smith apprentice becomes craftsman only after twenty financed workdays',as
  const {npcCareerDay}=await import('./npc-economy.js');
  const s=fresh(),p=s.npcWorld.individuals.smithapprentice;
  s.commerce.budget.market=800;
- for(let day=2;day<=21;day++){s.day=day;p.energy=100;npcCareerDay(s,p,day);}
- assert.equal(p.workDays,20);assert.equal(p.occupation,'craftsman');
+ for(let day=2;day<=42&&p.occupation!=='craftsman';day++){s.day=day;p.energy=100;npcCareerDay(s,p,day);}
+ assert.equal(p.workDays,20);assert.equal(p.careerSkills.craft,20);assert.equal(p.occupation,'craftsman');
  assert.ok(p.history.some(x=>x.includes('正式铁匠')));
  const budget=s.commerce.budget.market,coins=p.coins;
- s.day=22; p.energy=100;
- assert.equal(npcCareerDay(s,p,22),true);
+ s.day+=1; p.energy=100;
+ assert.equal(npcCareerDay(s,p,s.day),true);
  assert.equal(p.coins,coins+6);assert.equal(s.commerce.budget.market,budget-6);
- for(const node of Object.values(s.nodes))node.refreshDay=23;
+ for(const node of Object.values(s.nodes))node.refreshDay=s.day%2===0?s.day+1:s.day+2;
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
 test('invalid career flags are rejected instead of being silently reset',()=>{
  const s=fresh();s.npcWorld.individuals.farmhand01.occupation='emperor';
  assert.throws(()=>restore(JSON.stringify(s)),/NPC人生记录无效/);
+});
+
+test('smith may fail craft assessment, exhausting energy without imaginary wages or proficiency',async()=>{
+ const {npcWork}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.smithapprentice;
+ const length=p.id.length;
+ let failDay=2;while((failDay+length)%7!==0)failDay++;
+ const old={coins:p.coins,skill:p.careerSkills.craft,budget:s.commerce.budget.market,days:p.workDays,energy:p.energy};
+ assert.equal(npcWork(s,p,failDay),false);
+ assert.equal(p.coins,old.coins);
+ assert.equal(p.careerSkills.craft,old.skill);
+ assert.equal(p.workDays,old.days);
+ assert.equal(s.commerce.budget.market,old.budget);
+ assert.ok(p.energy<old.energy);
+ assert.ok(p.history.some(h=>h.includes('工序失误')));
+});
+test('successful work grows the correct professional skill and does not raise unrelated skills',async()=>{
+ const {npcWork,npcTransport,npcProduce}=await import('./npc-economy.js');
+ const s=fresh(),apprentice=s.npcWorld.individuals.smithapprentice,porter=s.npcWorld.individuals.dockhand01,farmer=s.npcWorld.individuals.farmhand01;
+ assert.equal(npcWork(s,apprentice,2),true);
+ assert.equal(apprentice.careerSkills.craft,1);
+ assert.equal(apprentice.careerSkills.trade,0);
+ assert.equal(npcTransport(s,porter,2),true);
+ assert.equal(porter.careerSkills.carry,1);
+ assert.equal(npcProduce(s,farmer,3),true);
+ assert.equal(farmer.careerSkills.forage,1);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('older saves gain validated vocational experience without losing prior apprenticeship credit',()=>{
+ const s=fresh(),p=s.npcWorld.individuals.smithapprentice;
+ p.workDays=12;for(const person of Object.values(s.npcWorld.individuals))delete person.careerSkills;
+ const restored=restore(JSON.stringify(s));
+ assert.equal(restored.npcWorld.individuals.smithapprentice.careerSkills.craft,12);
+ assert.equal(restored.npcWorld.individuals.shopassistant.careerSkills.craft,0);
+ restored.npcWorld.individuals.smithapprentice.careerSkills.trade=-1;
+ assert.throws(()=>restore(JSON.stringify(restored)),/NPC人生记录无效/);
 });
