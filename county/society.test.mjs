@@ -12,7 +12,7 @@ test('existing 0.9.0 saves receive independent social state',()=>{
 test('two days without staple grain cause hardship, normal supply reverses it',()=>{
  const s=fresh();s.commerce.stock.market.grain=0;
  societyDay(s,1);
- const alerts=society.districts.market;
+ const alerts=s.society.districts.market;
  assert.equal(alerts.hardship,1);
  assert.ok(societyDay(s,2).some(x=>x.includes('粮食连续紧缺')));
  assert.equal(alerts.hardship,2);
