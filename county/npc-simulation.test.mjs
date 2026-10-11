@@ -772,3 +772,14 @@ test('sustained family hardship makes an unemployed carrier reconsider before po
  assert.ok(p.history.some(x=>x.includes('重新尝试本行')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('experienced carrier saves effort but receives only merchant-funded pay',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ p.occupation='carrier';p.injuryDays=0;p.hunger=0;p.energy=21;p.careerSkills.carry=20;
+ const budget=s.commerce.budget.market,coins=p.coins;
+ npcCareerDay(s,p,3);
+ assert.equal(p.energy,1);assert.equal(p.coins,coins+3);
+ assert.equal(s.commerce.budget.market,budget-3);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
