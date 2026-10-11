@@ -47,7 +47,8 @@ export function equipmentAction(s,kind,id,rng=()=>.5){const e=ensureEquipment(s)
  const work=equipmentWorkCost(item,kind);
  if(s.minute<420||s.minute+work.minutes>1080){s.result=['铁匠铺07:00–18:00营业，剩余时间不足以完成本次'+(kind==='craft'?'打造':'修理')+'。'];return false;}
  if(s.energy<work.energy){s.result=['精力不足以完成装备作业，需要'+work.energy+'点精力。'];return false;}
- const materials=Object.entries(item.materials).map(([k,n])=>[k,kind==='repair'?Math.max(1,Math.ceil(n/3)):n]);
+ // Rare ores define the original forging recipe; routine repairs use common stock.
+ const materials=kind==='repair'?Object.entries(item.materials).filter(([k])=>!['fine_ore','cold_ore','meteor_ore'].includes(k)).map(([k,n])=>[k,Math.max(1,Math.ceil(n/3))]):Object.entries(item.materials);
  const fee=kind==='repair'?Math.max(1,Math.ceil(item.fee/4)):item.fee;
  if(s.coins<fee||materials.some(([k,n])=>(s.bag[k]||0)<n)){s.result=['铜钱或材料不足。'];return false;}
  // High tier equipment is in the world catalogue but requires expert trust and preparation.
