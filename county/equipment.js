@@ -22,6 +22,9 @@ export const EQUIPMENT=Object.freeze({
  iron_scale:{name:'玄铁鳞甲',slot:'armor',kind:'',tier:5,attack:0,defense:18,durability:105,materials:{iron:34},fee:185},
  hero_robe:{name:'百工护身袍',slot:'armor',kind:'',tier:5,attack:0,defense:16,durability:100,materials:{iron:25,wood:10},fee:165}
 });
+
+const RARE_MATERIAL=Object.freeze({3:{fine_ore:2},4:{cold_ore:2},5:{meteor_ore:2}});
+for(const item of Object.values(EQUIPMENT))if(item.tier>=3)Object.assign(item.materials,RARE_MATERIAL[item.tier]);
 export const makeEquipment=()=>({owned:{},equipped:{weapon:null,armor:null}});
 export function ensureEquipment(s){s.equipment??=makeEquipment();return s.equipment;}
 export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'||Array.isArray(e)||!e.owned||typeof e.owned!=='object'||Array.isArray(e.owned)||!e.equipped||typeof e.equipped!=='object'||Array.isArray(e.equipped))return false;
