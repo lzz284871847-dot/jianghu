@@ -721,3 +721,18 @@ test('high household trust unlocks earlier aid from actual savings',async()=>{
  assert.ok(needy.history.some(x=>x.includes('帮助3文')));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('stable trusted families periodically record shared life without changing resources',async()=>{
+ const {familyResponsibility}=await import('./npc-households.js');
+ const s=fresh(),h=s.npcWorld.households.chen;
+ const a=s.npcWorld.individuals.farmhand01,b=s.npcWorld.individuals.farmhand02;
+ a.injuryDays=0;b.injuryDays=0;a.hunger=0;b.hunger=0;a.unemployedDays=0;b.unemployedDays=0;
+ h.hardshipDays=1;h.trust=80;
+ const before=[a.coins+b.coins+h.coins,a.food+b.food+h.food];
+ familyResponsibility(s,7);
+ assert.equal(h.hardshipDays,0);
+ assert.ok(a.history.some(x=>x.includes('彼此信赖')));
+ assert.ok(b.history.some(x=>x.includes('彼此信赖')));
+ assert.deepEqual([a.coins+b.coins+h.coins,a.food+b.food+h.food],before);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
