@@ -533,3 +533,17 @@ test('a friend with low trust refuses aid without moving any money',async()=>{
  assert.equal(JSON.stringify(s.npcWorld.social),copy);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('long unemployment damages the persistent employer relationship',async()=>{
+ const {socialDay}=await import('./npc-social.js');
+ const s=fresh(),bond=s.npcWorld.social.bonds['merchant:shopassistant'];
+ const worker=s.npcWorld.individuals.shopassistant;
+ worker.unemployedDays=4;
+ const trust=bond.trust,resentment=bond.resentment;
+ s.day=4;for(const node of Object.values(s.nodes))node.refreshDay=4;
+ socialDay(s,4);
+ assert.equal(bond.trust,trust-2);
+ assert.equal(bond.resentment,resentment+1);
+ assert.ok(bond.history.some(x=>x.includes('连续停工')));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
