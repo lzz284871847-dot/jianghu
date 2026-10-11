@@ -1,4 +1,4 @@
-import {alive} from './npc-mortality.js?v=4.8.0';
+import {alive} from './npc-mortality.js?v=4.9.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -91,7 +91,7 @@ export function voluntaryShopSearch(p,day){
 }
 export function ambitionDay(s,p,day,applyShop){
  const o=p.outlook;if(!alive(p)||o.lastDay>=day)return false;o.lastDay=day;
- if(p.life?.sickDays>0||p.life?.restDay===day)return false;
+ if(p.retirement?.active||p.life?.sickDays>0||p.life?.restDay===day)return false;
  const record=text=>{p.history=['第'+day+'日'+text,...p.history].slice(0,8);};
  // Applications consume a real vacancy and leave the first salary for the next day.
  if(voluntaryShopSearch(p,day)&&applyShop(s,p,day))record('依照'+TEMPERAMENTS[o.temperament]+'性格，选择转入商铺谋生，保留原有经验与积蓄。');

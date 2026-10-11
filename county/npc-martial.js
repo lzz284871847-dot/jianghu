@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=4.8.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=4.8.0';
-import {learn,train} from './martial-progression.js?v=4.8.0';
-import {people} from './content.js?v=4.8.0';
+import {alive} from './npc-mortality.js?v=4.9.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=4.9.0';
+import {learn,train} from './martial-progression.js?v=4.9.0';
+import {people} from './content.js?v=4.9.0';
 export const NPC_ART='qinghe_fist';
 export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day});
 export const studyValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===4&&
@@ -16,7 +16,7 @@ export function npcStudyDay(s,p,age,day){
  if(!v.learnedDay){
   const reserve={enterprising:40,cautious:80,steadfast:60}[p.outlook.temperament];
   const teacher=s.npcWorld.individuals.master,fee=MARTIAL_ARTS[NPC_ART].tier*8;
-  if(day%7||age>=65||p.workDays<10||p.coins<reserve||!alive(teacher)||teacher.injuryDays||teacher.life.sickDays||teacher.life.restDay===day||teacher.energy<20||teacher.coins>1000000-fee||people.master.open>480||people.master.close<600)return false;
+  if(day%7||age>=65||p.workDays<10||p.coins<reserve||!alive(teacher)||teacher.retirement?.active||teacher.injuryDays||teacher.life.sickDays||teacher.life.restDay===day||teacher.energy<20||teacher.coins>1000000-fee||people.master.open>480||people.master.close<600)return false;
   if(!learn(adapter,NPC_ART))return false;
   p.coins=adapter.coins;teacher.coins+=fee;teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);
   v.learnedDay=day;record(p,day,'自行到武馆付费'+fee+'文，向周师傅学习'+MARTIAL_ARTS[NPC_ART].name+'，招式还需练习。');

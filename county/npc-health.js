@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=4.8.0';
-import {people} from './content.js?v=4.8.0';
-import {marketPrice,stockAt} from './commerce.js?v=4.8.0';
-import {districtStatus} from './society.js?v=4.8.0';
+import {alive} from './npc-mortality.js?v=4.9.0';
+import {people} from './content.js?v=4.9.0';
+import {marketPrice,stockAt} from './commerce.js?v=4.9.0';
+import {districtStatus} from './society.js?v=4.9.0';
 const record=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 // Daily appointments are simulated inside the doctor's existing 08:00–18:00 hours.
 // Rain/undernutrition can cause a short illness; no extra world RNG is consumed.
@@ -22,7 +22,7 @@ export function npcHealthDay(s,p,age,day,guardians=[]){
   const payer=age<16?guardians.find(g=>alive(g)&&g.coins>=8)??p:p;
   // The eight-coin fee goes to the doctor; the doctor purchases one real herb
   // from the market at its current quote. The consumed herb is never duplicated.
-  if(payer.coins>=8&&alive(doctor)&&!doctor.life.sickDays&&doctor.injuryDays===0&&doctor.energy>=10&&clinic.open<=600&&clinic.close>=660&&
+  if(payer.coins>=8&&alive(doctor)&&!doctor.retirement?.active&&!doctor.life.sickDays&&doctor.injuryDays===0&&doctor.energy>=10&&clinic.open<=600&&clinic.close>=660&&
    !districtStatus(s,'market').closed&&quote!==null&&stockAt(s,'market','herb')>0&&doctor.coins+8-quote>=0&&doctor.coins+8-quote<=1000000&&s.commerce.budget.market+quote<=1000000){
    payer.coins-=8;doctor.energy-=10;doctor.workDays=Math.min(100000,doctor.workDays+1);doctor.coins+=8-quote;s.commerce.budget.market+=quote;s.commerce.stock.market.herb--;
    record(doctor,'第'+day+'日为'+p.name+'诊治，收诊金8文，购药耗费'+quote+'文并用去药材1份。');
