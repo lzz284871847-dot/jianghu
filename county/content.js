@@ -15,11 +15,11 @@ export const places={
  foot:place('南山脚','山林与旧道',['village','road','bamboo','hill'],30,'可拾柴、寻药。再往山上走，开始需要准备工具与药品。',['木料','常见药材']),
  bamboo:place('竹林','山林与旧道',['foot','hill','liuxi'],45,'落枝、野兔与小径。采集有时空手，雨天木料更难找。',['木料','狩猎']),
  hill:place('南山坡','山林与旧道',['foot','bamboo','mine','oldroad'],60,'山坡药材较多，狩猎也更危险；行动前明确提示擦伤风险。',['常见药材','狩猎']),
- mine:place('旧矿洞','山林与旧道',['hill'],45,'本批只开放入口浅层铁矿。深层好矿料已有分布规划，待装备与生产用途完成后开放。',['浅层铁矿','深层矿区（未开放）']),
+ mine:place('旧矿洞','山林与旧道',['hill'],45,'浅层铁矿供日常冶炼，深层矿脉需要采矿经验。精铁、寒铁与陨铁碎料越来越难寻，深入采矿可能受伤。',['浅层铁矿','深层精铁','寒铁矿脉','陨铁碎料']),
  oldroad:place('山间旧道','山林与旧道',['hill'],60,'危险地段：可能遇拦路人。可以绕开；交手可能死亡，胜利没有神装。远山出口暂未开放。',['危险旧道','远山出口（未开放）'])
 };
 export const skills={carry:'搬运',forage:'采集',herb:'采药',fish:'钓鱼',mining:'采矿',hunt:'狩猎',farming:'农耕',cook:'烹饪',smelt:'冶炼',fist:'拳脚',battle:'临战判断',trade:'经商'};
-export const items={food:'干粮',grain:'粮食',vegetable:'蔬菜',wood:'木料',herb:'常见药材',fish:'鲜鱼',ore:'铁矿石',iron:'铁料',meat:'猎物肉',rod:'钓竿',pick:'矿镐',trap:'猎具'};
+export const items={food:'干粮',grain:'粮食',vegetable:'蔬菜',wood:'木料',herb:'常见药材',fish:'鲜鱼',ore:'铁矿石',iron:'铁料',meat:'猎物肉',rod:'钓竿',pick:'矿镐',trap:'猎具',fine_ore:'精铁矿',cold_ore:'寒铁矿',meteor_ore:'陨铁碎料'};
 const node=(name,places,minutes,energy,skill,chance,capacity,output,tool=null,risk=0,damage=0)=>({name,places,minutes,energy,skill,chance,capacity,output,tool,risk,damage});
 export const resources={
  wood:node('拾柴整理木料',['foot','bamboo'],90,12,'forage',.75,3,{wood:2}),
@@ -27,6 +27,9 @@ export const resources={
  fish:node('河岸钓鱼',['dock','ferry'],90,14,'fish',.65,3,{fish:1},'rod'),
  vegetables:node('帮农户分拣余菜',['fields'],60,10,'farming',.8,2,{vegetable:1}),
  ore:node('浅层采矿',['mine'],120,20,'mining',.7,3,{ore:2},'pick',.15,8),
+ fine_ore:node('深层精铁矿脉',['mine'],150,24,'mining',.45,2,{fine_ore:1},'pick',.20,9),
+ cold_ore:node('寒铁矿脉',['mine'],180,28,'mining',.30,1,{cold_ore:1},'pick',.30,13),
+ meteor_ore:node('陨铁碎料探寻',['mine'],210,32,'mining',.16,1,{meteor_ore:1},'pick',.40,18),
  hunt:node('布置猎具狩猎',['bamboo','hill'],150,20,'hunt',.55,2,{meat:1},'trap',.15,8)
 };
 export const nodeDefs=Object.fromEntries(Object.entries(resources).flatMap(([key,d])=>d.places.map(place=>[place+':'+key,{...d,key,place}])));
