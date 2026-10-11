@@ -22,8 +22,8 @@ export function familySupport(s,p,day){
  const id=familyOf(p.id);if(!id)return false;
  const household=s.npcWorld.households[id];
  // Contribute actual private surplus to a family-managed store.
- if(p.food>=3&&household.food<90){p.food--;household.food++;}
- if(p.coins>=50&&household.coins<=999990){p.coins-=5;household.coins+=5;}
+ if(p.food>=3&&household.food<90){p.food--;household.food++;household.trust=Math.min(100,household.trust+1);p.history=['第'+day+'日主动向家中储粮贡献一份口粮。',...p.history].slice(0,8);}
+ if(p.coins>=50&&household.coins<=999990){p.coins-=5;household.coins+=5;household.trust=Math.min(100,household.trust+1);p.history=['第'+day+'日主动向家中积蓄贡献5文。',...p.history].slice(0,8);}
  if(p.food===0&&household.food>0){
   household.food--;p.food++;p.hunger=Math.max(0,p.hunger-12);household.trust=Math.min(100,household.trust+1);
   p.history=['第'+day+'日从家中领取一份口粮。',...p.history].slice(0,8);return true;
