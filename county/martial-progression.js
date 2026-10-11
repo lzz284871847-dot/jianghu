@@ -21,7 +21,7 @@ export function martialMoveTurn(s,moveId,rng=()=>.5){
  if(c.enemyHp<enemyHpBefore)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);
  c.round++;
  const enemy=c.ended?null:intent(c);
- const response=c.ended?[]:enemyResponse(c,s,enemy,rng,'move');
+ const response=c.ended?[]:enemyResponse(c,s,enemy,rng,move.move&&MARTIAL_ARTS[id].category==='身法'?'sidestep':'move');
  const log=[...move.log,...response];
  c.history.push({round:c.round,move:moveId,enemyIntent:enemy,log});
  if(c.history.length>30)c.history.shift();
