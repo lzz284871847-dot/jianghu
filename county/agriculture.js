@@ -11,7 +11,7 @@ export const harvestFor=(day,weather)=>{
 export function farmDelivery(s,day,weather,max=30){
  const deliveries=harvestFor(day,weather);
  if(!deliveries)return [];
- const messages=weather==='雨'?['连日阴雨使本轮农户收成偏低，粮菜供给减少。']:[];
+ const messages=[];
  for(const [place,goods] of Object.entries(deliveries)){
   const shelf=s.commerce.stock[place];
   for(const [key,n] of Object.entries(goods)){
@@ -20,5 +20,6 @@ export function farmDelivery(s,day,weather,max=30){
    if(delivered>0){shelf[key]+=delivered;messages.push((place==='market'?'县城街市':'柳溪集')+'收到农户送来的'+(key==='grain'?'粮食':'蔬菜')+'×'+delivered+'。');}
   }
  }
+ if(weather==='雨')messages.push('阴雨使本轮农户收成偏低，粮菜供给减少。');
  return messages;
 }
