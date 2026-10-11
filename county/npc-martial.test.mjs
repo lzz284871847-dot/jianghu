@@ -98,8 +98,8 @@ test('4.10 study migrates exactly, including adult descendant records, with no t
  s.day=7007;for(const n of Object.values(s.nodes))n.refreshDay=7009;
  const v=makeChildLivelihood('chen-child-1',7006);v.study={learnedDay:6000,practice:12,insight:3,lastDay:7006};
  s.npcWorld.lineage={lastDay:7006,courtshipDay:2,marriedDay:32,conceivedDay:0,children:[{id:'chen-child-1',bornDay:332,hunger:0,learning:0,lastDay:7006,life:makeLife(),livelihood:v}]};
- const before=cash(s),x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld.individuals.dockhand01.study,{...p.study,otherArts:{},teacherTrust:0});
- assert.deepEqual(x.npcWorld.lineage.children[0].livelihood.study,{...v.study,otherArts:{},teacherTrust:0});assert.equal(cash(x),before);
+ const before=cash(s),x=restore(JSON.stringify(s));assert.deepEqual(x.npcWorld.individuals.dockhand01.study,{...p.study,otherArts:{},teacherTrust:0,experience:0,mastery:0,lastSparDay:0});
+ assert.deepEqual(x.npcWorld.lineage.children[0].livelihood.study,{...v.study,otherArts:{},teacherTrust:0,experience:0,mastery:0,lastSparDay:0});assert.equal(cash(x),before);
 });
 test('extended study rejects unknown arts, duplicate primary and invalid gains',()=>{
  for(const [id,a] of [['unknown',{learnedDay:14,practice:0,insight:0}],['qinghe_fist',{learnedDay:14,practice:0,insight:0}],['spring_kick',{learnedDay:22,practice:0,insight:0}],['spring_kick',{learnedDay:14,practice:2401,insight:0}]]){

@@ -1,4 +1,4 @@
-import {alive} from './npc-mortality.js?v=4.12.1';
+import {alive} from './npc-mortality.js?v=4.13.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
