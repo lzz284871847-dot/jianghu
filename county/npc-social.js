@@ -51,7 +51,10 @@ export function socialDay(s,day){
    b.resentment=Math.max(0,b.resentment-2);b.trust=Math.min(100,b.trust+1);
    event(b,day,'恢复稳定工作后，雇佣双方逐渐消除旧怨。');
   }else if(b.kind==='mentor'&&right.careerSkills.craft>=20&&b.trust<90&&day%8===0){
-   b.trust++;event(b,day,'学徒技艺进步，师徒信任增加。');
+   const improvement=right.careerSkills.craft>=40?2:1;
+   b.trust=Math.min(100,b.trust+improvement);
+   if(right.careerSkills.craft>=40)b.resentment=Math.max(0,b.resentment-1);
+   event(b,day,'学徒凭已掌握的锻造技艺逐渐重新赢得师傅认可。');
   }
  }
  s.npcWorld.social.lastDay=day;
