@@ -133,3 +133,17 @@ test('skirmishers withdraw when crowded but close in when out of range',()=>{
  assert.equal(intent(c),'retreat');
  c.distance=4;assert.equal(intent(c),'advance');
 });
+
+test('counter fighter punishes reckless heavy strikes but not ordinary strikes',()=>{
+ const heavy=fresh(),h=newCombat('boxer','qinghe_fist');h.distance=1;
+ const hr=resolve(h,heavy,'heavy',()=>0.1);
+ assert.equal(hr.enemyIntent,'guard');assert.equal(heavy.hp,88);
+ assert.ok(hr.log.some(x=>x.includes('守中反击')));
+ const ordinary=fresh(),o=newCombat('boxer','qinghe_fist');o.distance=1;
+ const sr=resolve(o,ordinary,'strike',()=>0.1);
+ assert.equal(ordinary.hp,100);
+ assert.equal(sr.log.some(x=>x.includes('守中反击')),false);
+ const weak=fresh(),w=newCombat('brawler','qinghe_fist');w.distance=1;
+ assert.equal(intent(w),'heavy');
+ assert.doesNotThrow(()=>restore(JSON.stringify(heavy)));
+});
