@@ -22,7 +22,7 @@ test('learn, train and fight in school survive save',()=>{
  assert.equal(martialAction(s,'learn','qinghe_fist'),true);
  assert.equal(s.minute,540);
  assert.equal(martialAction(s,'train','qinghe_fist'),true);
- assert.equal(s.minute,660);
+ assert.equal(s.minute,600);
  assert.equal(martialAction(s,'challenge','brawler'),true);
  assert.equal(restore(JSON.stringify(s)).combat.opponent,'brawler');
  assert.equal(martialAction(s,'move','qinghe_fist_1',()=>0.5),true);
@@ -290,7 +290,7 @@ test('county app, modules and offline cache all use the same release version',()
   const content=readFileSync(join(dir,name),'utf8');
   assert.doesNotMatch(content,/\?v=0\.(?:1|2)\.0/,name+' stale cache-buster');
  }
- assert.match(readFileSync(join(dir,'sw.js'),'utf8'),/VERSION='5\.0\.0'/);
- assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='5\.0\.0'/);
- assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 5\.0\.0/);
+ assert.match(readFileSync(join(dir,'sw.js'),'utf8'),/VERSION='5\.1\.0'/);
+ assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='5\.1\.0'/);
+ assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 5\.1\.0/);
 });

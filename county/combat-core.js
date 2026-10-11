@@ -1,6 +1,6 @@
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.0.0';
-import {injuryEffects} from './injury.js?v=5.0.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.0.0';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.1.0';
+import {injuryEffects} from './injury.js?v=5.1.0';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.1.0';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);
@@ -31,7 +31,7 @@ export function enemyResponse(c,player,enemy=intent(c),rng=()=>.5,action=''){
 export function resolve(c,player,action,rng=()=>.5){
  if(!legal(c,action))throw Error('当前距离无法执行此行动');
  if(player.dead||player.hp<=0)throw Error('角色已经死亡');
- const energy={strike:5,heavy:11,guard:3,feint:6,sidestep:5,advance:4,retreat:4,flee:6}[action];
+ const energy={strike:5,heavy:11,guard:3,feint:6,sidestep:5,advance:4,retreat:4,flee:Math.min(6,player.energy)}[action];
  if(c.practice&&action==='flee'){c.ended='escaped';return {round:c.round,action,enemyIntent:'停止陪练',ended:'escaped',log:['你示意收手，陪练立即停止。'],distanceAfter:c.distance};}
  if(player.energy<energy)throw Error('精力不足');
  const enemy=intent(c),before={hp:player.hp,energy:player.energy,enemyHp:c.enemyHp};
@@ -43,7 +43,7 @@ export function resolve(c,player,action,rng=()=>.5){
  if(action==='sidestep'){c.stance='游走';c.playerGuard=2;}else if(action==='guard'){c.stance='守势';c.playerGuard=5;}else if(action==='heavy'){c.stance='进逼';c.playerGuard=0;}else if(action==='feint'){c.stance='中正';c.playerGuard=1;}else if(action==='strike')c.playerGuard=0;
  if(action==='flee'){
   const advantage=(c.distance>=3?3:0)+(c.stance==='游走'?2:0)+(c.exits>0?2:0)-(c.enemyStance==='进逼'?2:0)-(injuries.fracture?3:0)-effects.movementPenalty;
-  const threshold=clamp(.28+advantage*.08,.08,.92);
+  const threshold=clamp(.28+advantage*.08-(before.energy<6?.16:0),.08,.92);
   if(rng()<threshold){c.ended='escaped';log.push('成功脱离交手。');}
   else{log.push('撤退受阻，对手仍有机会追击。');c.distance=clamp(c.distance+1,0,4);}
  }else if(['strike','heavy','feint'].includes(action)){
