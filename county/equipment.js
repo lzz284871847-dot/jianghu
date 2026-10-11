@@ -1,4 +1,4 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=4.14.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=4.15.0';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
  wood_staff:{name:'木棍',slot:'weapon',kind:'棍法',tier:1,attack:2,defense:0,durability:35,materials:{wood:2},fee:2},
