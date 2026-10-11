@@ -1,9 +1,10 @@
-import {travelBusy} from './npc-journeys.js?v=4.22.0';
-import {schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.22.0';
-import {alive} from './npc-mortality.js?v=4.22.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=4.22.0';
-import {canLearn,learn,train} from './martial-progression.js?v=4.22.0';
-import {people} from './content.js?v=4.22.0';
+import {villageTeacher,villageCanTeach} from './npc-village-school.js?v=4.23.0';
+import {travelBusy} from './npc-journeys.js?v=4.23.0';
+import {schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=4.23.0';
+import {alive} from './npc-mortality.js?v=4.23.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=4.23.0';
+import {canLearn,learn,train} from './martial-progression.js?v=4.23.0';
+import {people} from './content.js?v=4.23.0';
 export const NPC_ART='qinghe_fist';
 export const makeMentor=()=>({joinedDay:0,endedDay:0,lastAidDay:0,aidCount:0});
 export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day,otherArts:{},teacherTrust:0,experience:0,mastery:0,lastSparDay:0,mentor:makeMentor()});
@@ -41,13 +42,13 @@ export function npcStudyDay(s,p,age,day){
  const known=arts(v),adapter={place:'school',hp:100,coins:p.coins,energy:p.energy,relations:{master:v.teacherTrust},martial:{known:Object.fromEntries(known.map(([id])=>[id,true])),equipped:NPC_ART,practice:Object.fromEntries(known.map(([id,a])=>[id,a.practice])),insight:Object.fromEntries(known.map(([id,a])=>[id,a.insight])),experience:{},mastery:{}}};
  // Only actual paid lessons build trust. Higher tiers reuse the player's two-art prerequisite.
  if(!v.learnedDay||v.practice>=120){
-  const village=p.outlook.ambition==='forage'&&p.id!=='farmer'?Object.keys(MARTIAL_ARTS).filter(id=>MARTIAL_ARTS[id].source==='village'):[];
+  const village=p.outlook.ambition==='forage'&&p.id!==s.npcWorld.villageSchool.holder?Object.keys(MARTIAL_ARTS).filter(id=>MARTIAL_ARTS[id].source==='village'&&villageCanTeach(s,id)):[];
   const school=Object.keys(MARTIAL_ARTS).filter(id=>MARTIAL_ARTS[id].source!=='village'&&schoolCanTeach(s,id)).sort((a,b)=>MARTIAL_ARTS[b].tier-MARTIAL_ARTS[a].tier);
   const target=!v.learnedDay?NPC_ART:[...village,...school].find(id=>{adapter.place=MARTIAL_ARTS[id].source==='village'?'village':'school';return !canLearn(adapter,id);});
   const reserve={enterprising:40,cautious:80,steadfast:60}[p.outlook.temperament];
   const teacherId=target&&MARTIAL_ARTS[target].source==='village'?'farmer':'master';
-  const teacher=teacherId==='master'?schoolTeacher(s):s.npcWorld.individuals.farmer,hours=people[teacherId],fee=target?MARTIAL_ARTS[target].tier*8:0;
-  if(target&&teacher&&teacher.id!==p.id&&(teacherId!=='master'||schoolCanTeach(s,target))&&day%7===0&&age<65&&p.workDays>=10&&p.coins>=reserve&&alive(teacher)&&!teacher.retirement?.active&&!teacher.injuryDays&&!teacher.life.sickDays&&teacher.life.restDay!==day&&teacher.energy>=20&&teacher.coins<=1000000-fee&&hours.open<=480&&hours.close>=600&&learn(adapter,target)){
+  const teacher=teacherId==='master'?schoolTeacher(s):villageTeacher(s),hours=people[teacherId],fee=target?MARTIAL_ARTS[target].tier*8:0;
+  if(target&&teacher&&teacher.id!==p.id&&(teacherId==='master'?schoolCanTeach(s,target):villageCanTeach(s,target))&&day%7===0&&age<65&&p.workDays>=10&&p.coins>=reserve&&alive(teacher)&&!teacher.retirement?.active&&!teacher.injuryDays&&!teacher.life.sickDays&&teacher.life.restDay!==day&&teacher.energy>=20&&teacher.coins<=1000000-fee&&hours.open<=480&&hours.close>=600&&learn(adapter,target)){
    p.coins=adapter.coins;teacher.coins+=fee;teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);
    if(target===NPC_ART)v.learnedDay=day;else v.otherArts[target]={learnedDay:day,practice:0,insight:0};
    if(teacherId==='master')v.teacherTrust=Math.min(100,v.teacherTrust+5);
