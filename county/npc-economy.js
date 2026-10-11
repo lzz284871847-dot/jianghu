@@ -132,8 +132,9 @@ export function npcCareerDay(s,p,day){
   const rivalry=rivalId?s.npcWorld.social.bonds[bondBetween(s,p.id,rivalId)]:null;
   const refusesSharedRoute=rivalry&&rivalry.resentment>=70&&day%2===0;
   if(refusesSharedRoute){remember(p,'第'+day+'日因与同行积怨过深，避开共同搬运的短工。');}
-  if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=22&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
-   s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=22;p.workDays++;train(p,'carry');
+  const effort=p.careerSkills.carry>=20?20:22;
+  if(!refusesSharedRoute&&p.injuryDays===0&&p.energy>=effort&&p.hunger<80&&!districtStatus(s,shop).closed&&budgetAt(s,shop)>=30){
+   s.commerce.budget[shop]-=pay;p.coins+=pay;p.energy-=effort;p.workDays++;train(p,'carry');
    if((day+p.id.length)%17===0){p.injuryDays=3;remember(p,'第'+day+'日搬运时受伤，需休养三日。');}
    if(p.workDays%10===0)remember(p,'第'+day+'日做搬运短工，得到'+pay+'文。');
   }
