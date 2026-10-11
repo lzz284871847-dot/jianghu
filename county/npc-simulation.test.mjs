@@ -168,3 +168,36 @@ test('legacy NPC saves without cargo get safe zero-inventory migration',()=>{
  migrated.npcWorld.individuals.fisher.cargo=-1;
  assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
 });
+
+test('unpaid ordinary NPC switches to funded carriage work after three missed days',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ s.society.districts.market.closedUntil=5;
+ for(let day=2;day<=4;day++){s.day=day;npcCareerDay(s,p,day);}
+ assert.equal(p.occupation,'carrier');
+ assert.ok(p.history.some(x=>x.includes('改找运输短工')));
+ s.day=6;s.society.districts.market.closedUntil=0;
+ const budget=s.commerce.budget.market,coins=p.coins;
+ assert.equal(npcCareerDay(s,p,6),true);
+ assert.equal(s.commerce.budget.market,budget-3);
+ assert.equal(p.coins,coins+3);
+ for(const node of Object.values(s.nodes))node.refreshDay=7;
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('switching careers cannot manufacture wages from a broke shop',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.shopassistant;
+ p.occupation='carrier';s.commerce.budget.market=0;
+ const coins=p.coins;
+ assert.equal(npcCareerDay(s,p,2),false);
+ assert.equal(p.coins,coins);
+ assert.equal(p.unemployedDays,1);
+});
+test('1.3.0 save migrates unemployment and profession fields',()=>{
+ const s=fresh();for(const p of Object.values(s.npcWorld.individuals)){delete p.occupation;delete p.unemployedDays;}
+ const migrated=restore(JSON.stringify(s));
+ assert.equal(migrated.npcWorld.individuals.shopassistant.occupation,'original');
+ assert.equal(migrated.npcWorld.individuals.shopassistant.unemployedDays,0);
+ migrated.npcWorld.individuals.shopassistant.unemployedDays=-2;
+ assert.throws(()=>restore(JSON.stringify(migrated)),/NPC人生记录无效/);
+});
