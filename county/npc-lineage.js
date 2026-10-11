@@ -1,10 +1,10 @@
-import {travelBusy} from './npc-journeys.js?v=4.21.0';
-import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.21.0';
-import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.21.0';
-import {npcHealthDay,healthSummary} from './npc-health.js?v=4.21.0';
-import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.21.0';
-import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.21.0';
-import {familyOf} from './npc-households.js?v=4.21.0';
+import {travelBusy} from './npc-journeys.js?v=4.22.0';
+import {makeStudy,studyValid,studySummary,npcStudyDay} from './npc-martial.js?v=4.22.0';
+import {makeOutlook,outlookValid,outlookSummary,ambitionDay} from './npc-social.js?v=4.22.0';
+import {npcHealthDay,healthSummary} from './npc-health.js?v=4.22.0';
+import {makeLife,lifeValid,alive,mortality,recoveryFor} from './npc-mortality.js?v=4.22.0';
+import {npcCareerDay,npcBuyFood,npcCareer,npcApplyShop,makeRetirement,retirementValid,retirementSummary,npcRetirementDay} from './npc-economy.js?v=4.22.0';
+import {familyOf} from './npc-households.js?v=4.22.0';
 // This first batch follows one established, unrelated friendship. No invented spouses
 // or retrospective births are injected into existing households or population totals.
 export const UNION_ID='farmhand01:shopassistant';
@@ -84,10 +84,11 @@ export function lineageDay(s,day){
    const retiree={...v,life:c.life,id:c.id,hunger:c.hunger};
    npcRetirementDay(s,retiree,age,day);
    for(const key of Object.keys(v))v[key]=retiree[key];
-   // One available family farm position, released by the father's death. No copied skill.
-   if(!travelBusy(s,c.id)&&!health.resting&&!v.retirement.active&&!alive(s.npcWorld.individuals.farmhand01)&&c.learning>=20&&v.occupation==='original'&&!l.children.some(x=>x!==c&&alive(x)&&!x.livelihood.retirement.active&&x.livelihood.occupation==='farmer')){
+   // One real family farm slot, released by death or retirement. No copied skill.
+   const father=s.npcWorld.individuals.farmhand01,canSeekFarm=v.occupation==='original'||v.occupation==='carrier'&&v.unemployedDays>=3;
+   if(!travelBusy(s,c.id)&&!health.resting&&!v.retirement.active&&!v.injuryDays&&c.hunger<80&&(!alive(father)||father.retirement.active)&&c.learning>=20&&canSeekFarm&&!l.children.some(x=>x!==c&&alive(x)&&!x.livelihood.retirement.active&&x.livelihood.occupation==='farmer')){
     v.occupation='farmer';v.unemployedDays=0;
-    v.history=['第'+day+'日接手父亲留下的农事岗位，从自己的采收经验开始。',...v.history].slice(0,8);
+    v.history=['第'+day+'日接手'+(alive(father)?'父亲退养后空出的':'父亲留下的')+'农事岗位，从自己的采收经验开始。',...v.history].slice(0,8);
     notes.push('陈家孩子'+(l.children.indexOf(c)+1)+'接手家中农事，能否收成与出售仍有风险。');
    }
    if(v.injuryDays>0){v.injuryDays--;v.energy=Math.min(100,v.energy+12);}else v.energy=Math.min(100,v.energy+recoveryFor(age));
