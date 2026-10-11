@@ -1,9 +1,9 @@
-import {alive} from './npc-mortality.js?v=4.4.0';
-import {familyOf} from './npc-households.js?v=4.4.0';
-import {bondBetween} from './npc-social.js?v=4.4.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.4.0';
-import {MARKET_LIMIT} from './commerce.js?v=4.4.0';
-import {districtStatus} from './society.js?v=4.4.0';
+import {alive} from './npc-mortality.js?v=4.5.0';
+import {familyOf} from './npc-households.js?v=4.5.0';
+import {bondBetween} from './npc-social.js?v=4.5.0';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=4.5.0';
+import {MARKET_LIMIT} from './commerce.js?v=4.5.0';
+import {districtStatus} from './society.js?v=4.5.0';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -15,7 +15,7 @@ const train=(p,key,amount=1)=>{p.careerSkills[key]=Math.min(500,p.careerSkills[k
 // Rank uses persisted, actually earned skills; restoring an old save grants no money.
 export function npcCareer(p){
  const key=p.occupation==='carrier'?'carry':p.occupation==='shopworker'?'trade':
- p.id==='smithapprentice'?'craft':POSITIONS[p.id]?'trade':TRANSPORTERS[p.id]?'carry':PRODUCERS[p.id]?'forage':null;
+ p.id==='smithapprentice'?'craft':POSITIONS[p.id]?'trade':TRANSPORTERS[p.id]?'carry':producerOf(p)?'forage':null;
  const skill=key?p.careerSkills[key]:0;
  const rank=skill>=100?2:skill>=40?1:0;
  return {key,rank,label:['初入行','熟手','资深'][rank],bonus:key==='forage'?0:rank};
@@ -69,11 +69,12 @@ export const PRODUCERS=Object.freeze({
  hunter:{market:'liuxi',item:'meat',interval:3,effort:25},
  herbalist:{market:'market',item:'herb',interval:3,effort:16}
 });
+export function producerOf(p){return PRODUCERS[p.id]??(/^chen-child-[12]$/.test(p.id)?PRODUCERS.farmhand01:null);}
 export const TRANSPORTERS=Object.freeze({dockhand01:'market',dockhand02:'liuxi',carter:'market',laborer:'market'});
 export function npcProduce(s,p,day){
  if(!alive(p))return false;
- const job=PRODUCERS[p.id];const effort=job?Math.max(12,job.effort-(p.careerSkills.forage>=20?2:0)):0;
- if(!job||p.injuryDays>0||day%job.interval!==0||p.energy<effort||p.hunger>=80||p.cargo>=5)return false;
+ const job=producerOf(p);const effort=job?Math.max(12,job.effort-(p.careerSkills.forage>=20?2:0)):0;
+ if(!job||/^chen-child-/.test(p.id)&&p.occupation!=='farmer'||p.injuryDays>0||day%job.interval!==0||p.energy<effort||p.hunger>=80||p.cargo>=5)return false;
  p.energy-=effort;
  // Deterministic risk based on the game seed and day, without extra RNG side effects.
  const succeeds=(day+p.id.length)%5!==0 && !(s.weather==='雨'&&job.item==='meat');
@@ -82,7 +83,7 @@ export function npcProduce(s,p,day){
 }
 export function npcSellProduce(s,p,day){
  if(!alive(p))return false;
- const job=PRODUCERS[p.id];if(!job||p.cargo<=0)return false;
+ const job=producerOf(p);if(!job||p.cargo<=0)return false;
  const shop=job.market,price=marketPrice(s,shop,'sell',job.item);
  if(districtStatus(s,shop).closed||price===null||stockAt(s,shop,job.item)>=MARKET_LIMIT||budgetAt(s,shop)<price)return false;
  p.cargo--;s.commerce.stock[shop][job.item]++;s.commerce.budget[shop]-=price;p.coins+=price;p.workDays++;
@@ -169,6 +170,7 @@ export function npcCareerDay(s,p,day){
   npcTransport(s,p,day);
  }
  if(p.id==='smithapprentice'&&p.occupation==='original'&&p.workDays>=20&&p.careerSkills.craft>=20){p.occupation='craftsman';remember(p,'第'+day+'日学徒完成二十次合格工序并积累足够技艺，成为正式铁匠，工钱随手艺提升。');}
+ if(/^chen-child-/.test(p.id)&&['carrier','shopworker'].includes(p.occupation))npcSellProduce(s,p,day);
  if(p.workDays>before){p.unemployedDays=0;if(npcCareer(p).rank>rankBefore)remember(p,'第'+day+'日凭实际劳作晋升为'+npcCareer(p).label+'，今后工钱按熟练程度结算。');return true;}
  p.unemployedDays=Math.min(100000,p.unemployedDays+1);
  // Only an unfunded/closed employer releases shop employees; illness alone is not dismissal.
@@ -190,6 +192,7 @@ export function npcCareerDay(s,p,day){
  const recoverySearch=p.injuryDays>=2&&p.unemployedDays>=2;
  if(['original','carrier'].includes(p.occupation)&&(p.unemployedDays>=searchAfter||recoverySearch||injuryJobSearch)&&npcApplyShop(s,p,day))return false;
  const prolongedSearch=p.unemployedDays>=(familyHardship>=5?5:7)&&p.coins<=(familyHardship>=5?35:20);
+ if(p.occupation==='farmer'&&prolongedSearch){p.occupation='carrier';remember(p,'第'+day+'日家中农事连续无法变现，暂转运输短工谋生。');return false;}
  if(p.occupation==='carrier'&&prolongedSearch&&p.level==='ordinary'&&day%3===0){
   p.occupation='original';
   remember(p,'第'+day+'日搬运短工长期无着，重新尝试本行与其他谋生门路。');
