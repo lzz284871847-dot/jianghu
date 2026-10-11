@@ -1,10 +1,12 @@
+import {marketPrice,stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=4.5.0';
+import {districtStatus} from './society.js?v=4.5.0';
 // First mortality batch covers the established Chen/Xiao-Lian family only.
 export const TRACKED_PARENTS=['farmhand01','shopassistant'];
-export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0});
+export const makeLife=()=>({frailty:0,starvationDays:0,deathDay:0,estateDay:0});
 export const alive=p=>!p?.life?.deathDay;
-export const lifeValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===3&&
- [['frailty',100],['starvationDays',30],['deathDay',day]].every(([k,max])=>Number.isSafeInteger(v[k])&&v[k]>=0&&v[k]<=max)&&
- (!v.deathDay||v.frailty===100||v.starvationDays===30);
+export const lifeValid=(v,day)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===4&&
+ [['frailty',100],['starvationDays',30],['deathDay',day],['estateDay',day]].every(([k,max])=>Number.isSafeInteger(v[k])&&v[k]>=0&&v[k]<=max)&&
+ (!v.deathDay||v.frailty===100||v.starvationDays===30)&&(!v.estateDay||v.deathDay>0&&v.estateDay>=v.deathDay);
 export const recoveryFor=(age,injured=false)=>injured?12:age>=75?12:age>=65?18:25;
 export function mortality(p,age,hunger,day){
  const v=p.life;if(!alive(p))return false;
@@ -38,9 +40,19 @@ export function settleEstates(s){
    }
   }
  };
+ const liquidate=(source,life,heirs)=>{
+  if(life.estateDay>=s.day)return;
+  life.estateDay=s.day;
+  const price=marketPrice(s,'market','sell','vegetable');
+  const room=heirs.reduce((n,h)=>n+1000000-h.coins,0);
+  if(!source.cargo||!heirs.length||price===null||room<price||source.coins>1000000-price||districtStatus(s,'market').closed||stockAt(s,'market','vegetable')>=MARKET_LIMIT||budgetAt(s,'market')<price)return;
+  // A living heir sells exactly one existing inherited ration of produce per day.
+  source.cargo--;s.commerce.stock.market.vegetable++;s.commerce.budget.market-=price;source.coins+=price;
+ };
  for(const p of parents.filter(p=>!alive(p))){
   const spouse=l.marriedDay?parents.filter(x=>x!==p&&alive(x)):[];
-  transfer(p,[...spouse,...children.filter(alive).map(c=>c.livelihood)]);
+  const heirs=[...spouse,...children.filter(alive).map(c=>c.livelihood)];
+  transfer(p,heirs);if(p.id==='farmhand01')liquidate(p,p.life,heirs);transfer(p,heirs);
  }
- for(const c of children.filter(c=>!alive(c)))transfer(c.livelihood,[...parents.filter(alive),...children.filter(alive).map(x=>x.livelihood)]);
+ for(const c of children.filter(c=>!alive(c))){const heirs=[...parents.filter(alive),...children.filter(alive).map(x=>x.livelihood)];transfer(c.livelihood,heirs);liquidate(c.livelihood,c.life,heirs);transfer(c.livelihood,heirs);}
 }
