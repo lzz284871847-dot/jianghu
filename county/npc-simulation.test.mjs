@@ -874,3 +874,18 @@ test('injured worker searches for a real shop vacancy sooner without minting wag
  assert.equal(s.commerce.budget.market,budget);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('recent carriage injury makes a recovered worker hesitate before returning',async()=>{
+ const {npcCareerDay}=await import('./npc-economy.js');
+ const s=fresh(),p=s.npcWorld.individuals.dockhand01;
+ s.commerce.budget.market=0;
+ p.occupation='original';p.level='ordinary';p.injuryDays=0;
+ p.unemployedDays=4;p.energy=80;p.hunger=0;p.coins=10;
+ p.history=['第2日搬运时受伤，需休养三日。'];
+ npcCareerDay(s,p,5);
+ assert.equal(p.occupation,'original');
+ p.energy=80;p.unemployedDays=4;
+ npcCareerDay(s,p,10);
+ assert.equal(p.occupation,'carrier');
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
