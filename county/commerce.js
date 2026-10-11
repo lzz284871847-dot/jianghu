@@ -2,7 +2,7 @@ import {markets} from './content.js?v=0.4.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const initialMarket=()=>({market:{food:10,grain:16,wood:12,herb:8,rod:3,pick:3,trap:3},liuxi:{food:7,grain:12,wood:9,herb:7}});
-export const makeCommerce=()=>({stock:initialMarket(),lastDay:1});
+export const makeCommerce=()=>({stock:Object.fromEntries(Object.entries(markets).map(([place,m])=>[place,Object.fromEntries([...new Set([...Object.keys(m.buy),...Object.keys(m.sell)])].map(key=>[key,initialMarket()[place][key]??0]))])),lastDay:1});
 export function ensureCommerce(s){s.commerce??=makeCommerce();return s.commerce;}
 export function commerceValid(s){
  const c=s.commerce;if(!c||typeof c!=='object'||Array.isArray(c)||!Number.isSafeInteger(c.lastDay)||c.lastDay<1||c.lastDay>s.day||!c.stock||typeof c.stock!=='object'||Array.isArray(c.stock))return false;
