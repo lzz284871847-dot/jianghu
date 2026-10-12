@@ -65,3 +65,16 @@ test('recent grudge suppresses ordinary dialogue gains until real reconciliation
  assert.equal(socialChoice(s,key,'reconcile'),true);
  assert.equal(talk(s,key),true);assert.equal(s.relations[key],after+4);
 });
+
+test('apology removes recent grudge but cannot erase relationship loss',()=>{
+ const {s,key}=prepare();s.relations[key]=20;s.npcWorld.individuals[key].coins=10;
+ assert.equal(socialChoice(s,key,'apologize'),false);
+ assert.equal(socialChoice(s,key,'quarrel'),true);
+ assert.equal(s.relations[key],12);
+ assert.equal(socialChoice(s,key,'apologize'),true);
+ assert.equal(s.relations[key],13);
+ assert.equal(s.socialActions[key].quarrel,undefined);
+ assert.equal(socialChoice(s,key,'request'),true);
+ assert.equal(socialChoice(s,key,'apologize'),false);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
