@@ -1,5 +1,6 @@
 // Run: node --test county/martial-regression.test.mjs
 import test from 'node:test';
+import {VERSION} from './content.js';
 import assert from 'node:assert/strict';
 import {fresh,restore,martialAction,act,choose} from './engine.js';
 import {advance} from './world.js';
@@ -281,19 +282,20 @@ test('all twelve opponents are accessible and survive save/load',()=>{
  }
 });
 
-import {readFileSync} from 'node:fs';
+import {readdirSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 test('county app, modules and offline cache all use the same release version',()=>{
  const dir=fileURLToPath(new URL('.',import.meta.url));
- const modules=['index.html','sw.js','app.js','storage.js','commands.js','world.js','engine.js','content.js','progression.js','martial-moves.js','martial-progression.js','combat-core.js','injury.js','manifest.webmanifest'];
+ const modules=[...readdirSync(dir).filter(name=>name.endsWith('.js')),'index.html','manifest.webmanifest'];
  for(const name of modules){
   const content=readFileSync(join(dir,name),'utf8');
-  assert.doesNotMatch(content,/\?v=0\.(?:1|2)\.0/,name+' stale cache-buster');
+  for(const match of content.matchAll(/(?:['"]|(?:src|href)=")\.\/(?!\.)(?:[^'"?]+)\?v=([\d.]+)/g))assert.equal(match[1],VERSION,name+' stale cache-buster');
  }
- assert.match(readFileSync(join(dir,'sw.js'),'utf8'),/VERSION='5\.7\.0'/);
- assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='5\.7\.0'/);
- assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 5\.7\.0/);
+ assert.equal(JSON.parse(readFileSync(join(dir,'manifest.webmanifest'),'utf8')).start_url,`./?v=${VERSION}`);
+ assert.ok(readFileSync(join(dir,'sw.js'),'utf8').includes(`VERSION='${VERSION}'`));
+ assert.ok(readFileSync(join(dir,'content.js'),'utf8').includes(`VERSION='${VERSION}'`));
+ assert.ok(readFileSync(join(dir,'index.html'),'utf8').includes(`青河县 ${VERSION}`));
 });
 
 test('martial practice plateau requires real combat experience before further training',()=>{

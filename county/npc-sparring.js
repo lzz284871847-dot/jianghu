@@ -1,8 +1,8 @@
-import {travelBusy} from './npc-journeys.js?v=5.6.0';
-import {bondBetween} from './npc-social.js?v=5.6.0';
-import {alive} from './npc-mortality.js?v=5.6.0';
-import {NPC_ART} from './npc-martial.js?v=5.6.0';
-import {useMove,usableMoves} from './martial-moves.js?v=5.6.0';
+import {travelBusy} from './npc-journeys.js?v=5.8.0';
+import {bondBetween} from './npc-social.js?v=5.8.0';
+import {alive} from './npc-mortality.js?v=5.8.0';
+import {NPC_ART} from './npc-martial.js?v=5.8.0';
+import {useMove,usableMoves} from './martial-moves.js?v=5.8.0';
 const ready=(p,day)=>alive(p)&&p.age>=16&&p.age<65&&!p.retirement.active&&p.hunger<40&&!p.injuryDays&&!p.life.sickDays&&p.life.restDay!==day&&p.energy>=40&&p.study.learnedDay>0&&p.study.learnedDay<day&&p.study.practice>=120&&p.study.lastSparDay<day&&!Object.values(p.study.otherArts).some(a=>a.learnedDay===day);
 const adapter=p=>({hp:100,energy:p.energy,dead:false,injuries:{},martial:{known:{[NPC_ART]:true},equipped:NPC_ART,practice:{[NPC_ART]:p.study.practice},insight:{[NPC_ART]:p.study.insight},experience:{[NPC_ART]:p.study.experience},mastery:{[NPC_ART]:p.study.mastery}}});
 const record=(p,day,text)=>{p.history=['第'+day+'日'+text,...p.history].slice(0,8);};

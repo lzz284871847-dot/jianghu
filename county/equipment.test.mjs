@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {VERSION} from './content.js';
 import assert from 'node:assert/strict';
 import {fresh,restore,equipmentAction} from './engine.js';
 import {EQUIPMENT,equipmentBonuses,wearEquipment,equipmentWorkCost} from './equipment.js';
@@ -266,7 +267,7 @@ test('mobile release uses uniform version and preloads equipment logic offline',
   assert.doesNotMatch(txt,/\?v=0\.(?:1\.0|2\.[01])/,path+' stale module version');
  }
  const sw=readFileSync(fileURLToPath(new URL('sw.js',dir)),'utf8');
- assert.match(sw,/VERSION='5\.7\.0'/);
+ assert.ok(sw.includes(`VERSION='${VERSION}'`));
  assert.match(sw,/'equipment\.js'/);
- assert.match(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8'),/青河县 5\.7\.0/);
+ assert.ok(readFileSync(fileURLToPath(new URL('index.html',dir)),'utf8').includes(`青河县 ${VERSION}`));
 });
