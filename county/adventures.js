@@ -1,23 +1,24 @@
-import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.14.0';
-import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.14.0';
-import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.14.0';
-import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.14.0';
-import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.14.0';
-import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.14.0';
-import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.14.0';
-import {makeTrials,trialsValid} from './trials.js?v=5.14.0';
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.14.0';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.14.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.14.0';
-import {people,items} from './content.js?v=5.14.0';
-import {gain} from './progression.js?v=5.14.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.14.0';
-import {EQUIPMENT} from './equipment.js?v=5.14.0';
-export const makeAdventures=(day=1)=>({companions:makeCompanions(),threads:makeThreads(),business:makeBusiness(),outings:makeOutings(),law:makeLaw(),factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.15.0';
+import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.15.0';
+import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.15.0';
+import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.15.0';
+import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.15.0';
+import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.15.0';
+import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.15.0';
+import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.15.0';
+import {makeTrials,trialsValid} from './trials.js?v=5.15.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.15.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.15.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.15.0';
+import {people,items} from './content.js?v=5.15.0';
+import {gain} from './progression.js?v=5.15.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.15.0';
+import {EQUIPMENT} from './equipment.js?v=5.15.0';
+export const makeAdventures=(day=1)=>({spoils:makeSpoils(),companions:makeCompanions(),threads:makeThreads(),business:makeBusiness(),outings:makeOutings(),law:makeLaw(),factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==21||!companionsValid(s)||!threadsValid(s)||!businessValid(s)||!feedbackValid(s)||!factionsValid(s)||!lawValid(s)||!outingsValid(s))return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==22||!spoilsValid(s)||!companionsValid(s)||!threadsValid(s)||!businessValid(s)||!feedbackValid(s)||!factionsValid(s)||!lawValid(s)||!outingsValid(s))return false;
  if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty','retreated'].includes(v)))return false;
  if(!explorationValid(s)||!trialsValid(s)||!playerMentorValid(s))return false;
  if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
@@ -47,6 +48,8 @@ export function adventureAction(s,id,{advance,rng}){
  if(kind==='law')return lawAction(s,String(id),{present,transact,advance,rng});
  if(a.law.pursuit)return fail(s,'先处理县城拦查：投案、短期拘押或冒险逃避。');
  if(kind==='goal'){if(!['none',...Object.keys(GOALS)].includes(key))return fail(s,'没有这条近期目标。');a.threads.goal=key;s.result=['近期方向：'+(GOALS[key]?.name??'自由行动'),'目标可随时更换或忽略，不耗时、不发钱物或隐藏加成。'];return true;}
+ if(kind==='spoil')return spoilAction(s,String(id),{transact,advance,rng});
+ if(kind==='dispose'){const [,mode,equipmentId]=String(id).split(':');return disposeEquipment(s,equipmentId,mode,{transact,advance});}
  if(kind==='companion')return companionAction(s,String(id),{transact,advance,rng});
  if(kind==='thread')return threadAction(s,String(id),{present,transact,advance,rng});
  if(kind==='business')return businessAction(s,String(id),{present,transact,advance,rng});

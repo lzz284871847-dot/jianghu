@@ -1,7 +1,8 @@
-import {SITES} from './adventure-data.js?v=5.14.0';
-import {items} from './content.js?v=5.14.0';
-import {gain} from './progression.js?v=5.14.0';
-import {addInjury} from './injury.js?v=5.14.0';
+import {openSiteSpoils} from './spoils.js?v=5.15.0';
+import {SITES} from './adventure-data.js?v=5.15.0';
+import {items} from './content.js?v=5.15.0';
+import {gain} from './progression.js?v=5.15.0';
+import {addInjury} from './injury.js?v=5.15.0';
 export const makeExploration=()=>({routes:{},encounters:{}});
 export const ENCOUNTERS={bamboo:{name:'废棚旁受困行人',description:'受困行人需要帮助。可用自己药材1份处理（30分钟/精力8），或搬开压枝（1小时/精力18，25%擦伤8气血）。无钱物奖励；也可离开。'},ferry:{name:'药篓旁的争执',description:'两名行人争执一只另有药材2份的破篓。可公平分取其中1份（30分钟/精力6），或劝对方让出1份（45分钟/精力8，60%成功；互助会成员或柳掌柜关系3可直接谈妥）。未谈妥不强迫战斗。'},mine:{name:'矿堆旁的守路棍手',description:'棍手守着另有铁矿1份的碎矿堆。可绕行1小时/精力8，不拿物资；或交自己口粮1份商量（30分钟/精力6，60%放行，无物资奖励）；也可主动实战，可能受伤、撤退失败或永久死亡，胜利后才可收取矿料。'}};
 const outcomes={bamboo:['helped','strained','left'],ferry:['shared','agreed','refused','left'],mine:['bypassed','agreed','refused','left','fighting','won','taken','escaped','died']};
@@ -17,7 +18,7 @@ export function explorationAction(s,id,{transact,advance,rng}){
   if(s.hp<25||key==='mine'&&!s.bag.pick)return fail('搜寻需气血至少25；矿堆仍需矿镐。');
   if(Object.entries(d.goods).some(([id,n])=>s.bag[id]>1000000-n))return fail('背包库存已满，不开始搜寻。');
   const safe=choice==='safe',deep=choice==='deep',minutes=safe?Math.max(15,d.minutes-15):d.minutes+(deep?30:0),energy=safe?Math.max(4,d.energy-4):d.energy+(deep?6:0),chance=Math.max(.05,d.chance+(safe?-.25:deep?.15:0)),risk=safe?0:d.risk+(deep?.2:0),damage=d.damage+(deep?6:0);
-  return transact(s,'探索：'+d.name+' · '+(safe?'稳妥搜寻':deep?'深入冒险':'原有搜寻'),minutes,energy,()=>{x.routes[key]=choice;const found=rng()<chance;s.adventures.sites[key]=found?'found':'empty';if(found){for(const [id,n] of Object.entries(d.goods))s.bag[id]+=n;s.result.push('取得本处有限遗留物：'+Object.entries(d.goods).map(([id,n])=>items[id]+'×'+n).join('、'));}else s.result.push('没有找到合用材料，时间精力已付出，不可反复搜寻。');if(risk&&rng()<risk){s.hp-=damage;if(deep)addInjury(s,'bruise');s.result.push('擦伤，气血 -'+damage+(deep?'，新增瘀伤；可休养或治疗。':'。'));}const line=gain(s,key==='mine'?'mining':key==='ferry'?'herb':'forage',2);if(line)s.result.push(line);},advance);
+  return transact(s,'探索：'+d.name+' · '+(safe?'稳妥搜寻':deep?'深入冒险':'原有搜寻'),minutes,energy,()=>{x.routes[key]=choice;const found=rng()<chance;s.adventures.sites[key]=found?'found':'empty';if(found)openSiteSpoils(s,key);if(found){for(const [id,n] of Object.entries(d.goods))s.bag[id]+=n;s.result.push('取得本处有限遗留物：'+Object.entries(d.goods).map(([id,n])=>items[id]+'×'+n).join('、'));}else s.result.push('没有找到合用材料，时间精力已付出，不可反复搜寻。');if(risk&&rng()<risk){s.hp-=damage;if(deep)addInjury(s,'bruise');s.result.push('擦伤，气血 -'+damage+(deep?'，新增瘀伤；可休养或治疗。':'。'));}const line=gain(s,key==='mine'?'mining':key==='ferry'?'herb':'forage',2);if(line)s.result.push(line);},advance);
  }
  if(kind!=='encounter'||!ENCOUNTERS[key])return fail('没有这项遭遇。');
  const status=x.encounters[key];

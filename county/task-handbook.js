@@ -1,14 +1,15 @@
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.14.0';
-import {places,people,markets,items} from './content.js?v=5.14.0';
-import {QUESTS} from './adventure-data.js?v=5.14.0';
-import {BUSINESSES} from './business.js?v=5.14.0';
-import {EQUIPMENT} from './equipment.js?v=5.14.0';
-import {marketPrice} from './commerce.js?v=5.14.0';
-import {districtStatus} from './society.js?v=5.14.0';
-import {OUTINGS} from './outings.js?v=5.14.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.14.0';
-import {POLICE_JOBS} from './law.js?v=5.14.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.14.0';
+import {SPOILS} from './spoils.js?v=5.15.0';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.15.0';
+import {places,people,markets,items} from './content.js?v=5.15.0';
+import {QUESTS} from './adventure-data.js?v=5.15.0';
+import {BUSINESSES} from './business.js?v=5.15.0';
+import {EQUIPMENT} from './equipment.js?v=5.15.0';
+import {marketPrice} from './commerce.js?v=5.15.0';
+import {districtStatus} from './society.js?v=5.15.0';
+import {OUTINGS} from './outings.js?v=5.15.0';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.15.0';
+import {POLICE_JOBS} from './law.js?v=5.15.0';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.15.0';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
@@ -30,4 +31,5 @@ export function handbook(s){const a=s.adventures,cards=[];const add=(title,place
  for(const [id,r] of Object.entries(a.outings.records))if(r.outcome==='claim'){const d=OUTINGS[id],place=id==='traps'?'bamboo':people[d.holder]?.place??'workshop';add(d.name,place,'找接洽人交代，领取实际余额内的报酬。',0,'成果已完成，付款不足仍保留。','','outings');}
  for(const [id,d] of Object.entries(THREADS)){const r=a.threads.records[id];if(r.status==='new'&&threadEligible(s,id))add(d.name,d.place,'可选机会：'+d.description,0,'未领取，不计截止期限；可忽略。','','threads');else if(['active','claim'].includes(r.status)){const place=id==='escort'?(r.step?'liuxi':'ferry'):id==='testimony'&&r.status==='active'?'road':d.place;const next=r.status==='claim'||id==='escort'&&r.step?'向接洽人交代实际成果。':id==='escort'?'经过旧渡口选择稳妥或近路。':'到官道核对现场。';const cash=d.payer==='public'?s.commerce.budget.market:s.npcWorld.individuals[d.payer].coins;add(d.name,place,next,r.dueDay,'留存自己的干粮'+r.cargo+'份；付款'+d.reward+'文。',r.status==='claim'&&cash<d.reward?'付款人实际余额不足，成果保留。':'','threads');}else if(r.status==='failed'&&r.cargo)add(d.name,s.place,'腾出背包空间，领回留存干粮。',0,'自己的干粮'+r.cargo+'份，无额外奖励。','','threads');}
  for(const [id,d] of Object.entries(COOPERATIONS)){const r=a.companions.records[id];if(['open','ready'].includes(r.status)){const place=r.status==='ready'?d.claim:d.site,next=r.status==='ready'?'按真实分帐交代成果。':r.conflict==='hurt'?'照料同伴轻伤，或结束同行后独行。':r.prepared?'按准备路线实际作业；可撤回。':r.joined?'到现场商量合作分歧。':'同伴离队，仍可独行准备、作业或撤回。';add(d.name,place,next,0,'NPC已消耗精力'+r.npcSpent+'；邀请工钱'+r.fee+'文；'+(r.joined?'同行至今天'+Math.floor(r.until%1440/60)+':'+String(r.until%60).padStart(2,'0')+'，一次一人。':'同伴已离队，返程期间暂停接洽。'),'','companions');}}
+ for(const [id,d] of Object.entries(SPOILS)){const r=a.spoils.records[id];if(r.state==='sealed')continue;if(r.coins||r.gear||Object.values(r.goods).some(Boolean))add(d.name,s.place,'打开留存钱物，分别拾取；同名装备冲突时旧物保留。',0,'铜钱'+r.coins+'文，装备'+(r.gear?EQUIPMENT[r.gear.id].name:'已取')+'，不自动穿戴。','','spoils');if(r.stolen.status==='held')add('有主失物 · '+d.name,r.stolen.identified?people[d.owner].place:'county','辨认后归还原主，或去县衙代还；明知留下会影响关系。',0,'实际失物独立留存，不混入可卖背包。','','spoils');if(r.stolen.status==='kept')add('补还失物 · '+d.name,'county','备原数钱物和2文转交费，向县衙补还；不清除已有案件。',0,'欠还'+r.stolen.value+(d.kind==='coins'?'文':'份干粮')+'。','','spoils');}
  const critical=['人生已结束','县城拦查','林间脱困'];cards.sort((x,y)=>Number(critical.includes(y.title))-Number(critical.includes(x.title))||(x.due||Infinity)-(y.due||Infinity));return {goal:goalProgress(s),cards};}
