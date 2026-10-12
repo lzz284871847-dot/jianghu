@@ -108,3 +108,14 @@ test('failing a scarce purchase never charges more than displayed quote',async()
  assert.equal(trade(s,'buy','food',1),false);
  assert.deepEqual({coins:s.coins,day:s.day,minute:s.minute},before);
 });
+
+test('liuxi caravan delays leave real stock unchanged on disrupted delivery day',()=>{
+ const s=fresh();s.day=6;s.commerce.lastDay=6;
+ s.commerce.stock.liuxi.wood=0;
+ s.weather='雨';advance(s,1440-s.minute);
+ assert.equal(s.day,7);
+ assert.equal(stockAt(s,'liuxi','wood'),0);
+ assert.match(s.news.join(''),/柳溪商路遇雨后泥泞/);
+ assert.ok(commerceValid(s));
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
