@@ -1,16 +1,16 @@
-import {countyLifeTasks} from './county-life.js?v=5.17.0';
-import {SPOILS} from './spoils.js?v=5.17.0';
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.17.0';
-import {places,people,markets,items} from './content.js?v=5.17.0';
-import {QUESTS} from './adventure-data.js?v=5.17.0';
-import {BUSINESSES} from './business.js?v=5.17.0';
-import {EQUIPMENT} from './equipment.js?v=5.17.0';
-import {marketPrice} from './commerce.js?v=5.17.0';
-import {districtStatus} from './society.js?v=5.17.0';
-import {OUTINGS} from './outings.js?v=5.17.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.17.0';
-import {POLICE_JOBS} from './law.js?v=5.17.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.17.0';
+import {countyLifeTasks} from './county-life.js?v=5.17.1';
+import {SPOILS} from './spoils.js?v=5.17.1';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.17.1';
+import {places,people,markets,items} from './content.js?v=5.17.1';
+import {QUESTS} from './adventure-data.js?v=5.17.1';
+import {BUSINESSES} from './business.js?v=5.17.1';
+import {EQUIPMENT} from './equipment.js?v=5.17.1';
+import {marketPrice} from './commerce.js?v=5.17.1';
+import {districtStatus} from './society.js?v=5.17.1';
+import {OUTINGS} from './outings.js?v=5.17.1';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.17.1';
+import {POLICE_JOBS} from './law.js?v=5.17.1';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.17.1';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
