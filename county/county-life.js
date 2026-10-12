@@ -50,7 +50,7 @@ export const countyEventSurcharge=(s,place,key)=>['market','liuxi'].includes(pla
 
 function sectAction(s,action,h){const t=s.adventures.life.sect,m=s.adventures.mentor,p=s.npcWorld.individuals.farmer,{present,transact,advance}=h;
  if(action==='join'){
-  if(t.river||m.member||!['wood_knife','staff'].some(k=>s.martial.known[k])||s.relations.farmer<3||s.npcWorld.villageSchool.holder!=='farmer'||!present(s,'farmer',30))return fail(s,'河湾习武会需已学柴刀法或齐眉棍法、陈农户关系3，且陈农户在田地可接洽；先退出周师傅门下。不收费或赠物。');
+  if(t.river||m.member||!['wood_knife','staff'].some(k=>s.martial.known[k])||s.relations.farmer<3||s.npcWorld.villageSchool.holder!=='farmer'||!present(s,'farmer',30))return fail(s,'河湾习武会需已学柴刀法或农家棍法、陈农户关系3，且陈农户在田地可接洽；先退出周师傅门下。不收费或赠物。');
   return transact(s,'加入河湾习武会',30,0,()=>{t.river=true;if(!t.joined){t.joined=s.day;t.trust=2;}s.result.push('重视农具兵器与乡路协作。与周师傅门下互斥；退出仍保留武艺、信任和事务记录。');},advance);
  }
  if(action==='leave')return t.river?transact(s,'退出河湾习武会',15,0,()=>{t.river=false;t.trust=clamp(t.trust-1);if(t.letters.river==='carried')t.letters.river='failed';s.result.push('信任-1，未交交换函结束，不重开或罚钱；基本求学照常。');},advance):fail(s,'尚未加入河湾习武会。');
