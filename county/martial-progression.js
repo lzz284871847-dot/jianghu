@@ -31,8 +31,9 @@ function finalizeCombat(s,c,log){
   if(!repeated)m.rewardDays[c.opponent]=s.day;
   m.insight[id]=Math.min(MAX,(m.insight[id]||0)+gain);
   log.push(narrow?'险胜保命，伤势沉重，需尽快疗伤。':s.hp<=60?'苦战取胜，伤势不轻。':'交手获胜，仍须提防下一场恶战。');
+  if(s.hp<=60||Object.keys(s.injuries||{}).length)log.push('胜负已定，但伤势与气血不会自动恢复；继续挑战前请先处理伤口。');
   log.push(repeated?'今天已从此类对手得到实战领悟，再战无额外领悟。':'实战领悟 +'+gain+'；没有额外钱财或神兵掉落。');
- }else if(c.ended==='escaped')log.push('成功脱身，未获得胜利奖励；气血和伤势保留。');
+ }else if(c.ended==='escaped'){log.push('成功脱身，未获得胜利奖励；气血和伤势保留。');if(s.hp<60||Object.keys(s.injuries||{}).length)log.push('败逃后身体仍未恢复；再次挑战前宜先疗伤、歇息，否则可能伤重身亡。');else log.push('撤退虽然保住了身体，但此次交手未得到胜利领悟；可以调整武学与战术再战。');}
  else if(c.ended==='death')log.push('战败身亡，这段人生结束。');
 }
 export function martialTurn(s,action,rng){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng);const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}stopPractice(s,s.combat,result.log);result.ended=s.combat.ended||null;if(result.ended){finalizeCombat(s,s.combat,result.log);s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
