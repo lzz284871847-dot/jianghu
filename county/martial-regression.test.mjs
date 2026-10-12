@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fresh,restore,martialAction,act,choose} from './engine.js';
 import {advance} from './world.js';
+import {martialProgress} from './play-help.js';
 import {catalogCheck,OPPONENTS} from './martial-data.js';
 import {combatCatalogValid,newCombat,intent,resolve} from './combat-core.js';
 import {moveCatalogValid} from './martial-moves.js';
@@ -304,4 +305,12 @@ test('martial practice plateau requires real combat experience before further tr
  assert.equal(martialAction(s,'train','qinghe_fist'),true);
  assert.equal(s.martial.practice.qinghe_fist,144);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('martial screen explains real experience plateau and safe sparring route',()=>{
+ const s=fresh();s.martial.known.qinghe_fist=true;s.martial.practice.qinghe_fist=120;s.martial.experience.qinghe_fist=0;
+ assert.match(martialProgress(s,'qinghe_fist'),/突破关口/);
+ assert.match(martialProgress(s,'qinghe_fist'),/武馆陪练/);
+ s.martial.experience.qinghe_fist=6;
+ assert.doesNotMatch(martialProgress(s,'qinghe_fist'),/突破关口/);
 });
