@@ -1,6 +1,6 @@
-import {trialModifiers} from './trials.js?v=5.4.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.4.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.4.0';
+import {trialModifiers} from './trials.js?v=5.5.0';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.5.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.5.0';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const CATEGORY={拳掌:{reach:1,damage:9,accuracy:.83,guard:1},腿法:{reach:2,damage:10,accuracy:.78,guard:0},刀法:{reach:2,damage:13,accuracy:.73,guard:0},剑法:{reach:2,damage:10,accuracy:.87,guard:1},棍法:{reach:3,damage:10,accuracy:.77,guard:2},枪法:{reach:3,damage:13,accuracy:.76,guard:1},身法:{reach:0,damage:0,accuracy:1,guard:3},内功:{reach:0,damage:0,accuracy:1,guard:2}};
 export function moveStats(artId,moveId){
