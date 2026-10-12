@@ -1,6 +1,7 @@
-import {people,places,items} from './content.js?v=5.15.0';
-import {gain} from './progression.js?v=5.15.0';
-import {travelBusy} from './npc-journeys.js?v=5.15.0';
+import {rememberExperience} from './county-life.js?v=5.16.0';
+import {people,places,items} from './content.js?v=5.16.0';
+import {gain} from './progression.js?v=5.16.0';
+import {travelBusy} from './npc-journeys.js?v=5.16.0';
 export const COOPERATIONS={
  boat:{name:'船工同行修架',actor:'boatman',from:'dock',site:'ferry',corridor:['dock','ferry'],fee:3,payer:'merchant',claim:'market',total:12,share:4,skill:'carry',input:{wood:1},dispute:'route',info:'贺船工同行到旧渡口修货架。工钱3文，关系3可免；需自己木料1份。分歧是稳妥处理或说服冒险。雨天更难，实际工钱共12文由柳掌柜支付，协作时船工分4文。'},
  hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
@@ -42,7 +43,7 @@ export function companionAction(s,id,{transact,advance,rng}){const [,key,choice]
   if(r.status!=='ready'||s.place!==d.claim||s.minute<480||s.minute+15>1080)return fail('需实际合作成果，白天到说明中的付款处交代。');
   if(d.payer!=='public'&&(!fit(s,{actor:d.payer},15)||companionBusy(s,d.payer)))return fail('付款人今日无法接洽，保留成果。');
   if(payer[field]<d.total||s.coins>10000000-your||p.coins>1000000-r.share)return fail('付款方实际余额或分帐容量不足，整笔未结算，成果保留。');
-  return transact(s,'结算 · '+d.name,15,0,()=>{payer[field]-=d.total;s.coins+=your;p.coins+=r.share;r.paid=your;r.status='done';shift(s,key,1);record(s,d,'合作完成，实际分帐'+r.share+'文');s.result.push('实际总工钱'+d.total+'文：你'+your+'文，同伴'+r.share+'文；没有重复材料或自动掉落。');},advance);
+  return transact(s,'结算 · '+d.name,15,0,()=>{payer[field]-=d.total;s.coins+=your;p.coins+=r.share;r.paid=your;r.status='done';shift(s,key,1);rememberExperience(s,d.actor,'cooperation',true);record(s,d,'合作完成，实际分帐'+r.share+'文');s.result.push('实际总工钱'+d.total+'文：你'+your+'文，同伴'+r.share+'文；没有重复材料或自动掉落。');},advance);
  }
  if(choice==='withdraw'){
   if(!['open','ready'].includes(r.status))return fail('没有可撤回的这项合作。');return transact(s,'撤回 · '+d.name,0,0,()=>{detach(s,key,'合作撤回，同伴离队');r.status='withdrawn';if(!r.assisted)r.share=0;s.result.push('实际投入不退，未结算工钱不发；记录保留。');},advance);
@@ -64,7 +65,7 @@ export function companionAction(s,id,{transact,advance,rng}){const [,key,choice]
  const minutes=r.route==='quick'?30:60;if(s.minute<360||s.minute+minutes>1080)return fail('白天作业需留足完成时间；可先准备或改日独行。');
  if(r.joined&&(!fit(s,d,minutes)||p.energy<12||clock(s)+minutes>r.until))return fail('同伴伤病、时间或精力不足；可结束同行后独行，不强迫继续。');
  const assisted=r.joined,energy=assisted?10:16,chance=Math.min(.95,(assisted?.8:.55)+(s.skills[d.skill]>=12?.1:0)+(r.trust?.05:0)-(s.weather==='雨'?.15:0)),risk=r.route==='quick'?.25:.05;
- return transact(s,'实际作业 · '+d.name,minutes,energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;if(assisted){p.energy-=12;r.npcSpent+=12;}r.assisted=assisted;if(!assisted)r.share=0;const success=rng()<chance;r.status=success?'ready':'failed';if(rng()<risk){s.hp=Math.max(0,s.hp-8);if(assisted)p.injuryDays=Math.max(1,p.injuryDays);s.result.push('意外擦伤8气血'+(assisted?'，同伴轻伤，停止同行。':'。'));if(!s.hp){s.dead=true;r.status='died';}}detach(s,key,'本次作业结束，同伴返程',minutes);if(!s.dead){const line=gain(s,d.skill,success?2:1);if(line)s.result.push(line);if(!success)shift(s,key,-1);s.result.push(success?'成果保留，去付款处按真实分帐结算。':'作业未成，材料、工钱、精力与伤势保留，无报酬；原有短工仍可谋生。');}},advance);
+ return transact(s,'实际作业 · '+d.name,minutes,energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;if(assisted){p.energy-=12;r.npcSpent+=12;}r.assisted=assisted;if(!assisted)r.share=0;const success=rng()<chance;r.status=success?'ready':'failed';if(rng()<risk){s.hp=Math.max(0,s.hp-8);if(assisted)p.injuryDays=Math.max(1,p.injuryDays);s.result.push('意外擦伤8气血'+(assisted?'，同伴轻伤，停止同行。':'。'));if(!s.hp){s.dead=true;r.status='died';}}detach(s,key,'本次作业结束，同伴返程',minutes);if(!s.dead){const line=gain(s,d.skill,success?2:1);if(line)s.result.push(line);if(!success){shift(s,key,-1);rememberExperience(s,d.actor,'cooperation',false);}s.result.push(success?'成果保留，去付款处按真实分帐结算。':'作业未成，材料、工钱、精力与伤势保留，无报酬；原有短工仍可谋生。');}},advance);
 }
 export function companionOptions(s){const out=[];if(s.dead)return out;for(const [id,d] of Object.entries(COOPERATIONS)){const r=s.adventures.companions.records[id],add=(choice,label,preview=d.info)=>out.push({id:'companion:'+id+':'+choice,label,preview});if(r.status==='new'&&s.place===d.from)add('invite','邀请 · '+d.name);if(r.status==='open'){add('withdraw','撤回 · '+d.name,'投入不退，无罚款或预付报酬。');if(r.joined)add('dismiss','离队独行 · '+d.name,'同伴沿原路返程，不瞬移玩家，仍可独行作业。');if(s.place===d.site){if(!r.joined&&!r.prepared)add('solo','独行准备 · '+d.name,'15分钟；成功率较低，仍需自己的材料。');if(r.joined&&r.conflict==='hurt')add('care','伤后照料 · '+d.name,'药材1份、30分钟/精力2；或结束同行。');else if(!r.prepared&&r.joined){const choices=id==='boat'?['safe','persuade']:id==='hunter'?['fair','bargain']:id==='smith'?['self','support']:['safe','quick'];for(const choice of choices)add(choice,({safe:'选择稳妥',persuade:'说服冒险',fair:'接受猎户分6文',bargain:'商谈分4文',self:'自己备材料',support:'请铁匠出2文',quick:'冒险快查'})[choice]+' · '+d.name);}else if(r.prepared&&r.conflict==='resolved')add('work','实际作业 · '+d.name,'自己的材料：'+(Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')||'无')+'；'+(r.joined?'NPC精力12，你精力10':'你精力16，成功率较低')+'；失手与雨天有损失，不保证成功。');}}
  if(r.status==='ready'&&s.place===d.claim)add('claim','结算 · '+d.name,'实际总工钱'+d.total+'文，你'+(d.total-r.share)+'文，同伴'+r.share+'文；余额不足保留成果。');}return out;}

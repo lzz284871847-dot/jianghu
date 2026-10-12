@@ -1,5 +1,6 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.15.0';
-import {TRIALS} from './trials.js?v=5.15.0';
+import {rememberExperience} from './county-life.js?v=5.16.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.16.0';
+import {TRIALS} from './trials.js?v=5.16.0';
 export const MENTOR_TASKS={delivery:{name:'送木料到作坊',description:'3日内交自己木料2份给许铁匠，再回武馆结算8文；交付后材料用于作业，撤回不退。'},inquiry:{name:'查访竹林小径',description:'3日内查明竹林小径。可稳妥查访45分钟/精力8；冒险快查15分钟/精力8、60%查明、失败擦伤6气血；师徒信任4可在街市凭身份向掌柜查问30分钟/精力1。回馆结算6文。'},spar:{name:'实际切磋考察',description:'3日内在武馆付正常陪练费，至少实际交手3回合并收手，再向师傅交代；不足3回合记未完成。保留气血、精力与耐久耗费，可随时收手，无钱物奖励。'}};
 export const makePlayerMentor=()=>({member:false,joinedDay:0,trust:0,tasks:{delivery:'none',inquiry:'none',spar:'none'},active:null,dueDay:0,stage:0,sparring:false,lessonDay:0,lastDrill:null,parcelHint:false});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
@@ -16,11 +17,11 @@ export function canStartMentorPractice(s){expirePlayerMentor(s);const m=s.advent
 export function playerMentorAction(s,id,{present,transact,advance,rng}){
  const [,kind,key]=id.split(':'),m=s.adventures.mentor,p=s.npcWorld.individuals.master,fail=t=>{s.result=[t];return false;};expirePlayerMentor(s);
  if(kind==='join'){
-  if(m.member||!Object.keys(s.martial.known).length||s.relations.master<3||s.npcWorld.school.holder!=='master'||!present(s,'master',30))return fail('正式拜师需已学一门武艺、周师傅关系3，并在其健康在馆时接洽。');
+  if(m.member||s.adventures.life?.sect.river||!Object.keys(s.martial.known).length||s.relations.master<3||s.npcWorld.school.holder!=='master'||!present(s,'master',30))return fail('正式拜师需先退出河湾习武会、已学一门武艺、周师傅关系3，并在其健康在馆时接洽。');
   return transact(s,m.joinedDay?'重新拜入周师傅门下':'正式拜周师傅为师',30,0,()=>{m.member=true;if(!m.joinedDay){m.joinedDay=s.day;m.trust=2;}s.result.push('无拜师费或赠物；事务自主领取，首次信任2。退出后任务、信任、指点记录均保留，不重置有限收益。');},advance);
  }
  if(!m.member)return fail('需先正式拜师；独自练习、付费求学和原有职业仍可继续。');
- if(kind==='leave')return transact(s,'退出师门',15,0,()=>{if(m.active)finish(s,false);m.member=false;m.trust=Math.max(0,m.trust-1);s.result.push('退出使师徒信任 -1；未完事务结束，已交材料不退。不罚钱，已学武艺和原有学习渠道保留。');},advance);
+ if(kind==='leave')return transact(s,'退出师门',15,0,()=>{if(m.active)finish(s,false);m.member=false;if(s.adventures.life?.sect.letters.school==='carried')s.adventures.life.sect.letters.school='failed';m.trust=Math.max(0,m.trust-1);s.result.push('退出使师徒信任 -1；未完事务结束，已交材料不退。不罚钱，已学武艺和原有学习渠道保留。');},advance);
  if(kind==='withdraw'){if(!m.active||m.sparring)return fail('没有可撤回的师门事务；交手需先收手。');return transact(s,'撤回师门事务',0,0,()=>{finish(s,false);s.result.push('本项事务记未完成，信任 -1；不罚钱，不重开此有限事务，已交材料不退。');},advance);}
  if(kind==='task'){
   if(!MENTOR_TASKS[key]||m.active||m.tasks[key]!=='none'||!present(s,'master',15))return fail('事务已处理或仍有未完事务；请在师傅可接洽时自主领取。');
@@ -42,7 +43,7 @@ export function playerMentorAction(s,id,{present,transact,advance,rng}){
  if(kind==='report'){
   if(!m.active||m.stage!==1||!present(s,'master',15))return fail('完成真实步骤后，在师傅可接洽时交代。');
   const reward=m.active==='delivery'?8:m.active==='inquiry'?6:0;if(p.coins<reward||s.coins>10000000-reward)return fail('师傅现有余额不足，尚未结算；可稍后交代。');
-  return transact(s,'交代师门事务',15,0,()=>{p.coins-=reward;s.coins+=reward;finish(s,true);s.result.push('事务完成，师徒信任 +2；实际报酬'+reward+'文从师傅余额支付，仅一次。');},advance);
+  return transact(s,'交代师门事务',15,0,()=>{p.coins-=reward;s.coins+=reward;finish(s,true);rememberExperience(s,'master','cooperation',true);s.result.push('事务完成，师徒信任 +2；实际报酬'+reward+'文从师傅余额支付，仅一次。');},advance);
  }
  if(kind==='hint'){
   if(key!=='parcel'||m.trust<4||m.parcelHint||s.adventures.quest?.id!=='parcel'||s.adventures.quest.stage!==0||!present(s,'merchant',30))return fail('需信任4、尚未查问的竹林失物委托，并在掌柜可接洽时凭师门身份查问。');
@@ -50,7 +51,7 @@ export function playerMentorAction(s,id,{present,transact,advance,rng}){
  }
  if(kind==='guide'||kind==='drill'||kind==='rebuild'){
   const art=s.martial.equipped,known=s.martial.known[art],d=Object.hasOwn(TRIALS,key)?TRIALS[key]:null,fee=kind==='drill'?4:6;
-  if((kind==='rebuild'?(m.trust>=4||!Object.values(m.tasks).includes('failed')):m.trust<4)||!known||m.lessonDay===s.day||!present(s,'master',60)||s.npcWorld.school.holder!=='master'||p.energy<20||s.hp<25||Object.keys(s.injuries).length||kind==='drill'&&!d)return fail('需信任4（或失约后通过练习重建）、已学选用武艺、气血25且无伤、今日未指点；师傅须在馆并有20精力。');
+  if((kind==='rebuild'?(m.trust>=4||!Object.values(m.tasks).includes('failed')):m.trust<4)||!known||m.lessonDay===s.day||s.adventures.life?.sect.lessonDay===s.day||!present(s,'master',60)||s.npcWorld.school.holder!=='master'||p.energy<20||s.hp<25||Object.keys(s.injuries).length||kind==='drill'&&!d)return fail('需信任4（或失约后通过练习重建）、已学选用武艺、气血25且无伤、今日未指点；师傅须在馆并有20精力。');
   if(s.coins<fee||p.coins>1000000-fee)return fail('费用'+fee+'文，须有实际资金才能接受指点。');
   if(s.martial.practice[art]>=2400&&s.martial.insight[art]>=2400)return fail('积累已满，不收费或耗费精力。');
   return transact(s,kind==='guide'?'接受师傅指点':kind==='rebuild'?'通过实际练习重建信任':'针对'+d.name+'备战练习',60,12,()=>{s.coins-=fee;p.coins+=fee;p.energy-=20;p.workDays=Math.min(100000,p.workDays+1);s.martial.practice[art]=Math.min(2400,s.martial.practice[art]+(kind==='guide'?36:24));s.martial.insight[art]=Math.min(2400,s.martial.insight[art]+(kind==='rebuild'?6:10));m.lessonDay=s.day;if(kind==='rebuild')m.trust=Math.min(4,m.trust+1);if(kind==='drill')m.lastDrill=key;s.result.push(MARTIAL_ARTS[art].name+'：熟练 +'+(kind==='guide'?36:24)+'、领悟 +'+(kind==='rebuild'?6:10)+'；费用'+fee+'文转入师傅余额。','每日指点与备战共用一次机会，不直接学习高阶武功。');if(kind==='rebuild')s.result.push('失约事务不重开；本次实际练习使师徒信任 +1，最多恢复到4。');if(d&&kind==='drill')s.result.push(d.advice,'练习应对上述战术；实际挑战仍由自己进行，没有自动胜利或临时战力加成。');},advance);
