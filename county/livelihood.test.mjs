@@ -80,3 +80,13 @@ test('normal grain and merchant liquidity preserve earlier work opportunities',a
  assert.equal(act(s,'work',()=>0),true);
  assert.equal(s.coins,54);
 });
+
+test('second shift competes for limited full-pay work without removing fallback wages',()=>{
+ const s=fresh();s.place='liuxi';
+ assert.equal(act(s,'work',()=>.75),true);
+ assert.equal(s.coins,42);
+ assert.equal(act(s,'work',()=>.75),true);
+ assert.equal(s.coins,46);
+ assert.match(s.result.join(''),/竞争更激烈/);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
