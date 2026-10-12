@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fresh,restore,adventureAction,move} from './engine.js';
 import {advance} from './world.js';
-import {makeThreads,threadEligible,goalProgress} from './threads.js';
+import {makeThreads,threadEligible,goalProgress,threadOptions} from './threads.js';
 import {handbook,nextRoad} from './task-handbook.js';
 import {activityGroups} from './activity-layout.js';
 import {importSave} from './storage.js';
@@ -39,3 +39,5 @@ test('phone handbook and opportunity group stay bounded and are included in offl
 test('ordinary beginner completes a real police task then follows handbook roads for investigation without learning martial arts',()=>{const s=fresh();const walk=to=>{for(let i=0;s.place!==to;i++){assert.ok(i<16);assert.equal(move(s,nextRoad(s,to),()=>1),true);}};adventureAction(s,'law:job:witness:accept');walk('fields');assert.equal(adventureAction(s,'law:job:witness:ask',()=>0),true);walk('county');assert.equal(adventureAction(s,'law:job:witness:finish'),true);assert.equal(run(s,'testimony:accept'),true);let c=handbook(s).cards.find(c=>c.title==='亲历之后的查访');assert.equal(move(s,c.road,()=>1),true);assert.equal(run(s,'testimony:check'),true);c=handbook(s).cards.find(c=>c.title==='亲历之后的查访');assert.equal(move(s,c.road,()=>1),true);assert.equal(run(s,'testimony:claim'),true);assert.equal(s.coins,42);assert.deepEqual(s.martial.known,{});assert.doesNotThrow(()=>restore(JSON.stringify(s)));});
 
 test('ordinary stallholder must physically be present for cargo negotiation and delivery',()=>{const s=eligible('cargo');s.npcWorld.individuals.stallholder.place='county';const before=[s.coins,s.minute];assert.equal(run(s,'cargo:talk'),false);assert.deepEqual([s.coins,s.minute],before);s.npcWorld.individuals.stallholder.place='liuxi';assert.equal(run(s,'cargo:talk'),true);s.npcWorld.individuals.stallholder.place='county';assert.equal(run(s,'cargo:claim'),false);assert.equal(rec(s,'cargo').status,'claim');});
+
+test('completed supply route hides repeat choices and handbook keeps only real delivery next step',()=>{const s=eligible('escort');run(s,'escort:accept');at(s,'ferry');assert.ok(threadOptions(s).some(a=>a.id==='thread:escort:safe'));assert.equal(run(s,'escort:safe'),true);assert.equal(threadOptions(s).some(a=>['thread:escort:safe','thread:escort:quick'].includes(a.id)),false);const c=handbook(s).cards.find(c=>c.title==='势力接洽后的供粮');assert.equal(c.place,'liuxi');assert.equal(c.due,4);assert.doesNotThrow(()=>restore(JSON.stringify(s)));});
