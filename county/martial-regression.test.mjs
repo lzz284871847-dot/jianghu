@@ -314,3 +314,12 @@ test('martial screen explains real experience plateau and safe sparring route',(
  s.martial.experience.qinghe_fist=6;
  assert.doesNotMatch(martialProgress(s,'qinghe_fist'),/突破关口/);
 });
+
+test('narrow martial victories and wounded escapes retain recovery warnings',()=>{
+ const s=fresh();s.place='school';s.martial.known.qinghe_fist=true;s.martial.equipped='qinghe_fist';
+ assert.equal(martialAction(s,'challenge','brawler'),true);
+ s.hp=25;s.combat.enemyHp=1;
+ assert.equal(martialAction(s,'turn','strike',()=>0),true);
+ assert.ok(s.result.some(x=>/伤势与气血不会自动恢复/.test(x)));
+ assert.equal(s.hp<=25,true);
+});
