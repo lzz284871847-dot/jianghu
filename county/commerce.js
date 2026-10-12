@@ -53,6 +53,8 @@ export function dailyCommerce(s){
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+sold*(m.sell[key]||1));
    }
    if(day%2===1){
+    const delayed=place==='liuxi'&&day%11===7;
+    if(delayed){messages.push('柳溪商路遇雨后泥泞，原定补货延迟；商铺只能靠现有存货交易。');continue;}
     for(const [key,quantity] of Object.entries(initial))shelf[key]=Math.min(MARKET_LIMIT,shelf[key]+Math.max(1,Math.ceil(quantity/2)));
     // Independent itinerant peddlers exchange goods and cash, not infinite merchant money.
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+(place==='market'?24:18));
