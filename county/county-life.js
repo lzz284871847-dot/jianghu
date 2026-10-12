@@ -1,6 +1,7 @@
-import {items,people,places} from './content.js?v=5.16.0';
-import {gain} from './progression.js?v=5.16.0';
-import {districtStatus} from './society.js?v=5.16.0';
+import {present as contactPresent} from './adventures.js?v=5.17.0';
+import {items,people,places} from './content.js?v=5.17.0';
+import {gain} from './progression.js?v=5.17.0';
+import {districtStatus} from './society.js?v=5.17.0';
 
 // Player-facing local life. No background shops, hereditary ownership or new population.
 export const BONDS={
@@ -55,7 +56,12 @@ function sectAction(s,action,h){const t=s.adventures.life.sect,m=s.adventures.me
  }
  if(action==='leave')return t.river?transact(s,'退出河湾习武会',15,0,()=>{t.river=false;t.trust=clamp(t.trust-1);if(t.letters.river==='carried')t.letters.river='failed';s.result.push('信任-1，未交交换函结束，不重开或罚钱；基本求学照常。');},advance):fail(s,'尚未加入河湾习武会。');
  if(action==='guide'){
-  const art=s.martial.equipped;if(!t.river||t.trust<2||!['wood_knife','staff'].includes(art)||!s.martial.known[art]||t.lessonDay===s.day||m.lessonDay===s.day||s.hp<25||Object.keys(s.injuries).length||!present(s,'farmer',60)||s.npcWorld.villageSchool.holder!=='farmer'||p.energy<12||s.coins<4||p.coins>999996||s.martial.practice[art]>=2400&&s.martial.insight[art]>=2400)return fail(s,'指点需会内信任2、选用已学刀/棍法、无伤气血25，陈农户在岗且有精力；4文、1小时/精力12，与周门指点共用每日一次。');
+  const art=s.martial.equipped;
+  if(t.river&&(!['wood_knife','staff'].includes(art)||!s.martial.known[art]))return fail(s,'当前未选用已学刀/棍法；到人物页选用柴刀法或农家棍法。');
+  if(t.river&&(t.lessonDay===s.day||m.lessonDay===s.day))return fail(s,'今日已经接受指点，两门共用每日一次；明日再来。');
+  if(t.river&&(s.hp<25||Object.keys(s.injuries).length))return fail(s,'指点需气血25且无伤；先休养或诊治。');
+  if(t.river&&s.coins<4)return fail(s,'当前'+s.coins+'文，河湾指点需4文；可先做短工。');
+  if(!t.river||t.trust<2||!['wood_knife','staff'].includes(art)||!s.martial.known[art]||t.lessonDay===s.day||m.lessonDay===s.day||s.hp<25||Object.keys(s.injuries).length||!present(s,'farmer',60)||s.npcWorld.villageSchool.holder!=='farmer'||p.energy<12||s.coins<4||p.coins>999996||s.martial.practice[art]>=2400&&s.martial.insight[art]>=2400)return fail(s,'指点需会内信任2、选用已学刀/棍法、无伤气血25，陈农户在岗且有精力；4文、1小时/精力12，与周门指点共用每日一次。');
   return transact(s,'河湾农具兵器指点',60,12,()=>{s.coins-=4;p.coins+=4;p.energy-=12;t.lessonDay=s.day;s.martial.practice[art]=Math.min(2400,s.martial.practice[art]+24);s.martial.insight[art]=Math.min(2400,s.martial.insight[art]+8);s.result.push('熟练+24、领悟+8，师傅实际消耗12精力；不赠武学、不增加真实出招经验。');},advance);
  }
  const [kind,side]=action.split(':');if(!['school','river'].includes(side)||!(side==='school'?m.member:t.river))return fail(s,'需相应门人身份，独自求学仍开放。');
@@ -68,7 +74,9 @@ function bondAction(s,id,action,h){const d=BONDS[id],r=s.adventures.life.bonds[i
  if(action==='withdraw'&&r.promise?.status==='active')return transact(s,'撤回熟人约定',0,0,()=>{r.promise.status='failed';rememberExperience(s,id,'promise',false);relation(s,id,-1);s.result.push('失约代价保留，不罚钱；可在以后游戏日重新商量。');},advance);
  if(!present(s,id,action==='work'?60:15))return fail(s,'需当面在岗接洽；伤病、外出、返程或时间不足时保留进度。');
  if(action==='meet'){
-  if(r.meetDay===s.day||s.relations[id]<3||p.energy<2)return fail(s,'需关系3、对方精力2，面对面盘点每天一次。');
+  if(r.meetDay===s.day)return fail(s,'今日已经盘点过，明日可再当面接洽。');
+  if(s.relations[id]<3)return fail(s,'当前关系'+s.relations[id]+'/3；可先与'+d.name+'交谈或用自己的口粮和解。');
+  if(p.energy<2)return fail(s,d.name+'精力不足2，改日再来。');
   return transact(s,'与'+d.name+'盘点近况',15,2,()=>{r.meetDay=s.day;p.energy-=2;rememberExperience(s,id,'meeting',true);s.result.push('合作信任+1；留下实际会面经历，无钱物奖励。');},advance);
  }
  if(action==='promise'){
@@ -76,11 +84,17 @@ function bondAction(s,id,action,h){const d=BONDS[id],r=s.adventures.life.bonds[i
   return transact(s,'再次约定 · '+d.work,15,0,()=>{r.promise={accepted:s.day,due:s.day+2,status:'active'};s.result.push('截止第'+r.promise.due+'日；自己的'+items[d.item]+'1份，实际作业才记履约；成功工钱'+d.reward+'文来自本人余额，可能失败。');},advance);
  }
  if(action==='work'){
-  if(r.promise?.status!=='active'||s.bag[d.item]<1||p.energy<8||s.hp<25||d.item==='vegetable'&&s.commerce.stock.market.vegetable>=30)return fail(s,'需有效约定、自己的材料1份、气血25、对方精力8及收货容量。');
+  if(r.promise?.status!=='active')return fail(s,'先再次约定，才能实际作业。');
+  if(s.bag[d.item]<1)return fail(s,'缺自己的'+items[d.item]+'1份；可先采集、制作或购买。');
+  if(p.energy<8)return fail(s,d.name+'当前精力'+p.energy+'，作业需8；改日接洽，约定保留。');
+  if(s.hp<25)return fail(s,'当前气血'+s.hp+'，作业需25；先恢复身体。');
+  if(d.item==='vegetable'&&s.commerce.stock.market.vegetable>=30)return fail(s,'当地菜货容量已满，约定保留。');
   return transact(s,'共同作业 · '+d.work,60,10,()=>{s.bag[d.item]--;p.energy-=8;const ok=rng()<(r.trust>=4?.85:.7);r.promise.status=ok?'ready':'failed';if(d.item==='vegetable')s.commerce.stock.market.vegetable++;rememberExperience(s,id,'promise',ok);relation(s,id,ok?1:-1);xp(s,d.skill,ok?2:1);s.result.push(ok?'真实作业已成，另行交代领实际工钱；缺钱时成果保留。':'作业未成，投入与时间精力不退，关系及信任-1，无工钱。');},advance);
  }
  if(action==='claim'){
-  if(r.promise?.status!=='ready'||p.coins<d.reward||s.coins>10000000-d.reward)return fail(s,'需真实成果和本人余额，整笔不结算则保留成果。');
+  if(r.promise?.status!=='ready')return fail(s,'先完成实际作业，再交代领款。');
+  if(p.coins<d.reward)return fail(s,d.name+'当前余额'+p.coins+'文，需支付'+d.reward+'文；成果保留。');
+  if(s.coins>10000000-d.reward)return fail(s,'钱包容量不足，成果保留。');
   return transact(s,'交代熟人合作',15,0,()=>{p.coins-=d.reward;s.coins+=d.reward;r.promise.status='done';s.result.push('实际领款'+d.reward+'文，不重复结算。再次合作须另日约定和实际作业。');},advance);
  }
  return fail(s,'当前熟人约定步骤不符。');
@@ -145,9 +159,35 @@ export function countyLifeOptions(s){const l=s.adventures.life,out=[],add=(id,la
  for(const [id,d] of Object.entries(BONDS)){const r=l.bonds[id],prefix='bond:'+id+':';if(r.promise?.status==='active')add(prefix+'withdraw','撤回约定 · '+d.name,'关系与合作信任-1，不罚钱；下一游戏日仍可再约。');if(s.place!==d.place)continue;if(r.meetDay!==s.day)add(prefix+'meet','盘点近况 · '+d.name,'需关系3，对方精力2；15分钟/精力2，每日一次，无钱物奖励。');if(r.promise?.status==='active')add(prefix+'work','共同作业 · '+d.work,'自己的'+items[d.item]+'1份，1小时/精力10，对方精力8；成功率70%（信任4为85%），失败保留材料损失与关系代价；截止第'+r.promise.due+'日。');else if(r.promise?.status==='ready')add(prefix+'claim','交代合作 · '+d.name,'真实工钱'+d.reward+'文来自本人余额；不足保留成果，不重掷。');else if(r.trust>=2)add(prefix+'promise','再次约定 · '+d.work,'每人每天最多新约一次；两游戏日内实际备料作业，可能失败。');}
  const st=l.stall;if(['market','liuxi'].includes(s.place)&&(!st.place||st.place===s.place&&st.until<s.day))add('stall:rent',st.place?'续租 · 三日小摊':'租用 · 三日小摊','6文转付摊位主，租今天起3日，总容量8份；不自动续扣或赚钱。');if(st.place===s.place){add('stall:take','取回全部摊货','自己的存货回背包，容量不足整笔保留。');add('stall:close','收摊退出','取回全部余货，租金不退，历史保留。');if(st.until>=s.day)for(const k of Object.keys(st.stock)){add('stall:stock:'+k,'备货 · '+items[k],'自己的1份，15分钟/精力1，最多8份货。');if(st.stock[k])for(const mode of ['low','fair','high'])add('stall:'+mode+':'+k,({low:'低价',fair:'平价',high:'高价'})[mode]+'摆摊 · '+items[k]+' · '+stallPrice(s,k,mode)+'文','一小时/精力8，每日最多3次；成交率'+({low:85,fair:60,high:30}[mode])+'%，雨天-15个百分点，可能损货；收入扣租金差额还未扣实际货物成本。');}}
  for(const [id,d] of Object.entries(COUNTY_EVENTS)){const r=l.events.records[id],prefix='countyEvent:'+id+':',begin=l.events.startDay+d.offset,end=begin+d.days;if(['failed','left'].includes(r.status)&&r.cargo)add(prefix+'cargo','领回药材 · '+d.name,'独立留存自己的药材1份，不重复领取。');if(r.status==='ready'&&s.place==='county')add(prefix+'claim','交代 · '+d.name,'实际工钱8文由县城现有资金支付；不足保留成果。');if(s.day<begin||s.day>end||!['new','active'].includes(r.status))continue;if(r.status==='new'){if(s.place==='county')add(prefix+'accept','介入 · '+d.name,d.description+' 第'+begin+'—'+end+'日。');continue;}add(prefix+'leave','退出 · '+d.name,'投入不退，留存药材可领回；世界临时影响仍按期限收尾。');for(const actor of id==='patrol'?['master','farmer']:['merchant','doctor'])if(!r.heard.includes(actor)&&s.place===people[actor].place)add(prefix+'ask:'+actor,'查问事件 · '+people[actor].name,'当面15分钟，双方查问后协调成功率90%，否则40%；仅一次。');if(!r.step&&s.place===(id==='patrol'?'road':'village'))add(prefix+(id==='patrol'?'survey':'prepare'),id==='patrol'?'察看 · 联合护路':'备粮药 · 县境互济',id==='patrol'?'45分钟/精力8，气血25；随后到渡口备木料1。':'自己干粮2份、药材1份；医者在岗，干粮交村中、药材留存送柳溪。');if(r.step===1&&s.place===(id==='patrol'?'ferry':'liuxi'))add(prefix+'work','现场作业 · '+d.name,'45分钟/精力8；护路用木料1份，互济交留存药材1份；随后回县城。');if(r.step===2&&s.place==='county')for(const choice of id==='patrol'?['school','river','joint']:['joint'])add(prefix+choice,({school:'支持青河武馆',river:'支持河湾习武会',joint:'协调双方'})[choice]+' · '+d.name,'30分钟/精力4；协调可能失败，查问双方后90%；立场影响两门关系与本门信任，不清旧案。');}
- return out;
+ return out.map(o=>({...o,blocker:countyLifeBlocker(s,o.id)}));
 }
-export function countyLifeSummary(s){const l=s.adventures.life,st=l.stall;return ['两门身份：'+(s.adventures.mentor.member?'青河武馆周门':l.sect.river?'河湾习武会':'独自求学')+'；河湾信任'+l.sect.trust+'/10，交换函及退出经历保留。',...Object.entries(l.bonds).filter(([,r])=>r.history.length||r.promise).map(([id,r])=>BONDS[id].name+'：合作信任'+r.trust+'/10，近期共同经历'+r.history.length+'条：'+r.history.slice(0,3).map(h=>'第'+h.day+'日'+({meeting:'盘点',promise:'再次合作',cooperation:'同行合作',event:'县境协作'})[h.kind]+(h.success?'履行':'未成')).join('、')+(r.promise?'；再次约定'+({active:'待作业',ready:'成果待领款',done:'已结算',failed:'未成，可另日再约'})[r.promise.status]:'')),st.place?'小摊：'+places[st.place].name+'，租至第'+st.until+'日，存货'+Object.values(st.stock).reduce((a,b)=>a+b,0)+'/8；累计租金'+st.cost+'、收入'+st.revenue+'文，损货'+st.lost+'份；货物成本另计。':'尚无租用摊位，可自备货物在街市或柳溪经营。',...Object.entries(COUNTY_EVENTS).map(([id,d])=>{const r=l.events.records[id],begin=l.events.startDay+d.offset;return d.name+'：第'+begin+'—'+(begin+d.days)+'日；'+({new:s.day<begin?'预告':'可介入',active:'进行中',ready:'协调完成待领款',done:'已结算',failed:'未成',ignored:'乡邻自行收尾',left:'已退出'})[r.status]+'；'+d.description;})];}
-export function countyLifeTasks(s){const l=s.adventures.life,tasks=[];const add=(title,place,next,due,group,goods='')=>tasks.push({title,place,next,due,group,goods});for(const [side,status] of Object.entries(l.sect.letters))if(status==='carried')add('两门交换函',side==='school'?'fields':'school','交给另一门授艺者。',0,'sects');for(const [id,r] of Object.entries(l.bonds))if(['active','ready'].includes(r.promise?.status))add('再次合作 · '+BONDS[id].name,BONDS[id].place,r.promise.status==='active'?'自备'+items[BONDS[id].item]+'1份，实际作业。':'成果保留，等本人实际付款。',r.promise.status==='active'?r.promise.due:0,'bonds');if(l.stall.place)add('自己的三日小摊',l.stall.place,l.stall.until<s.day?'货物保留，可续租或取回。':'自备货物、定价营业或收摊。',l.stall.until<s.day?0:l.stall.until,'stalls','租金'+l.stall.cost+'、收入'+l.stall.revenue+'文；货物成本另计。');for(const [id,d] of Object.entries(COUNTY_EVENTS)){const r=l.events.records[id];if(['active','ready'].includes(r.status))add(d.name,r.status==='ready'||r.step===2?'county':id==='patrol'?r.step?'ferry':'road':r.step?'liuxi':'village',r.status==='ready'?'等待实际资金交代。':r.step===2?'选择立场或协调；先问双方更可靠。':'查问双方并完成现场步骤；可撤回。',r.status==='ready'?0:l.events.startDay+d.offset+d.days,'countyEvents',r.cargo?'留存自己的药材1份。':'');else if(r.cargo)add('领回药材 · '+d.name,s.place,'取回自己药材，需背包空位。',0,'countyEvents');}return tasks;}
+export function countyLifeSummary(s){const l=s.adventures.life,st=l.stall;return ['两门身份：'+(s.adventures.mentor.member?'青河武馆周门':l.sect.river?'河湾习武会':'独自求学')+'；周门信任'+s.adventures.mentor.trust+'/10、河湾信任'+l.sect.trust+'/10，交换函及退出经历保留。',...Object.entries(l.bonds).filter(([,r])=>r.history.length||r.promise).map(([id,r])=>BONDS[id].name+'：合作信任'+r.trust+'/10，近期共同经历'+r.history.length+'条：'+r.history.slice(0,3).map(h=>'第'+h.day+'日'+({meeting:'盘点',promise:'再次合作',cooperation:'同行合作',event:'县境协作'})[h.kind]+(h.success?'履行':'未成')).join('、')+(r.promise?'；再次约定'+({active:'待作业',ready:'成果待领款',done:'已结算',failed:'未成，可另日再约'})[r.promise.status]:'')),st.place?'小摊：'+places[st.place].name+'，租至第'+st.until+'日，存货'+Object.values(st.stock).reduce((a,b)=>a+b,0)+'/8；累计租金'+st.cost+'、收入'+st.revenue+'文，损货'+st.lost+'份；货物成本另计。':st.cost||st.revenue||st.lost?'已收摊；经营历史：累计租金'+st.cost+'文、收入'+st.revenue+'文、损货'+st.lost+'份；货物采购与制作成本另计，收入减租金不等于净利润。':'尚无租用摊位，可自备货物在街市或柳溪经营。',...Object.entries(COUNTY_EVENTS).map(([id,d])=>{const r=l.events.records[id],begin=l.events.startDay+d.offset;return d.name+'：第'+begin+'—'+(begin+d.days)+'日；'+({new:s.day<begin?'预告':'可介入',active:'进行中',ready:'协调完成待领款',done:'已结算',failed:'未成',ignored:'乡邻自行收尾',left:'已退出'})[r.status]+'；'+d.description;})];}
+export function countyLifeTasks(s){
+ const l=s.adventures.life,tasks=[];
+ const add=(title,place,next,due,group,goods='',action=null)=>tasks.push({title,place,next,due,group,goods,blocker:action&&s.place===place?countyLifeBlocker(s,action):null});
+ for(const [side,status] of Object.entries(l.sect.letters))if(status==='carried')add('两门交换函',side==='school'?'fields':'school','交给另一门授艺者。',0,'sects','','sect:deliver:'+side);
+ for(const [id,r] of Object.entries(l.bonds))if(['active','ready'].includes(r.promise?.status))add('再次合作 · '+BONDS[id].name,BONDS[id].place,r.promise.status==='active'?'自备'+items[BONDS[id].item]+'1份，实际作业。':'成果保留，等本人实际付款。',r.promise.status==='active'?r.promise.due:0,'bonds','','bond:'+id+':'+(r.promise.status==='active'?'work':'claim'));
+ if(l.stall.place)add('自己的三日小摊',l.stall.place,l.stall.until<s.day?'货物保留，可续租或取回。':'自备货物、定价营业或收摊。',l.stall.until<s.day?0:l.stall.until,'stalls','租金'+l.stall.cost+'、收入'+l.stall.revenue+'文；货物成本另计。',l.stall.until<s.day?'stall:rent':null);
+ for(const [id,d] of Object.entries(COUNTY_EVENTS)){
+  const r=l.events.records[id];
+  if(['active','ready'].includes(r.status)){
+   const place=r.status==='ready'||r.step===2?'county':id==='patrol'?r.step?'ferry':'road':r.step?'liuxi':'village';
+   const action=r.status==='ready'?'claim':r.step===2?'joint':r.step===1?'work':id==='patrol'?'survey':'prepare';
+   add(d.name,place,r.status==='ready'?'等待实际资金交代。':r.step===2?'选择立场或协调；先问双方更可靠。':'查问双方并完成现场步骤；可撤回。',r.status==='ready'?0:l.events.startDay+d.offset+d.days,'countyEvents',r.cargo?'留存自己的药材1份。':'','countyEvent:'+id+':'+action);
+  }else if(r.cargo)add('领回药材 · '+d.name,s.place,'取回自己药材，需背包空位。',0,'countyEvents','','countyEvent:'+id+':cargo');
+ }
+ return tasks;
+}
 
 export function countyEventNotices(s){const e=s.adventures.life.events;return Object.entries(COUNTY_EVENTS).filter(([id,d])=>s.day<=e.startDay+d.offset+d.days+2&&!['ready','done'].includes(e.records[id].status)).map(([id,d])=>{const begin=e.startDay+d.offset,end=begin+d.days;return d.name+'：第'+begin+'—'+end+'日可介入；'+(s.day<begin?'尚未发生，届时':'当前')+(id==='patrol'?'官道、渡口行程各多15分钟':'县城、柳溪的粮食和药材购价各多1文')+'，最迟第'+(end+3)+'日起乡邻恢复。可忽略，县城查看处理方式。';});}
+
+// Reuse the same pre-transaction checks. The settlement callback is never executed.
+export function countyLifeBlocker(s,id){
+ if(s.dead)return '人生已结束，不能继续行动。';
+ if(s.pending||s.combat)return '先处理眼前选择或交手。';
+ if(s.adventures.law.pursuit)return '先处理县城拦查。';
+ const probe={...s,result:[]};
+ const ok=countyLifeAction(probe,id,{present:contactPresent,transact:(state,title,minutes,energy)=>{if(state.energy<energy){state.result=['精力不足，需'+energy+'点；可先免费歇息。'];return false;}return true;},advance:()=>{throw Error('预览不能推进时间');},rng:()=>{throw Error('预览不能掷结果');}});
+ return ok?null:probe.result[0]??'当前条件不足，进度保留。';
+}
+export function countyLifeOverview(s){return countyLifeSummary(s).filter(t=>!Object.values(COUNTY_EVENTS).some(d=>t.startsWith(d.name)));}
