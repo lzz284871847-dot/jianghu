@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fresh,restore,socialChoice} from './engine.js';
+import {fresh,restore,socialChoice,talk} from './engine.js';
 import {people} from './content.js';
 
 const prepare=()=>{
@@ -54,4 +54,14 @@ test('quarrel reduces ties, prevents repeat and blocks borrowing until restituti
  assert.equal(s.socialActions[key].quarrel,undefined);
  assert.equal(socialChoice(s,key,'request'),true);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+
+test('recent grudge suppresses ordinary dialogue gains until real reconciliation',()=>{
+ const {s,key}=prepare();const before=s.relations[key];
+ assert.equal(socialChoice(s,key,'quarrel'),true);
+ const after=s.relations[key];assert.equal(after,Math.max(0,before-8));
+ assert.equal(talk(s,key),true);assert.equal(s.relations[key],after);
+ assert.equal(s.talkDays[key],undefined);
+ assert.equal(socialChoice(s,key,'reconcile'),true);
+ assert.equal(talk(s,key),true);assert.equal(s.relations[key],after+4);
 });
