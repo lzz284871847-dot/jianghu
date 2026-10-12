@@ -1,17 +1,18 @@
-import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.8.0';
-import {makeTrials,trialsValid} from './trials.js?v=5.8.0';
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.8.0';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.8.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.8.0';
-import {people,items} from './content.js?v=5.8.0';
-import {gain} from './progression.js?v=5.8.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.8.0';
-import {EQUIPMENT} from './equipment.js?v=5.8.0';
-export const makeAdventures=(day=1)=>({mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.9.0';
+import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.9.0';
+import {makeTrials,trialsValid} from './trials.js?v=5.9.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.9.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.9.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.9.0';
+import {people,items} from './content.js?v=5.9.0';
+import {gain} from './progression.js?v=5.9.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.9.0';
+import {EQUIPMENT} from './equipment.js?v=5.9.0';
+export const makeAdventures=(day=1)=>({factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==15||!feedbackValid(s))return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==16||!feedbackValid(s)||!factionsValid(s))return false;
  if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty','retreated'].includes(v)))return false;
  if(!explorationValid(s)||!trialsValid(s)||!playerMentorValid(s))return false;
  if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
@@ -28,9 +29,9 @@ const paid=(s,id,n)=>{const p=s.npcWorld.individuals[id];return p.coins>=n&&s.co
 function reward(s,id,n){s.npcWorld.individuals[id].coins-=n;s.coins+=n;}
 function fee(s,id,n){const p=s.npcWorld.individuals[id];if(s.coins<n||p.coins>1000000-n)return false;s.coins-=n;p.coins+=n;return true;}
 function finish(s,success){const a=s.adventures,q=a.quest;(success?a.done:a.failed).push(q.id);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
-export function expireAdventures(s){reconcileExploration(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
+export function expireAdventures(s){reconcileExploration(s);expireFactions(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
 export function recordAdventureVictory(s,c){if(c.ended==='victory'&&!c.practice&&s.adventures&&!s.adventures.victories.includes(c.opponent))s.adventures.victories.push(c.opponent);}
-export const practiceFee=s=>s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3?3:4;
+export const practiceFee=s=>!factionHostile(s,'school')&&(s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3||factionFriendly(s,'school'))?3:4;
 const trained=(s,tier)=>Object.keys(s.martial.known).filter(id=>MARTIAL_ARTS[id].tier===tier&&s.martial.practice[id]>=120).length;
 export function nextMilestone(s){const n=s.adventures.milestones.length+1;return {n,ready:n===1?s.adventures.done.length>=1:n===2?s.adventures.done.length>=2&&(trained(s,1)>=2&&Object.entries(s.equipment.owned).some(([id,v])=>v>0&&EQUIPMENT[id].slot==='armor'&&EQUIPMENT[id].tier>=2)||Object.values(s.adventures.career).some(Boolean)&&s.adventures.home.untilDay>0):n===3?(trained(s,2)>=2&&['escort','teacher'].every(id=>s.adventures.victories.includes(id))||Object.values(s.adventures.orderCounts).some(n=>n>=3)&&s.adventures.done.length+s.adventures.failed.length>=3&&Object.keys(s.adventures.sites).length>=2):false};}
 function transact(s,title,minutes,energy,run,advance){if(s.energy<energy)return fail(s,'精力不足，需'+energy+'点。');s.result=[title];s.energy-=energy;run();advance(s,minutes);s.result.push('耗时'+minutes+'分钟；精力消耗'+energy+'。');s.journal.unshift({day:s.day,text:s.result.join('；')});s.journal.length=Math.min(30,s.journal.length);return true;}
@@ -38,6 +39,7 @@ function xp(s,key,n){const line=gain(s,key,n);if(line)s.result.push(line);}
 export function adventureAction(s,id,{advance,rng}){
  if(s.dead||s.pending||s.combat)return fail(s,'先处理眼前交手或选择；死亡后不能继续。');
  expireAdventures(s);const a=s.adventures,[kind,key]=String(id).split(':');
+ if(kind==='faction')return factionAction(s,String(id),{present,transact,advance,rng});
  if(kind==='followup'||kind==='event')return feedbackAction(s,String(id),{present,transact,advance});
  if(kind==='mentor')return playerMentorAction(s,String(id),{present,transact,advance,rng});
  if(kind==='route'||kind==='encounter')return explorationAction(s,String(id),{transact,advance,rng});
@@ -75,7 +77,7 @@ export function adventureAction(s,id,{advance,rng}){
  }
  if(kind==='explore')return explorationAction(s,'route:'+key+':standard',{transact,advance,rng});
  if(kind==='join'){
-  const d=ORGANIZATIONS[key];if(!d||a.org.id!=='none')return fail(s,'请先退出当前组织，或选择已开放组织。');
+  const d=ORGANIZATIONS[key];if(factionHostile(s,key))return fail(s,'该组织因争议立场暂停接洽，可交口粮赔礼后再申请。');if(!d||a.org.id!=='none')return fail(s,'请先退出当前组织，或选择已开放组织。');
   if(!present(s,d.holder,30))return fail(s,'组织接洽人不在场或已休息。');
   if(key==='school'&&(!Object.keys(s.martial.known).length||s.relations.master<3)||key==='caravan'&&!a.done.length)return fail(s,'尚未达到加入条件，请查看组织说明。');
   if(s.coins<12||s.npcWorld.individuals[d.holder].coins>999988)return fail(s,'入会费用12文，资金不符则不加入。');
@@ -83,7 +85,7 @@ export function adventureAction(s,id,{advance,rng}){
  }
  if(kind==='leaveOrg'){if(a.org.id==='none')return fail(s,'尚未加入组织。');return transact(s,'退出组织',0,0,()=>{a.org.id='none';s.result.push('不退会费，不清除过往贡献，无强制义务。');},advance);}
  if(kind==='memberFood'){
-  const p=s.npcWorld.individuals.merchant;if(a.org.id!=='caravan'||a.org.rep.caravan<2||a.org.aidDay===s.day||!present(s,'merchant',15)||p.food<2||s.bag.food>=1000000||s.coins<3||p.coins>999997)return fail(s,'需互助会贡献2、今日未购、柳掌柜在场且余粮至少2份；费用3文。');
+  const p=s.npcWorld.individuals.merchant;if(factionHostile(s,'caravan')||!(a.org.id==='caravan'&&a.org.rep.caravan>=2||factionFriendly(s,'caravan'))||a.org.aidDay===s.day||!present(s,'merchant',15)||p.food<2||s.bag.food>=1000000||s.coins<3||p.coins>999997)return fail(s,'需互助会贡献2或友好立场2、未交恶、今日未购、柳掌柜在场且余粮至少2份；费用3文。');
   return transact(s,'购买会内现有口粮',15,0,()=>{fee(s,'merchant',3);p.food--;s.bag.food++;a.org.aidDay=s.day;},advance);
  }
  if(kind==='career'){
@@ -112,7 +114,7 @@ export function adventureAction(s,id,{advance,rng}){
 }
 
 export function adventureDialogue(s,id){
- const a=s.adventures;if(!a)return null;const mentor=playerMentorDialogue(s,id);if(mentor)return mentor;const follow=feedbackDialogue(s,id);if(follow)return follow;
+ const a=s.adventures;if(!a)return null;const faction=factionDialogue(s,id),mentor=playerMentorDialogue(s,id),follow=feedbackDialogue(s,id);if(mentor)return [faction,mentor].filter(Boolean).join(' ');if(follow)return [faction,follow].filter(Boolean).join(' ');if(faction)return faction;
  if(a.failed.includes(id==='doctor'?'medicine':id==='boatman'?'escort':'none'))return '上次委托未完成，当事人记得失约；可以说清经过，也可重新约定。';
  if(id==='doctor'&&a.done.includes('rescue'))return '南山采药人已得到救助，诊所记着你实际帮过的忙。';
  if(id==='doctor'&&a.done.includes('medicine'))return '你交来的两份药材已用于诊所，这趟急单已经结清。';
