@@ -55,7 +55,7 @@ export function socialChoice(s,key,choice){
   else{ delete s.socialActions[key].quarrel;s.bag.food--;npc.food=(npc.food??0)+1;s.relations[key]=Math.min(100,s.relations[key]+3);s.result.push('送出真实口粮1份，关系提升3点；不凭空生成物资。');}
  });
 }
-export function talk(s,key){if(!available(s))return false;if(!Object.hasOwn(people,key)||npcPlace(s,key)!==s.place)return fail(s,'此人目前不在这里。');return settle(s,'与'+people[key].name+'交谈',30,1,()=>{s.result.push(people[key].line);const follow=adventureDialogue(s,key);if(follow)s.result.push(follow);if(s.talkDays[key]!==s.day){const b=s.relations[key];s.relations[key]=Math.min(100,b+1);s.talkDays[key]=s.day;s.result.push(`关系：${b}/100 → ${s.relations[key]}/100（+${s.relations[key]-b}）`);}else s.result.push('今日已经聊过，不重复增加关系。');});}
+export function talk(s,key){if(!available(s))return false;if(!Object.hasOwn(people,key)||npcPlace(s,key)!==s.place)return fail(s,'此人目前不在这里。');return settle(s,'与'+people[key].name+'交谈',30,1,()=>{if(s.socialActions?.[key]?.quarrel>=s.day-2){s.result.push(people[key].name+'仍记得争执，只肯冷淡应答；这次交谈不会增加关系。');return;}s.result.push(people[key].line);const follow=adventureDialogue(s,key);if(follow)s.result.push(follow);if(s.talkDays[key]!==s.day){const b=s.relations[key];s.relations[key]=Math.min(100,b+1);s.talkDays[key]=s.day;s.result.push(`关系：${b}/100 → ${s.relations[key]}/100（+${s.relations[key]-b}）`);}else s.result.push('今日已经聊过，不重复增加关系。');});}
 export function act(s,id,rng=()=>random(s)){
  if(!available(s))return false;
  if(Object.hasOwn(resources,id)){const why=resourceBlocker(s,id);if(why)return fail(s,why);const d=resources[id];if(d.risk){s.pending={type:'resource',key:id};s.result=['确认危险采集：'+d.name,`有${d.risk*100}%擦伤${d.damage}点气血的风险，可以不参与；尚未扣精力或时间。`];return true;}return gather(s,id,rng);}
