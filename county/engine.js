@@ -1,29 +1,29 @@
-import {TRIALS,makeTrials,trialBlocker,trialPreview} from './trials.js?v=5.4.0';
-import {makeExploration} from './exploration.js?v=5.4.0';
-import {makeFeedback,eventOpen,ferryDelay} from './world-feedback.js?v=5.4.0';
-import {makeAdventures,adventuresValid,adventureAction as performAdventure,practiceFee,adventureDialogue} from './adventures.js?v=5.4.0';
-import {makeVillageSchool,villageTeacher,villageCanTeach} from './npc-village-school.js?v=5.4.0';
-import {makeJourneys,travelBusy} from './npc-journeys.js?v=5.4.0';
-import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=5.4.0';
-import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=5.4.0';
-import {makeRetirement} from './npc-economy.js?v=5.4.0';
-import {makeStudy,makeMentor} from './npc-martial.js?v=5.4.0';
-import {makeLife} from './npc-mortality.js?v=5.4.0';
-import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=5.4.0';
-import {makeContracts} from './npc-contracts.js?v=5.4.0';
-import {makeSocial,makeOutlook} from './npc-social.js?v=5.4.0';
-import {makeHouseholds} from './npc-households.js?v=5.4.0';
-import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=5.4.0';
-import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=5.4.0';
-import {gain,progress,MAX} from './progression.js?v=5.4.0';
-import {advance,random,npcPlace} from './world.js?v=5.4.0';
-import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=5.4.0';
-import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=5.4.0';
-import {injuryValid,treatInjury} from './injury.js?v=5.4.0';
-import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=5.4.0';
-import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=5.4.0';
-import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=5.4.0';
-import {makeSociety,societyValid,districtStatus} from './society.js?v=5.4.0';
+import {TRIALS,makeTrials,trialBlocker,trialPreview} from './trials.js?v=5.5.0';
+import {makeExploration} from './exploration.js?v=5.5.0';
+import {makeFeedback,eventOpen,ferryDelay} from './world-feedback.js?v=5.5.0';
+import {makeAdventures,adventuresValid,adventureAction as performAdventure,practiceFee,adventureDialogue} from './adventures.js?v=5.5.0';
+import {makeVillageSchool,villageTeacher,villageCanTeach} from './npc-village-school.js?v=5.5.0';
+import {makeJourneys,travelBusy} from './npc-journeys.js?v=5.5.0';
+import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=5.5.0';
+import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=5.5.0';
+import {makeRetirement} from './npc-economy.js?v=5.5.0';
+import {makeStudy,makeMentor} from './npc-martial.js?v=5.5.0';
+import {makeLife} from './npc-mortality.js?v=5.5.0';
+import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=5.5.0';
+import {makeContracts} from './npc-contracts.js?v=5.5.0';
+import {makeSocial,makeOutlook} from './npc-social.js?v=5.5.0';
+import {makeHouseholds} from './npc-households.js?v=5.5.0';
+import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=5.5.0';
+import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=5.5.0';
+import {gain,progress,MAX} from './progression.js?v=5.5.0';
+import {advance,random,npcPlace} from './world.js?v=5.5.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=5.5.0';
+import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=5.5.0';
+import {injuryValid,treatInjury} from './injury.js?v=5.5.0';
+import {EQUIPMENT,equipmentWorkCost,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=5.5.0';
+import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=5.5.0';
+import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=5.5.0';
+import {makeSociety,societyValid,districtStatus} from './society.js?v=5.5.0';
 export const KEY='jianghu-qinghe-county-v1';
 export function fresh(p={}){return {version:'county-1',name:String(p.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(p.age)||18))),gender:p.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(p.background)?p.background:'农家',personality:['谨慎','随和','勤奋'].includes(p.personality)?p.personality:'谨慎',talent:Object.hasOwn(talents,p.talent)?p.talent:'ordinary',day:1,minute:480,place:'county',weather:'晴',coins:30,hp:100,energy:100,dead:false,martial:makeMartial(),equipment:makeEquipment(),livelihood:makeLivelihood(),commerce:makeCommerce(),society:makeSociety(),npcWorld:makeNPCWorld(),adventures:makeAdventures(),injuries:{},injuryRecovery:{},seed:823471,bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},nodes:Object.fromEntries(Object.entries(nodeDefs).map(([k,n])=>[k,{left:n.capacity,refreshDay:3}])),encounterDay:0,pending:null,combat:null,news:[],journal:[],result:['你是初到青河县的普通人。可以找活、认识当地人，也可以自行出门。']};}
 export const adventureAction=(s,id,rng=()=>random(s))=>{if(String(id).startsWith('trial:')){const key=String(id).slice(6),why=trialBlocker(s,key);if(why)return fail(s,why);beginMartialCombat(s,TRIALS[key].foe);s.adventures.trials.active=key;s.adventures.trials.records[key].attempts++;s.result.push(trialPreview(s,key));return true;}if(id==='encounter:mine:fight'){if(!available(s))return false;if(s.place!=='mine'||s.adventures.exploration.encounters.mine)return fail(s,'请到矿洞未处理的守路遭遇处。');if(s.hp<25||s.energy<20||!s.martial.known[s.martial.equipped])return fail(s,'主动实战需已学选用武艺、气血25和精力20；可改为绕行或离开。');beginMartialCombat(s,'staffhand');s.adventures.exploration.encounters.mine='fighting';s.result.push('守路棍手实战：可能受伤、撤退失败或永久死亡；胜利不自动取矿。');return true;}if(id==='event:bout:start'){if(!available(s))return false;if(!eventOpen(s,'bout'))return fail(s,'公开切磋尚未开始或已经结束。');if(!martialAction(s,'practice'))return false;s.adventures.feedback.events.bout='entered';s.result.push('本次为公开切磋；至少三回合才记实际参与。');return true;}return performAdventure(s,id,{advance,rng});};
@@ -44,14 +44,14 @@ export function act(s,id,rng=()=>random(s)){
  if(id==='rest')return settle(s,'歇息',120,0,()=>{s.energy=Math.min(100,s.energy+30);s.hp=Math.min(100,s.hp+10);});
  if(id==='wait')return settle(s,'等候半小时',30,0,()=>{s.result.push('等候不恢复精力或气血。');});
  if(id==='sleep'){if(!['inn','village'].includes(s.place))return fail(s,'可到客栈住宿或河湾村借宿。');const fee=s.place==='inn'?5:0;if(s.coins<fee)return fail(s,'住宿需要5文。');return settle(s,'睡一觉',480,0,()=>{s.coins-=fee;s.energy=100;s.hp=Math.min(100,s.hp+20);});}
- if(id==='eat'||id==='heal'){const key=id==='eat'?'food':'herb';if(!s.bag[key])return fail(s,'没有'+items[key]+'。');if(s.hp===100&&(id==='heal'&&!Object.keys(s.injuries||{}).some(k=>['bruise','cut','strain'].includes(k))||id==='eat'&&s.energy===100))return fail(s,'现在不需要恢复，不消耗物品。');return settle(s,id==='eat'?'吃干粮':'用常见药材处理伤口',15,0,()=>{s.bag[key]--;s.hp=Math.min(100,s.hp+(id==='eat'?5:20));if(id==='eat')s.energy=Math.min(100,s.energy+12);else {for(const injury of ['bruise','cut','strain'])if(s.injuries?.[injury]){s.result.push(treatInjury(s,injury,'herb'));break;}}});}
+ if(id==='eat'||id==='heal'){const key=id==='eat'?'food':'herb';if(!s.bag[key])return fail(s,'没有'+items[key]+'。');if(s.hp===100&&(id==='heal'&&!Object.keys(s.injuries||{}).some(k=>['bruise','cut','strain'].includes(k))||id==='eat'&&s.energy===100))return fail(s,'现在不需要恢复，不消耗物品。');return settle(s,id==='eat'?'吃干粮':'用常见药材处理伤口',15,0,()=>{s.bag[key]--;s.hp=Math.min(100,s.hp+(id==='eat'?5:20));if(id==='eat')s.energy=Math.min(100,s.energy+12);else {for(const injury of ['cut','strain','bruise'])if(s.injuries?.[injury]){s.result.push(treatInjury(s,injury,'herb'));break;}}});}
  if(id==='doctor'){const doctor=clinicDoctor(s);if(!doctor||doctor.life.deathDay)return fail(s,'医者已故或岗位空缺，不能提供诊治。');if(doctor.retirement.active)return fail(s,'医者已退养，等待合格居民接任。');if(doctor.life.sickDays||doctor.life.restDay===s.day||doctor.injuryDays)return fail(s,'医者正在休养，今日不能提供诊治。');if(s.place!=='village'||s.minute<480||s.minute+60>1080)return fail(s,'请在河湾村08:00–18:00内完成诊治，共1小时。');if(s.hp===100&&!Object.keys(s.injuries||{}).length)return fail(s,'无需治疗。');if(s.coins<8)return fail(s,'诊金8文，不足则不治疗。');if(doctor.coins>999992)return fail(s,'医者暂时无法收款。');const successor=doctor.id!=='doctor';if(successor&&clinicQuote(s,s,doctor)===null)return fail(s,'现任医者身体、精力或实际药材不足，暂不能诊治。');return settle(s,'医者治疗',60,0,()=>{if(successor)payClinic(s,s,doctor);else {s.coins-=8;doctor.coins+=8;}s.hp=Math.min(100,s.hp+50);for(const injury of Object.keys(s.injuries||{}))s.result.push(treatInjury(s,injury,'doctor'));});}
- if(id==='train'){if(s.place!=='school'||s.minute<480||s.minute+120>1080)return fail(s,'请在武馆08:00–18:00内完成基础练习，共2小时。');if(s.hp<25)return fail(s,'先养伤。');return settle(s,'练习入门拳脚',120,18,()=>{s.result.push('仅为入门练习，完整武学成长将在后续系统批次开放。');},{fist:2});}
+ if(id==='train'){if(s.place!=='school'||s.minute<480||s.minute+120>1080)return fail(s,'请在武馆08:00–18:00内完成基础练习，共2小时。');if(s.hp<25)return fail(s,'先养伤。');return settle(s,'练习入门拳脚',120,18,()=>{s.result.push('基础拳脚经验已积累；已学武艺可在人物页选择一小时练习。');},{fist:2});}
  if(Object.hasOwn(recipes,id)){const d=recipes[id];if(s.place!=='workshop'||s.minute<420||s.minute+d.minutes>1080)return fail(s,'请在作坊07:00–18:00内完成加工。');for(const [k,n] of Object.entries(d.input))if(s.bag[k]<n)return fail(s,items[k]+'不足，未消耗材料。');return settle(s,d.name,d.minutes,d.energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push('本次生产：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、'),'材料消耗：'+Object.entries(d.input).map(([k,n])=>items[k]+' -'+n).join('、'),'当前库存：'+Object.keys(d.input).map(k=>items[k]+' '+s.bag[k]).join('、'));},{[d.skill]:2});}
  return fail(s,'这项行动尚未实装。');
 }
 export function choose(s,id,rng=()=>random(s)){if(s.dead||!s.pending)return fail(s,'没有待决定的事情。');if(s.pending.type==='resource'){if(id==='leave'){s.pending=null;s.result=['你没有进行危险采集，时间、精力和库存未变。'];return true;}if(id==='gather')return gather(s,s.pending.key,rng);return fail(s,'请选择采集或离开。');}if(!['avoid','fight'].includes(id))return fail(s,'请选择绕开或交手。');return settle(s,id==='avoid'?'绕开拦路人':'迎战拦路人',id==='avoid'?30:1,0,()=>{s.pending=null;if(id==='fight'){if(s.martial?.known?.[s.martial.equipped]){beginMartialCombat(s,'brawler');s.result.push('旧道遭遇转入战术交手，逃离并不保证成功。');}else{s.combat={hp:28};s.result.push('尚未习武，以普通拳脚应对；可选择撤离。');}}});}
-export function fight(s,id,rng=()=>random(s)){if(s.dead||!s.combat)return fail(s,'当前没有交手。');if(!['attack','heavy','guard','flee'].includes(id))return fail(s,'未知招式。');const en=id==='flee'?Math.min(2,s.energy):id==='heavy'?8:4;return settle(s,id==='flee'?'撤离':id==='guard'?'防守':id==='heavy'?'重击':'出拳',1,en,()=>{if(id==='flee'){s.combat=null;s.result.push('你保住性命退开了。');return;}if(id!=='guard'){const hit=id==='attack'||rng()<.7,damage=(id==='heavy'?10:6)+Math.min(4,progress(s.skills.fist).level-1);if(hit){s.combat.hp-=Math.max(1,damage-(s.energy-en<20?2:0));s.result.push('你击中对手。');}else s.result.push('重击落空。');}if(s.combat.hp<=0){s.combat=null;s.coins+=4;s.result.push('拦路人逃走，追回4文钱；没有额外经验或装备。');return;}const harm=id==='guard'?1:6;s.hp=Math.max(0,s.hp-harm);s.result.push('受到'+harm+'点伤害。');if(!s.hp){s.dead=true;s.combat=null;s.result.push('你伤重死去，这段人生结束，不会自动读档。');}},{...(id==='attack'||id==='heavy'?{fist:1}:{}),...(id==='flee'?{}:{battle:1})});}
+export function fight(s,id,rng=()=>random(s)){if(s.dead||!s.combat)return fail(s,'当前没有交手。');if(!['attack','heavy','guard','flee'].includes(id))return fail(s,'未知招式。');const en=id==='flee'?Math.min(2,s.energy):id==='heavy'?8:4;return settle(s,id==='flee'?'撤离':id==='guard'?'防守':id==='heavy'?'重击':'出拳',1,en,()=>{if(id==='flee'){s.combat=null;s.result.push('你保住性命退开了。');return;}if(id!=='guard'){const hit=id==='attack'||rng()<.7,damage=(id==='heavy'?10:6)+Math.min(4,progress(s.skills.fist).level-1);if(hit){s.combat.hp-=Math.max(1,damage-(s.energy-en<20?2:0));s.result.push('你击中对手。');}else s.result.push('重击落空。');}if(s.combat.hp<=0){s.combat=null;s.result.push('拦路人逃走，没有额外金钱、经验或装备。');return;}const harm=id==='guard'?1:6;s.hp=Math.max(0,s.hp-harm);s.result.push('受到'+harm+'点伤害。');if(!s.hp){s.dead=true;s.combat=null;s.result.push('你伤重死去，这段人生结束，不会自动读档。');}},{...(id==='attack'||id==='heavy'?{fist:1}:{}),...(id==='flee'?{}:{battle:1})});}
 // Qinghe martial commands share the existing state, save key, and feedback flow.
 export function martialAction(s,kind,id,rng=()=>random(s)){
  if(s.dead)return fail(s,'这段人生已经结束。');
