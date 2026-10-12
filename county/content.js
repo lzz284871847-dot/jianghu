@@ -1,4 +1,4 @@
-export const VERSION='5.13.0';
+export const VERSION='5.14.0';
 const place=(name,area,routes,minutes,text,facilities,work=false)=>({name,area,routes,minutes,text,facilities,work});
 export const places={
  county:place('青河县城','县城与近郊',['market','inn','workshop','school','road','village','dock'],15,'你站在县城街口。县衙告示写着本县道路与危险地带，出城由自己决定。',['县衙告示','赵捕快接洽','街边短工'],true),

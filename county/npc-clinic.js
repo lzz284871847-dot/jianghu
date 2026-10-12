@@ -1,8 +1,8 @@
-import {travelBusy} from './npc-journeys.js?v=5.13.0';
-import {alive} from './npc-mortality.js?v=5.13.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=5.13.0';
-import {marketPrice,stockAt} from './commerce.js?v=5.13.0';
-import {districtStatus} from './society.js?v=5.13.0';
+import {travelBusy} from './npc-journeys.js?v=5.14.0';
+import {alive} from './npc-mortality.js?v=5.14.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=5.14.0';
+import {marketPrice,stockAt} from './commerce.js?v=5.14.0';
+import {districtStatus} from './society.js?v=5.14.0';
 export const makeClinic=(day=1)=>({holder:'doctor',appointedDay:0,lastDay:day,learners:{}});
 export const clinicDoctor=s=>namedResidents(s).find(p=>p.id===s.npcWorld.clinic.holder);
 const fit=(p,day)=>!!p&&alive(p)&&!p.retirement.active&&!p.life.sickDays&&!p.injuryDays&&p.life.restDay!==day;
