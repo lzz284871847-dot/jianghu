@@ -1,7 +1,7 @@
-export const VERSION='5.9.0';
+export const VERSION='5.10.0';
 const place=(name,area,routes,minutes,text,facilities,work=false)=>({name,area,routes,minutes,text,facilities,work});
 export const places={
- county:place('青河县城','县城与近郊',['market','inn','workshop','school','road','village','dock'],15,'你站在县城街口。县衙告示写着本县道路与危险地带，出城由自己决定。',['县衙告示','街边短工'],true),
+ county:place('青河县城','县城与近郊',['market','inn','workshop','school','road','village','dock'],15,'你站在县城街口。县衙告示写着本县道路与危险地带，出城由自己决定。',['县衙告示','赵捕快接洽','街边短工'],true),
  market:place('县城街市','县城与近郊',['county'],15,'粮铺与杂货摊08:00–20:00营业。普通材料按标价收购，不承诺贸易利润。',['粮铺','杂货铺']),
  inn:place('长安客栈','县城与近郊',['county'],15,'一晚5文；手头紧也可到河湾村免费借宿。',['住宿','食物']),
  workshop:place('作坊街','县城与近郊',['county'],15,'铁匠炉与公用灶07:00–18:00开放。可先加工普通原料。',['铁匠铺','公用灶','作坊短工'],true),
