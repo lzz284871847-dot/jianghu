@@ -1,14 +1,15 @@
-import {businessOptions,businessSummary} from './business.js?v=5.12.0';
-import {outingOptions,outingSummary} from './outings.js?v=5.12.0';
-import {lawOptions,lawSummary} from './law.js?v=5.12.0';
-import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.12.0';
-import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.12.0';
-import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.12.0';
-import {explorationOptions,explorationSummary} from './exploration.js?v=5.12.0';
-import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.12.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.12.0';
-import {nextMilestone} from './adventures.js?v=5.12.0';
-import {places} from './content.js?v=5.12.0';
+import {threadOptions} from './threads.js?v=5.13.0';
+import {businessOptions,businessSummary} from './business.js?v=5.13.0';
+import {outingOptions,outingSummary} from './outings.js?v=5.13.0';
+import {lawOptions,lawSummary} from './law.js?v=5.13.0';
+import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.13.0';
+import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.13.0';
+import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.13.0';
+import {explorationOptions,explorationSummary} from './exploration.js?v=5.13.0';
+import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.13.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.13.0';
+import {nextMilestone} from './adventures.js?v=5.13.0';
+import {places} from './content.js?v=5.13.0';
 export function activityOptions(s){
  const a=s.adventures,out=[],add=(id,label,preview)=>out.push({id,label,preview});
  if(a.law.pursuit)return lawOptions(s);
@@ -28,7 +29,7 @@ export function activityOptions(s){
  if(s.place==='inn'){if(a.home.untilDay<s.day)add('rent','短租房间 · 3日12文','可选住所目标；每日一次8小时休息，恢复精力至100、气血20；期满不自动扣钱。');else if(a.home.restDay!==s.day)add('homeRest','在租房休息','8小时，已付租金，不重复收住宿费；期满不自动续租。');}
  if(s.place==='county'&&a.milestones.length<3)add('milestone','确认当前成长阶段','只核对真实条件，无隐藏加成或装备奖励；目标详情见下方。');
  if(s.place==='school')for(const [id,d] of Object.entries(TRIALS))add('trial:'+id,(a.trials.records[id].wins?'再战 · ':'挑战目标 · ')+d.name,trialPreview(s,id));
- return [...out,...businessOptions(s),...outingOptions(s),...lawOptions(s),...factionOptions(s),...explorationOptions(s),...feedbackOptions(s),...playerMentorOptions(s)];
+ return [...out,...threadOptions(s),...businessOptions(s),...outingOptions(s),...lawOptions(s),...factionOptions(s),...explorationOptions(s),...feedbackOptions(s),...playerMentorOptions(s)];
 }
 export function adventureSummary(s){
  const a=s.adventures,q=a.quest,n=nextMilestone(s).n;
