@@ -294,3 +294,14 @@ test('county app, modules and offline cache all use the same release version',()
  assert.match(readFileSync(join(dir,'content.js'),'utf8'),/VERSION='5\.7\.0'/);
  assert.match(readFileSync(join(dir,'index.html'),'utf8'),/青河县 5\.7\.0/);
 });
+
+test('martial practice plateau requires real combat experience before further training',()=>{
+ const s=fresh();s.martial.known.qinghe_fist=true;s.martial.equipped='qinghe_fist';s.martial.practice.qinghe_fist=120;s.martial.insight.qinghe_fist=0;s.martial.experience.qinghe_fist=0;s.martial.mastery.qinghe_fist=0;
+ const energy=s.energy,minute=s.minute;
+ assert.equal(martialAction(s,'train','qinghe_fist'),false);
+ assert.equal(s.energy,energy);assert.equal(s.minute,minute);
+ s.martial.experience.qinghe_fist=6;
+ assert.equal(martialAction(s,'train','qinghe_fist'),true);
+ assert.equal(s.martial.practice.qinghe_fist,144);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
