@@ -90,3 +90,12 @@ test('second shift competes for limited full-pay work without removing fallback 
  assert.match(s.result.join(''),/竞争更激烈/);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('rare dock accident costs real hp while preserving earned wage and save',()=>{
+ const s=fresh();s.place='dock';const before=s.hp;
+ assert.equal(act(s,'work',()=>.99),true);
+ assert.equal(s.hp,before-4);
+ assert.equal(s.coins,34);
+ assert.match(s.result.join(''),/短工意外/);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
