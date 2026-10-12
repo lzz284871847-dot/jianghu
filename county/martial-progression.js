@@ -1,10 +1,10 @@
-import {finishTrial} from './trials.js?v=5.5.0';
-import {settleExplorationCombat} from './exploration.js?v=5.5.0';
-import {finishFeedbackBout} from './world-feedback.js?v=5.5.0';
-import {recordAdventureVictory} from './adventures.js?v=5.5.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.5.0';
-import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.5.0';
-import {useMove,usableMoves} from './martial-moves.js?v=5.5.0';
+import {finishTrial} from './trials.js?v=5.5.1';
+import {settleExplorationCombat} from './exploration.js?v=5.5.1';
+import {finishFeedbackBout} from './world-feedback.js?v=5.5.1';
+import {recordAdventureVictory} from './adventures.js?v=5.5.1';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.5.1';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.5.1';
+import {useMove,usableMoves} from './martial-moves.js?v=5.5.1';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
