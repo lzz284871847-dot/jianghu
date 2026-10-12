@@ -42,3 +42,16 @@ test('corrupt social action record rejected',()=>{
  const {s,key}=prepare();s.socialActions[key]={request:999};
  assert.throws(()=>restore(JSON.stringify(s)),/交往记录无效/);
 });
+
+test('quarrel reduces ties, prevents repeat and blocks borrowing until restitution',()=>{
+ const {s,key}=prepare();s.relations[key]=20;s.npcWorld.individuals[key].coins=10;
+ assert.equal(socialChoice(s,key,'quarrel'),true);
+ assert.equal(s.relations[key],12);
+ assert.equal(socialChoice(s,key,'quarrel'),false);
+ assert.equal(socialChoice(s,key,'request'),false);
+ assert.equal(s.coins,30);
+ assert.equal(socialChoice(s,key,'reconcile'),true);
+ assert.equal(s.socialActions[key].quarrel,undefined);
+ assert.equal(socialChoice(s,key,'request'),true);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
