@@ -29,6 +29,7 @@ export function jobOutcome(s,rng){const job=JOBS[s.place],record=ensureLivelihoo
  s.coins+=paid;
  s.result.push(roll<chance?'雇主验收合格，结清'+paid+'文。':'活计受天气、工序或验收影响，只结算'+paid+'文；并非每次都有满额收入。');
  if(count>0&&['dock','liuxi'].includes(s.place))s.result.push('同一雇主今日已有前一班短工，后续活计竞争更激烈，满额验收机会下降。');
+ if(['dock','workshop'].includes(s.place)&&roll>=.97){const injury=4;s.hp=Math.max(1,s.hp-injury);s.result.push('短工意外：搬运时擦伤，气血 -'+injury+'；工时与验收结果照常结算，伤势不会自动恢复。');}
  s.result.push('今日本处已完成'+(count+1)+'/'+pressure.slots+'次短工。');if(pressure.shortage&&['fields','county'].includes(s.place))s.result.push('粮食紧缺，雇主缩减用工并提高验收要求。');if(pressure.lowFunds)s.result.push('商户周转资金紧张，雇主缩减用工。');
  return paid;
 }
