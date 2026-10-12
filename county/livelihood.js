@@ -22,7 +22,7 @@ export function livelihoodPressure(s,place=s.place){
 export function jobAvailability(s){const job=JOBS[s.place];if(!job)return '这里没有招工。';const record=ensureLivelihood(s).workDays[s.place];const pressure=livelihoodPressure(s);if(record?.day===s.day&&record.count>=pressure.slots)return '今天此处短工名额已用完，明天可再来。';return null;}
 export function jobOutcome(s,rng){const job=JOBS[s.place],record=ensureLivelihood(s).workDays[s.place];const count=record?.day===s.day?record.count:0;
  ensureLivelihood(s).workDays[s.place]={day:s.day,count:count+1};
- const pressure=livelihoodPressure(s);const chance=Math.max(.3,job.success-(s.weather==='雨'&&['dock','fields'].includes(s.place)?.18:0)-(s.energy<40?.1:0)-(pressure.shortage&&['fields','county'].includes(s.place)?.12:0)-(pressure.lowFunds?.16:0)-(count>0?.12:0));
+ const pressure=livelihoodPressure(s);const chance=Math.max(.3,job.success-(s.weather==='雨'&&['dock','fields'].includes(s.place)?.18:0)-(s.energy<40?.1:0)-(pressure.shortage&&['fields','county'].includes(s.place)?.12:0)-(pressure.lowFunds?.16:0)-(count>0?.03:0));
  const roll=rng();
  // 不足额结算：工期仍已付出；未满额工作的雇主支付最低劳务费，避免随机归零。
  const paid=roll<chance?job.base:4;
