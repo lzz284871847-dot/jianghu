@@ -80,7 +80,7 @@ test('apology removes recent grudge but cannot erase relationship loss',()=>{
 });
 
 test('npc entrusted funds may be kept on low-trust days with actual loss',()=>{
- const {s,key}=prepare();s.day=4;s.relations[key]=5;s.npcWorld.individuals[key].coins=10;
+ const {s,key}=prepare();s.day=4;for(const node of Object.values(s.nodes))node.refreshDay=Math.max(node.refreshDay,5);s.relations[key]=5;s.npcWorld.individuals[key].coins=10;
  const money=s.coins;
  assert.equal(socialChoice(s,key,'entrust'),true);
  assert.equal(s.coins,money-2);
