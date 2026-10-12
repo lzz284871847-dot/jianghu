@@ -22,7 +22,7 @@ export function learningBlocker(s,id){
  if(!p||p.life.deathDay||p.life.sickDays||p.life.restDay===s.day||(p.injuryDays??p.livelihood?.injuryDays))return '授艺者暂不能授课，请恢复后再来。';
  return null;
 }
-export function martialProgress(s,id){const m=s.martial;return '熟练'+(m.practice[id]||0)+' · 领悟'+(m.insight[id]||0)+' · 实战'+(m.experience[id]||0)+' · 招式'+availableMoves(s,id).length+'/'+MARTIAL_ARTS[id].moves.length+'；一小时练习消耗12精力，熟练+24、领悟+6。';}
+export function martialProgress(s,id){const m=s.martial;const plateau=(m.practice[id]||0)>=120&&(m.experience[id]||0)<6?' · 突破关口：需真实出招经验'+(m.experience[id]||0)+'/6，可去武馆陪练':'';return '熟练'+(m.practice[id]||0)+' · 领悟'+(m.insight[id]||0)+' · 实战'+(m.experience[id]||0)+' · 招式'+availableMoves(s,id).length+'/'+MARTIAL_ARTS[id].moves.length+'；一小时练习消耗12精力，熟练+24、领悟+6。'+plateau;}
 
 export function recoveryAdvice(s){
  if(s.dead)return [];const lines=[];
