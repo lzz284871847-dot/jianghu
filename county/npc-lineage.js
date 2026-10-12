@@ -1,7 +1,7 @@
-import {makeStudy,studyValid} from './npc-martial.js?v=5.17.1';
-import {makeOutlook,outlookValid} from './npc-social.js?v=5.17.1';
-import {lifeValid} from './npc-mortality.js?v=5.17.1';
-import {makeRetirement,retirementValid} from './npc-economy.js?v=5.17.1';
+import {makeStudy,studyValid} from './npc-martial.js?v=5.17.2';
+import {makeOutlook,outlookValid} from './npc-social.js?v=5.17.2';
+import {lifeValid} from './npc-mortality.js?v=5.17.2';
+import {makeRetirement,retirementValid} from './npc-economy.js?v=5.17.2';
 // Legacy save schema only. Marriage, births, descendants and succession no longer run.
 export const UNION_ID='farmhand01:shopassistant';
 export const makeLineage=(day=1)=>({lastDay:day,courtshipDay:0,marriedDay:0,conceivedDay:0,children:[]});
