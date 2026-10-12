@@ -1,12 +1,13 @@
-import {lawOptions,lawSummary} from './law.js?v=5.10.0';
-import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.10.0';
-import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.10.0';
-import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.10.0';
-import {explorationOptions,explorationSummary} from './exploration.js?v=5.10.0';
-import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.10.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.10.0';
-import {nextMilestone} from './adventures.js?v=5.10.0';
-import {places} from './content.js?v=5.10.0';
+import {outingOptions,outingSummary} from './outings.js?v=5.11.0';
+import {lawOptions,lawSummary} from './law.js?v=5.11.0';
+import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.11.0';
+import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.11.0';
+import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.11.0';
+import {explorationOptions,explorationSummary} from './exploration.js?v=5.11.0';
+import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.11.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.11.0';
+import {nextMilestone} from './adventures.js?v=5.11.0';
+import {places} from './content.js?v=5.11.0';
 export function activityOptions(s){
  const a=s.adventures,out=[],add=(id,label,preview)=>out.push({id,label,preview});
  if(a.law.pursuit)return lawOptions(s);
@@ -26,7 +27,7 @@ export function activityOptions(s){
  if(s.place==='inn'){if(a.home.untilDay<s.day)add('rent','短租房间 · 3日12文','可选住所目标；每日一次8小时休息，恢复精力至100、气血20；期满不自动扣钱。');else if(a.home.restDay!==s.day)add('homeRest','在租房休息','8小时，已付租金，不重复收住宿费；期满不自动续租。');}
  if(s.place==='county'&&a.milestones.length<3)add('milestone','确认当前成长阶段','只核对真实条件，无隐藏加成或装备奖励；目标详情见下方。');
  if(s.place==='school')for(const [id,d] of Object.entries(TRIALS))add('trial:'+id,(a.trials.records[id].wins?'再战 · ':'挑战目标 · ')+d.name,trialPreview(s,id));
- return [...out,...lawOptions(s),...factionOptions(s),...explorationOptions(s),...feedbackOptions(s),...playerMentorOptions(s)];
+ return [...out,...outingOptions(s),...lawOptions(s),...factionOptions(s),...explorationOptions(s),...feedbackOptions(s),...playerMentorOptions(s)];
 }
 export function adventureSummary(s){
  const a=s.adventures,q=a.quest,n=nextMilestone(s).n;
@@ -36,5 +37,5 @@ export function adventureSummary(s){
  '职业合作：'+(Object.entries(a.career).filter(([,v])=>v).map(([id])=>CAREERS[id].name).join('、')||'尚未验收；码头、作坊与医者处查看要求。'),
  a.home.untilDay>=s.day?'短租房间至第'+a.home.untilDay+'日，去长安客栈使用。':'尚无有效短租房间，可到长安客栈选择租住；免费借宿仍可用。'];
  lines.push(n===1?'成长第一阶段：完成任一委托，到县城确认。':n===2?'成长第二阶段：完成2条委托；武者需两门一阶武学各练习120与二阶以上完好护甲，职业路线可改用任一职业验收与短租记录。确认后开放南山救援。':n===3?'成长第三阶段：武者需两门二阶武学各练习120并真实战胜老镖师、资深教头；职业路线可选任一合作订单完成3次、处理3条委托与搜寻2处旧址。到县城确认；陪练不计胜利。':'县境成长三阶段已完成，可继续自由生活、职业合作、探索与挑战。');
- return [...lines,...lawSummary(s),...factionSummary(s),...feedbackSummary(s),...explorationSummary(s),...trialSummary(s),...playerMentorSummary(s)];
+ return [...lines,...outingSummary(s),...lawSummary(s),...factionSummary(s),...feedbackSummary(s),...explorationSummary(s),...trialSummary(s),...playerMentorSummary(s)];
 }

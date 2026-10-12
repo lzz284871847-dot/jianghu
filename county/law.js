@@ -1,6 +1,6 @@
 // Finite county cases. The constable uses existing local funds, with no legal-history simulation.
 export const CONSTABLE={name:'赵捕快',place:'county',open:480,close:1080};
-export const INCIDENTS={toll:{name:'官道勒索',place:'road',kind:'coins',amount:4,witness:'boatman'},goods:{name:'渡口侵占药材',place:'ferry',kind:'herb',amount:1,witness:'merchant'}};
+export const INCIDENTS={toll:{name:'道路勒索',place:'road',kind:'coins',amount:4,witness:'boatman'},goods:{name:'渡口侵占药材',place:'ferry',kind:'herb',amount:1,witness:'merchant'}};
 export const CRIMES={robbery:{name:'抢夺柳掌柜钱袋',place:'market',victim:'merchant',fine:12},assault:{name:'主动伤害贺船工',place:'dock',victim:'boatman',fine:8}};
 export const POLICE_JOBS={witness:{name:'查访田间证人',reward:6,description:'3日内到河湾田地问陈农户，30分钟/精力6，75%愿作证；回来县城结算6文。'},lost:{name:'寻回遗失公文',reward:8,description:'3日内到竹林搜寻，45分钟/精力10，65%找到；回来县城结算8文。公文不能出售。'},escort:{name:'协助护送证人',reward:10,description:'3日内经旧渡口选择路段，再到柳溪集交接；稳妥路45分钟/精力8，近路15分钟/精力12、30%擦伤8气血，可能死亡。报酬10文。'}};
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
