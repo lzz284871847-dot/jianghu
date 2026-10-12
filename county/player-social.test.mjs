@@ -78,3 +78,21 @@ test('apology removes recent grudge but cannot erase relationship loss',()=>{
  assert.equal(socialChoice(s,key,'apologize'),false);
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
+
+test('npc entrusted funds may be kept on low-trust days with actual loss',()=>{
+ const {s,key}=prepare();s.day=4;s.relations[key]=5;s.npcWorld.individuals[key].coins=10;
+ const money=s.coins;
+ assert.equal(socialChoice(s,key,'entrust'),true);
+ assert.equal(s.coins,money-2);
+ assert.equal(s.npcWorld.individuals[key].coins,12);
+ assert.equal(s.relations[key],0);
+ assert.equal(socialChoice(s,key,'entrust'),false);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
+test('trusted npc returns funds and pays only from own money',()=>{
+ const {s,key}=prepare();s.relations[key]=12;s.npcWorld.individuals[key].coins=10;
+ assert.equal(socialChoice(s,key,'entrust'),true);
+ assert.equal(s.coins,31);
+ assert.equal(s.npcWorld.individuals[key].coins,9);
+ assert.doesNotThrow(()=>restore(JSON.stringify(s)));
+});
