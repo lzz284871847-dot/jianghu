@@ -1,6 +1,7 @@
-import {societyDay} from './society.js?v=5.15.0';
-import {farmDelivery} from './agriculture.js?v=5.15.0';
-import {markets} from './content.js?v=5.15.0';
+import {countyEventSurcharge} from './county-life.js?v=5.16.0';
+import {societyDay} from './society.js?v=5.16.0';
+import {farmDelivery} from './agriculture.js?v=5.16.0';
+import {markets} from './content.js?v=5.16.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
@@ -17,14 +18,14 @@ export function stockAt(s,place,key){return ensureCommerce(s).stock[place]?.[key
 // Prices are recalculated before a transaction, preventing stale UI quotes.
 const PRICE_GOODS=new Set(['food','grain','herb','wood','vegetable']);
 export function marketPrice(s,place,type,key){
- const base=markets[place]?.[type]?.[key];
+ const base=markets[place]?.[type]?.[key],surcharge=type==='buy'?countyEventSurcharge(s,place,key):0;
  if(base===undefined)return null;
  if(!PRICE_GOODS.has(key))return base;
  const quantity=stockAt(s,place,key);
  if(type==='buy'){
-  if(quantity<=3)return Math.max(1,Math.ceil(base*1.5));
-  if(quantity>=24)return Math.max(1,Math.floor(base*.85));
-  return base;
+  if(quantity<=3)return Math.max(1,Math.ceil(base*1.5))+surcharge;
+  if(quantity>=24)return Math.max(1,Math.floor(base*.85))+surcharge;
+  return base+surcharge;
  }
  if(quantity>=24)return Math.max(1,Math.floor(base*.7));
  if(quantity<=2)return Math.max(1,Math.ceil(base*1.15));
