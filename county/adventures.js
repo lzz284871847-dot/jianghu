@@ -1,18 +1,19 @@
-import {makeTrials,trialsValid} from './trials.js?v=5.5.1';
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.5.1';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.5.1';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.5.1';
-import {people,items} from './content.js?v=5.5.1';
-import {gain} from './progression.js?v=5.5.1';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.5.1';
-import {EQUIPMENT} from './equipment.js?v=5.5.1';
-export const makeAdventures=(day=1)=>({trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.6.0';
+import {makeTrials,trialsValid} from './trials.js?v=5.6.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.6.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.6.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.6.0';
+import {people,items} from './content.js?v=5.6.0';
+import {gain} from './progression.js?v=5.6.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.6.0';
+import {EQUIPMENT} from './equipment.js?v=5.6.0';
+export const makeAdventures=(day=1)=>({mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==14||!feedbackValid(s))return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==15||!feedbackValid(s))return false;
  if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty','retreated'].includes(v)))return false;
- if(!explorationValid(s)||!trialsValid(s))return false;
+ if(!explorationValid(s)||!trialsValid(s)||!playerMentorValid(s))return false;
  if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
  const o=a.org;if(!obj(o)||Object.keys(o).length!==3||!['none','school','caravan'].includes(o.id)||!obj(o.rep)||Object.keys(o.rep).length!==2||!['school','caravan'].every(id=>num(o.rep[id],100))||!num(o.aidDay,s.day))return false;
  if(!obj(a.orderCounts)||Object.keys(a.orderCounts).length!==3||!Object.keys(CAREERS).every(id=>num(a.orderCounts[id],100000)))return false;
@@ -27,7 +28,7 @@ const paid=(s,id,n)=>{const p=s.npcWorld.individuals[id];return p.coins>=n&&s.co
 function reward(s,id,n){s.npcWorld.individuals[id].coins-=n;s.coins+=n;}
 function fee(s,id,n){const p=s.npcWorld.individuals[id];if(s.coins<n||p.coins>1000000-n)return false;s.coins-=n;p.coins+=n;return true;}
 function finish(s,success){const a=s.adventures,q=a.quest;(success?a.done:a.failed).push(q.id);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
-export function expireAdventures(s){reconcileExploration(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
+export function expireAdventures(s){reconcileExploration(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
 export function recordAdventureVictory(s,c){if(c.ended==='victory'&&!c.practice&&s.adventures&&!s.adventures.victories.includes(c.opponent))s.adventures.victories.push(c.opponent);}
 export const practiceFee=s=>s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3?3:4;
 const trained=(s,tier)=>Object.keys(s.martial.known).filter(id=>MARTIAL_ARTS[id].tier===tier&&s.martial.practice[id]>=120).length;
@@ -38,6 +39,7 @@ export function adventureAction(s,id,{advance,rng}){
  if(s.dead||s.pending||s.combat)return fail(s,'先处理眼前交手或选择；死亡后不能继续。');
  expireAdventures(s);const a=s.adventures,[kind,key]=String(id).split(':');
  if(kind==='followup'||kind==='event')return feedbackAction(s,String(id),{present,transact,advance});
+ if(kind==='mentor')return playerMentorAction(s,String(id),{present,transact,advance,rng});
  if(kind==='route'||kind==='encounter')return explorationAction(s,String(id),{transact,advance,rng});
  if(kind==='retry'){
   const d=QUESTS[key];if(!d||key==='parcel'||a.quest||!a.failed.includes(key)||a.done.includes(key))return fail(s,'此委托不能重新约定；失物与已完成委托不重复开放。');
@@ -55,7 +57,7 @@ export function adventureAction(s,id,{advance,rng}){
  if(kind==='withdraw'){if(!a.quest)return fail(s,'没有进行中的委托。');return transact(s,'撤回委托',0,0,()=>{finish(s,false);s.result.push('无报酬，无罚款；本条委托结束。');},advance);}
  if(kind==='questStep'){
   const q=a.quest;if(!q)return fail(s,'没有进行中的委托。');
-  if(q.id==='parcel'&&q.stage===0&&s.place==='bamboo'&&key==='search')return transact(s,'搜寻竹林失物',60,12,()=>{if(rng()<.7){q.stage=1;s.result.push('找到失落货包，请回县城街市交还；货包不是可出售物资。');}else{finish(s,false);s.result.push('未能找到失物，委托结束，无报酬。');}xp(s,'forage',2);},advance);
+  if(q.id==='parcel'&&q.stage===0&&s.place==='bamboo'&&key==='search')return transact(s,'搜寻竹林失物',60,12,()=>{if(rng()<mentorParcelChance(s)){q.stage=1;s.result.push('找到失落货包，请回县城街市交还；货包不是可出售物资。');}else{finish(s,false);s.result.push('未能找到失物，委托结束，无报酬。');}xp(s,'forage',2);},advance);
   if(q.id==='escort'&&q.stage===0&&s.place==='ferry'&&['safe','quick'].includes(key))return transact(s,'护送经过旧渡口',key==='safe'?45:15,key==='safe'?8:12,()=>{if(key==='quick'&&rng()<.3){s.hp=Math.max(0,s.hp-8);if(!s.hp){s.dead=true;finish(s,false);s.result.push('受伤身亡，护送结束。');return;}s.result.push('抄近路擦伤，气血 -8。');}q.stage=1;s.result.push('行脚人已过渡口，继续前往柳溪集。');xp(s,'carry',2);},advance);
   if(q.id==='rescue'&&q.stage===0&&s.place==='hill'&&key==='help'){
    if(s.bag.herb<1||s.hp<25)return fail(s,'救助需自己现有药材1份，气血至少25。');
@@ -110,7 +112,7 @@ export function adventureAction(s,id,{advance,rng}){
 }
 
 export function adventureDialogue(s,id){
- const a=s.adventures;if(!a)return null;const follow=feedbackDialogue(s,id);if(follow)return follow;
+ const a=s.adventures;if(!a)return null;const mentor=playerMentorDialogue(s,id);if(mentor)return mentor;const follow=feedbackDialogue(s,id);if(follow)return follow;
  if(a.failed.includes(id==='doctor'?'medicine':id==='boatman'?'escort':'none'))return '上次委托未完成，当事人记得失约；可以说清经过，也可重新约定。';
  if(id==='doctor'&&a.done.includes('rescue'))return '南山采药人已得到救助，诊所记着你实际帮过的忙。';
  if(id==='doctor'&&a.done.includes('medicine'))return '你交来的两份药材已用于诊所，这趟急单已经结清。';
