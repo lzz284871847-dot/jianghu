@@ -1,10 +1,10 @@
-import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.6.0';
-import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.6.0';
-import {explorationOptions,explorationSummary} from './exploration.js?v=5.6.0';
-import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.6.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.6.0';
-import {nextMilestone} from './adventures.js?v=5.6.0';
-import {places} from './content.js?v=5.6.0';
+import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.8.0';
+import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.8.0';
+import {explorationOptions,explorationSummary} from './exploration.js?v=5.8.0';
+import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.8.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.8.0';
+import {nextMilestone} from './adventures.js?v=5.8.0';
+import {places} from './content.js?v=5.8.0';
 export function activityOptions(s){
  const a=s.adventures,out=[],add=(id,label,preview)=>out.push({id,label,preview});
  for(const [id,d] of Object.entries(QUESTS))if(s.place===d.from&&!a.done.includes(id)&&!a.failed.includes(id)&&!a.quest)add('quest:'+id,'领取 · '+d.name,d.description);
