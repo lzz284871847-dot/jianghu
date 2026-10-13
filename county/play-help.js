@@ -1,7 +1,7 @@
-import {schoolCanTeach} from './npc-school.js?v=5.19.0';
-import {villageCanTeach} from './npc-village-school.js?v=5.19.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.19.0';
-import {canLearn,availableMoves} from './martial-progression.js?v=5.19.0';
+import {schoolCanTeach} from './npc-school.js?v=5.20.0';
+import {villageCanTeach} from './npc-village-school.js?v=5.20.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.20.0';
+import {canLearn,availableMoves} from './martial-progression.js?v=5.20.0';
 export function starterAdvice(s){
  const lines=['这些是可忽略的建议，不是强制主线。普通职业与武者都能完成县境目标。'];
  if((s.injuries?.cut||0)+(s.injuries?.critical||0)>0)lines.push('正在出血：先用药材处理切伤，或到河湾村找医者；带着出血睡觉可能危及生命。');
@@ -22,7 +22,7 @@ export function learningBlocker(s,id){
  if(!p||p.life.deathDay||p.life.sickDays||p.life.restDay===s.day||(p.injuryDays??p.livelihood?.injuryDays))return '授艺者暂不能授课，请恢复后再来。';
  return null;
 }
-export function martialProgress(s,id){const m=s.martial;const plateau=(m.practice[id]||0)>=120&&(m.experience[id]||0)<6?' · 突破关口：需真实出招经验'+(m.experience[id]||0)+'/6，可去武馆陪练':'';return '熟练'+(m.practice[id]||0)+' · 领悟'+(m.insight[id]||0)+' · 实战'+(m.experience[id]||0)+' · 招式'+availableMoves(s,id).length+'/'+MARTIAL_ARTS[id].moves.length+'；一小时练习消耗12精力，熟练+24、领悟+6。'+plateau;}
+export function martialProgress(s,id){const m=s.martial,body=MARTIAL_ARTS[id].category==='身法';const plateau=(m.practice[id]||0)>=120&&(m.experience[id]||0)<6?' · 突破关口：需真实运用经验'+(m.experience[id]||0)+'/6，'+(body?'可实际越障、身法撤退或出招':'可去武馆陪练'):'';return '熟练'+(m.practice[id]||0)+' · 领悟'+(m.insight[id]||0)+(body?' · 运用':' · 实战')+(m.experience[id]||0)+' · 招式'+availableMoves(s,id).length+'/'+MARTIAL_ARTS[id].moves.length+'；一小时练习消耗12精力，熟练+24、领悟+6。'+plateau;}
 
 export function recoveryAdvice(s){
  if(s.dead)return [];const lines=[];
