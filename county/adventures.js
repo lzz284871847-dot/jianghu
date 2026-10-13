@@ -1,20 +1,21 @@
-import {makeCountyLife,countyLifeValid,expireCountyLife,countyLifeAction} from './county-life.js?v=5.21.0';
-import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.21.0';
-import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.21.0';
-import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.21.0';
-import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.21.0';
-import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.21.0';
-import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.21.0';
-import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.21.0';
-import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.21.0';
-import {makeTrials,trialsValid} from './trials.js?v=5.21.0';
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.21.0';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.21.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.21.0';
-import {people,items} from './content.js?v=5.21.0';
-import {gain} from './progression.js?v=5.21.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.21.0';
-import {EQUIPMENT} from './equipment.js?v=5.21.0';
+import {fieldChance,useFieldClue} from './field-skills.js?v=5.22.0';
+import {makeCountyLife,countyLifeValid,expireCountyLife,countyLifeAction} from './county-life.js?v=5.22.0';
+import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.22.0';
+import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.22.0';
+import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.22.0';
+import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.22.0';
+import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.22.0';
+import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.22.0';
+import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.22.0';
+import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.22.0';
+import {makeTrials,trialsValid} from './trials.js?v=5.22.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.22.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.22.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.22.0';
+import {people,items} from './content.js?v=5.22.0';
+import {gain} from './progression.js?v=5.22.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.22.0';
+import {EQUIPMENT} from './equipment.js?v=5.22.0';
 export const makeAdventures=(day=1)=>({life:makeCountyLife(day),spoils:makeSpoils(),companions:makeCompanions(),threads:makeThreads(),business:makeBusiness(),outings:makeOutings(),law:makeLaw(),factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
@@ -76,7 +77,7 @@ export function adventureAction(s,id,{advance,rng}){
  if(kind==='withdraw'){if(!a.quest)return fail(s,'没有进行中的委托。');return transact(s,'撤回委托',0,0,()=>{finish(s,false);s.result.push('无报酬，无罚款；本条委托结束。');},advance);}
  if(kind==='questStep'){
   const q=a.quest;if(!q)return fail(s,'没有进行中的委托。');
-  if(q.id==='parcel'&&q.stage===0&&s.place==='bamboo'&&key==='search')return transact(s,'搜寻竹林失物',60,12,()=>{if(rng()<mentorParcelChance(s)){q.stage=1;s.result.push('找到失落货包，请回县城街市交还；货包不是可出售物资。');}else{finish(s,false);s.result.push('未能找到失物，委托结束，无报酬。');}xp(s,'forage',2);},advance);
+  if(q.id==='parcel'&&q.stage===0&&s.place==='bamboo'&&key==='search')return transact(s,'搜寻竹林失物',60,12,()=>{const chance=fieldChance(s,'tracking',mentorParcelChance(s));useFieldClue(s,'tracking');if(rng()<chance){q.stage=1;s.result.push('找到失落货包，请回县城街市交还；货包不是可出售物资。');}else{finish(s,false);s.result.push('未能找到失物，委托结束，无报酬。');}xp(s,'forage',2);},advance);
   if(q.id==='escort'&&q.stage===0&&s.place==='ferry'&&['safe','quick'].includes(key))return transact(s,'护送经过旧渡口',key==='safe'?45:15,key==='safe'?8:12,()=>{if(key==='quick'&&rng()<.3){s.hp=Math.max(0,s.hp-8);if(!s.hp){s.dead=true;finish(s,false);s.result.push('受伤身亡，护送结束。');return;}s.result.push('抄近路擦伤，气血 -8。');}q.stage=1;s.result.push('行脚人已过渡口，继续前往柳溪集。');xp(s,'carry',2);},advance);
   if(q.id==='rescue'&&q.stage===0&&s.place==='hill'&&key==='help'){
    if(s.bag.herb<1||s.hp<25)return fail(s,'救助需自己现有药材1份，气血至少25。');
