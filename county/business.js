@@ -1,8 +1,8 @@
-import {skills,markets,places} from './content.js?v=5.18.0';
-import {marketPrice,transactionStock,recordTrade} from './commerce.js?v=5.18.0';
-import {districtStatus} from './society.js?v=5.18.0';
-import {EQUIPMENT} from './equipment.js?v=5.18.0';
-import {gain} from './progression.js?v=5.18.0';
+import {skills,markets,places} from './content.js?v=5.19.0';
+import {marketPrice,transactionStock,recordTrade} from './commerce.js?v=5.19.0';
+import {districtStatus} from './society.js?v=5.19.0';
+import {EQUIPMENT} from './equipment.js?v=5.19.0';
+import {gain} from './progression.js?v=5.19.0';
 // Twelve bounded opportunities. Cargo belongs to the player and is kept out of the saleable bag.
 export const BUSINESSES=Object.freeze(Object.fromEntries(['farm','smith','clinic','merchant'].flatMap(kind=>[0,1,2].map(t=>[kind+t,{kind,t,name:({farm:['试种小畦','租地种菜','乡邻供菜约定'],smith:['木棍订单','铁剑订单','精钢刀订单'],clinic:['基础配药协作','分批配药协作','急用药协作'],merchant:['小批药材贩运','柳溪供药约定','大批供药约定']})[kind][t],skill:({farm:'farming',smith:'smelt',clinic:'herb',merchant:'trade'})[kind],required:t*(kind==='merchant'?3:6),place:({farm:'fields',smith:'workshop',clinic:'village',merchant:'market'})[kind],giver:({farm:'farmer',smith:'smith',clinic:'doctor',merchant:'merchant'})[kind],days:kind==='farm'?6:kind==='smith'?5:3}]))));
 const empty=()=>({status:'none',accepted:0,due:0,step:0,cost:0,revenue:0,cargo:0,tended:0,rain:false});
