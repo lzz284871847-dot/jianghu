@@ -1,45 +1,46 @@
-import {skillOverview,MATERIAL_KEYS,materialSources,stockHint} from './skill-guide.js?v=5.26.1';
-import {CHESS_MOVES,chessBrief,chessChance} from './culture.js?v=5.26.1';
-import {PROFESSIONAL_IDS,ARTISANS} from './professional-data.js?v=5.26.1';
-import {tradePrice} from './civic.js?v=5.26.1';
-import {MEALS,mealDescription,kitchenBlocker} from './kitchen.js?v=5.26.1';
-import {fieldRisk,activeFieldClue} from './field-skills.js?v=5.26.1';
-import {BODY_ARTS,bodyStats,mobilityPlan,mobilityBlocker,mobilityPreview,bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.26.1';
-import {MEDICINES,medicineBlocker} from './medicine.js?v=5.26.1';
-import {countyEventDelay,countyEventNotices,countyLifeOverview} from './county-life.js?v=5.26.1';
-import {equipmentResale,salvageMaterials,spoilSummary} from './spoils.js?v=5.26.1';
-import {companionSummary} from './companions.js?v=5.26.1';
-import {handbook} from './task-handbook.js?v=5.26.1';
-import {GOALS,THREADS} from './threads.js?v=5.26.1';
-import {outingDelay,outingMovementBlocker} from './outings.js?v=5.26.1';
-import {activityGroups} from './activity-layout.js?v=5.26.1';
-import {opponentBrief} from './trials.js?v=5.26.1';
-import {localExplorationSummary} from './exploration.js?v=5.26.1';
-import {ferryDelay} from './world-feedback.js?v=5.26.1';
-import {recoveryAdvice,learningBlocker,martialProgress} from './play-help.js?v=5.26.1';
-import {adventureSummary} from './adventure-view.js?v=5.26.1';
-import {practiceFee} from './adventures.js?v=5.26.1';
-import {villageSchoolSummary} from './npc-village-school.js?v=5.26.1';
-import {journeySummary} from './npc-journeys.js?v=5.26.1';
-import {clinicSummary} from './npc-clinic.js?v=5.26.1';
-import {schoolSummary} from './npc-school.js?v=5.26.1';
-import {studySummary} from './npc-martial.js?v=5.26.1';
-import {outlookSummary,socialSummary} from './npc-social.js?v=5.26.1';
-import {healthSummary} from './npc-health.js?v=5.26.1';
-import {npcCareer} from './npc-economy.js?v=5.26.1';
-import {bondBetween} from './npc-social.js?v=5.26.1';
-import {npcAt} from './npc-simulation.js?v=5.26.1';
-import {districtStatus} from './society.js?v=5.26.1';
-import {stockAt,budgetAt,marketPrice,MARKET_LIMIT} from './commerce.js?v=5.26.1';
-import {JOBS,jobAvailability,livelihoodPressure} from './livelihood.js?v=5.26.1';
-import {EQUIPMENT,equipmentBonuses,craftFailureChance,equipmentWorkCost} from './equipment.js?v=5.26.1';
-import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=5.26.1';
-import {command} from './commands.js?v=5.26.1';
-import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=5.26.1';
-import {KEY,fresh,adventureAction,move,act,choose,fight,trade,talk,socialChoice,cost,chance,resourceBlocker,martialAction,usableMoves,equipmentAction} from './engine.js?v=5.26.1';
-import {date,progress,MAX} from './progression.js?v=5.26.1';
-import {npcPlace} from './world.js?v=5.26.1';
-import {save,load,importSave} from './storage.js?v=5.26.1';
+import {dungeonSummary} from './dungeon.js?v=5.27.0';
+import {skillOverview,MATERIAL_KEYS,materialSources,stockHint} from './skill-guide.js?v=5.27.0';
+import {CHESS_MOVES,chessBrief,chessChance} from './culture.js?v=5.27.0';
+import {PROFESSIONAL_IDS,ARTISANS} from './professional-data.js?v=5.27.0';
+import {tradePrice} from './civic.js?v=5.27.0';
+import {MEALS,mealDescription,kitchenBlocker} from './kitchen.js?v=5.27.0';
+import {fieldRisk,activeFieldClue} from './field-skills.js?v=5.27.0';
+import {BODY_ARTS,bodyStats,mobilityPlan,mobilityBlocker,mobilityPreview,bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.27.0';
+import {MEDICINES,medicineBlocker} from './medicine.js?v=5.27.0';
+import {countyEventDelay,countyEventNotices,countyLifeOverview} from './county-life.js?v=5.27.0';
+import {equipmentResale,salvageMaterials,spoilSummary} from './spoils.js?v=5.27.0';
+import {companionSummary} from './companions.js?v=5.27.0';
+import {handbook} from './task-handbook.js?v=5.27.0';
+import {GOALS,THREADS} from './threads.js?v=5.27.0';
+import {outingDelay,outingMovementBlocker} from './outings.js?v=5.27.0';
+import {activityGroups} from './activity-layout.js?v=5.27.0';
+import {opponentBrief} from './trials.js?v=5.27.0';
+import {localExplorationSummary} from './exploration.js?v=5.27.0';
+import {ferryDelay} from './world-feedback.js?v=5.27.0';
+import {recoveryAdvice,learningBlocker,martialProgress} from './play-help.js?v=5.27.0';
+import {adventureSummary} from './adventure-view.js?v=5.27.0';
+import {practiceFee} from './adventures.js?v=5.27.0';
+import {villageSchoolSummary} from './npc-village-school.js?v=5.27.0';
+import {journeySummary} from './npc-journeys.js?v=5.27.0';
+import {clinicSummary} from './npc-clinic.js?v=5.27.0';
+import {schoolSummary} from './npc-school.js?v=5.27.0';
+import {studySummary} from './npc-martial.js?v=5.27.0';
+import {outlookSummary,socialSummary} from './npc-social.js?v=5.27.0';
+import {healthSummary} from './npc-health.js?v=5.27.0';
+import {npcCareer} from './npc-economy.js?v=5.27.0';
+import {bondBetween} from './npc-social.js?v=5.27.0';
+import {npcAt} from './npc-simulation.js?v=5.27.0';
+import {districtStatus} from './society.js?v=5.27.0';
+import {stockAt,budgetAt,marketPrice,MARKET_LIMIT} from './commerce.js?v=5.27.0';
+import {JOBS,jobAvailability,livelihoodPressure} from './livelihood.js?v=5.27.0';
+import {EQUIPMENT,equipmentBonuses,craftFailureChance,equipmentWorkCost} from './equipment.js?v=5.27.0';
+import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=5.27.0';
+import {command} from './commands.js?v=5.27.0';
+import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=5.27.0';
+import {KEY,fresh,adventureAction,move,act,choose,fight,trade,talk,socialChoice,cost,chance,resourceBlocker,martialAction,usableMoves,equipmentAction} from './engine.js?v=5.27.0';
+import {date,progress,MAX} from './progression.js?v=5.27.0';
+import {npcPlace} from './world.js?v=5.27.0';
+import {save,load,importSave} from './storage.js?v=5.27.0';
 const $=id=>document.getElementById(id);let state=null,view='world',localPanel='field',localPlace=null;const activityOpen=new Map(),skillsOpen=new Map();
 const el=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;};
 function button(label,fn,disabled=false,preview=''){const b=el('button',label);b.type='button';b.disabled=disabled;b.onclick=()=>{try{const from=state.place;fn();persist();render();feedback();if(from!==state.place){tab('world');feedback();$('location-stage').scrollIntoView({block:'start'});}if(state.pending||state.combat||state.dead){tab('world');feedback();$('scene').scrollIntoView({block:'start'});}}catch(e){$('save-status').textContent='行动未完成：'+e.message;}};if(preview)b.append(el('small',preview));return b;}
@@ -48,7 +49,7 @@ function showLocalPanel(key){if(!['field','people','resources','events','roads']
 function tab(key){view=key;for(const s of document.querySelectorAll('.view'))s.hidden=s.id!==key;for(const b of $('tabs').children)b.setAttribute('aria-current',b.dataset.tab===key?'page':'false');$('feedback').hidden=true;window.scrollTo({top:0});}
 function feedback(){if(!state)return;$('feedback-title').textContent=state.result[0];$('feedback-lines').replaceChildren(...state.result.slice(1).map(t=>el('p',t)));$('feedback').hidden=false;}
 const action=(id,label,preview)=>button(label,()=>act(state,id),state.dead||!!state.pending||!!state.combat,preview);
-function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hidden=false;const p=places[s.place],blocked=s.dead||s.pending||s.combat;if(localPlace!==s.place){localPlace=s.place;localPanel='field';}if(blocked)localPanel='field';
+function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hidden=false;const p=places[s.place],blocked=s.dead||s.pending||s.combat||s.dungeon.status==='active';if(localPlace!==s.place){localPlace=s.place;localPanel='field';}if(blocked)localPanel=s.dungeon.status==='active'?'events':'field';
  const identity=s.adventures.mentor.member?'周师傅门下':s.adventures.life.sect.river?'河湾习武会':'江湖散人';
  $('status').replaceChildren();const identityRow=el('div','','status-identity');identityRow.append(el('strong',s.name),el('span',s.adventures.law.pursuit?'捕快拦查中':identity,'muted'));const stats=el('div','','status-values');for(const [label,value,tone] of [['气血',s.hp,'health'],['精力',s.energy,'energy']]){const stat=el('div','',tone);stat.append(el('span',label+' '+value+'/100'));const bar=el('progress','');bar.max=100;bar.value=value;bar.setAttribute('aria-label',label);stat.append(bar);stats.append(stat);}stats.append(el('div',s.coins+' 文','purse'));$('status').append(identityRow,stats);$('area').textContent=p.area;$('place').textContent=p.name;$('clock').textContent=date(s)+' · '+s.weather;$('place-text').textContent=p.text;$('facilities').textContent='设施与资源：'+p.facilities.join('、');
  const recovery=recoveryAdvice(s);$('recovery-advice').replaceChildren(...recovery.map(t=>el('p',t)));$('recovery-guide').hidden=!recovery.length;
@@ -71,7 +72,7 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  else if(s.pending){const d=resources[s.pending.key];$('scene').append(el('h3',d.name),el('p',`${d.minutes}分钟 / 精力${cost(s,d.energy)}，${Math.round(fieldRisk(s,d.risk)*100)}%擦伤${d.damage}点气血；也可能没有收获。`),button('确认采集',()=>choose(s,'gather'),!!resourceBlocker(s,s.pending.key)),button('不参与，返回',()=>choose(s,'leave')));}
  $('actions').replaceChildren();if(!blocked){if(p.work){const reason=jobAvailability(s),pressure=livelihoodPressure(s);const info=(pressure.shortage&&['fields','county'].includes(s.place)?'粮食短缺、用工缩减；':'')+(pressure.lowFunds?'商铺资金紧张、用工缩减；':'');$('actions').append(button(reason?'短工已满':'做短工',()=>act(s,'work'),!!reason,reason||`${s.place==='fields'||s.place==='dock'?'06':'07'}:00–18:00；3小时 / 精力${cost(s,24)}；可得4–12文；今日名额${pressure.slots}次；${info}`));}if(['inn','village'].includes(s.place))$('actions').append(action('sleep','睡一觉',`8小时，精力恢复至100；${s.place==='inn'?'5文':'免费借宿'}`));if(s.place==='school')$('actions').append(action('train','练入门拳脚','2小时 / 精力18，拳脚经验+2'));if(s.place==='village'&&s.minute>=480&&s.minute+60<=1080)$('actions').append(action('doctor','医者治疗','1小时 / 诊金8文，气血最多恢复50'));$('actions').append(action('rest','歇息','2小时 / 精力0，恢复精力30、气血10'),action('wait','等半小时','只流逝时间，不恢复精力'));const bagShortcut=el('button','查看背包与当地交易');bagShortcut.onclick=()=>tab('bag');$('actions').append(bagShortcut);const manualShortcut=el('button','查看任务手册');manualShortcut.onclick=()=>tab('messages');$('actions').append(manualShortcut);}
  const groups=activityGroups(s);$('event-count').textContent=groups.reduce((n,g)=>n+g.options.length,0);$('road-count').textContent=p.routes.length;$('resource-count').textContent=Object.values(resources).filter(d=>d.places.includes(s.place)).length;$('people-count').textContent=Object.keys(people).filter(key=>npcPlace(s,key)===s.place).length+npcAt(s,s.place).filter(n=>!Object.hasOwn(people,n.id)).length+(s.place==='county'?1:0);
- $('activities').replaceChildren();for(const group of groups){const section=el('details','','activity-group'),list=el('div','','activity-list');section.dataset.group=group.id;section.open=activityOpen.get(group.id)??group.open;section.append(el('summary',group.label+' · '+group.options.length+'项'));for(const a of group.options){const row=el('article','','activity-option');row.append(el('p',a.brief,'action-preview'));if(a.details){const info=el('details','');info.append(el('summary','完整战前情报'),el('p',a.details,'muted'));row.append(info);}if(a.blocker)row.append(el('p',a.blocker,'muted'));row.append(button(a.label,()=>adventureAction(s,a.id),!!blocked||!!a.blocker));list.append(row);}section.append(list);section.addEventListener('toggle',()=>{if(section.isConnected)activityOpen.set(group.id,section.open);});$('activities').append(section);}if(!$('activities').children.length)$('activities').append(el('p','此处没有新的委托或合作；查看成长目标或继续自由行动。'));const visit=localExplorationSummary(s);if(visit)$('activities').append(el('p',visit,'muted'));$('adventure-goals').replaceChildren(...adventureSummary(s).map(t=>el('p',t)));
+ $('activities').replaceChildren();if(s.dungeon.status==='active')$('activities').append(el('h3','废弃矿道 · 第'+s.dungeon.stage+'/4段'),el('p',dungeonSummary(s),'muted'));for(const group of groups){const section=el('details','','activity-group'),list=el('div','','activity-list');section.dataset.group=group.id;section.open=activityOpen.get(group.id)??group.open;section.append(el('summary',group.label+' · '+group.options.length+'项'));for(const a of group.options){const row=el('article','','activity-option');row.append(el('p',a.brief,'action-preview'));if(a.details){const info=el('details','');info.append(el('summary','完整战前情报'),el('p',a.details,'muted'));row.append(info);}if(a.blocker)row.append(el('p',a.blocker,'muted'));row.append(button(a.label,()=>adventureAction(s,a.id),!!(s.dead||s.pending||s.combat)||!!a.blocker));list.append(row);}section.append(list);section.addEventListener('toggle',()=>{if(section.isConnected)activityOpen.set(group.id,section.open);});$('activities').append(section);}if(!$('activities').children.length)$('activities').append(el('p','此处没有新的委托或合作；查看成长目标或继续自由行动。'));const visit=localExplorationSummary(s);if(visit)$('activities').append(el('p',visit,'muted'));$('adventure-goals').replaceChildren(...[dungeonSummary(s),...adventureSummary(s)].filter(Boolean).map(t=>el('p',t)));
  $('nearby').replaceChildren(...p.routes.map(to=>button('去'+places[to].name,()=>move(s,to),!!blocked||s.adventures.law.pursuit||!!outingMovementBlocker(s),`${places[to].minutes+(s.weather==='雨'&&(places[to].area!=='县城与近郊'||to==='road')?15:0)+ferryDelay(s,to)+outingDelay(s,to)+countyEventDelay(s,to)}分钟 / 精力0`)));
 for(const to of p.routes)if(mobilityPlan(s,to)){const why=mobilityBlocker(s,to)||outingMovementBlocker(s);$('nearby').append(button('轻功去'+places[to].name,()=>move(s,to,undefined,'light'),!!blocked||!!why,mobilityPreview(s,to)+(why?' '+why:'')));}
  $('map').replaceChildren();for(const area of ['县城与近郊','河谷与水路','山林与旧道']){const section=el('section','');section.append(el('h3',area));for(const [key,q] of Object.entries(places).filter(([,q])=>q.area===area))section.append(el('p',(key===s.place?'● 你在这里 · ':'')+q.name+' → '+q.routes.map(k=>places[k].name).join('、'),'muted'));$('map').append(section);}
@@ -129,6 +130,6 @@ for(const b of $('world-tabs').children)b.onclick=()=>{showLocalPanel(b.dataset.
 for(const b of $('tabs').children)b.onclick=()=>tab(b.dataset.tab);$('dismiss').onclick=()=>{$('feedback').hidden=true;};$('save').onclick=()=>{persist();};
 $('new').onclick=()=>{if(!confirm('开始新的人生将替换青河县当前存档。需要时先导出。'))return;try{localStorage.removeItem(KEY);state=null;$('game').hidden=true;$('setup').hidden=false;}catch(e){$('save-status').textContent='无法清除存档：'+e.message;}};
 $('export').onclick=()=>{if(!state)return;const url=URL.createObjectURL(new Blob([JSON.stringify(state)],{type:'application/json'})),a=el('a','');a.href=url;a.download='qinghe-day'+state.day+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>150000)throw Error('存档过大。');const raw=await f.text();const {restore}=await import('./engine.js?v=5.26.1'),candidate=restore(raw);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`))return;state=importSave(raw,state);view='world';render();tab('world');$('save-status').textContent='导入成功。';}catch(err){$('save-status').textContent='导入未完成：'+err.message;}finally{e.target.value='';}};
+$('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>150000)throw Error('存档过大。');const raw=await f.text();const {restore}=await import('./engine.js?v=5.27.0'),candidate=restore(raw);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`))return;state=importSave(raw,state);view='world';render();tab('world');$('save-status').textContent='导入成功。';}catch(err){$('save-status').textContent='导入未完成：'+err.message;}finally{e.target.value='';}};
 try{state=load();if(state){render();tab('world');}}catch(e){$('startup-error').textContent='存档未能读取，原始记录没有被覆盖：'+e.message;}
-if(globalThis.navigator?.serviceWorker)navigator.serviceWorker.register('./sw.js?v=5.26.1',{scope:'./'}).then(reg=>{const worker=reg.installing||reg.waiting||reg.active;if(!worker){$('offline').textContent='离线文件尚未就绪。';return;}const status=()=>{$('offline').textContent=worker.state==='activated'?'青河县离线文件已就绪。':worker.state==='redundant'?'离线准备失败，可继续联网玩。':'正在准备青河县离线文件，首次请保持联网。';};worker.addEventListener('statechange',status);status();}).catch(()=>{$('offline').textContent='离线准备失败，可继续联网玩。';});else $('offline').textContent='此浏览器可联网玩，未提供离线缓存。';
+if(globalThis.navigator?.serviceWorker)navigator.serviceWorker.register('./sw.js?v=5.27.0',{scope:'./'}).then(reg=>{const worker=reg.installing||reg.waiting||reg.active;if(!worker){$('offline').textContent='离线文件尚未就绪。';return;}const status=()=>{$('offline').textContent=worker.state==='activated'?'青河县离线文件已就绪。':worker.state==='redundant'?'离线准备失败，可继续联网玩。':'正在准备青河县离线文件，首次请保持联网。';};worker.addEventListener('statechange',status);status();}).catch(()=>{$('offline').textContent='离线准备失败，可继续联网玩。';});else $('offline').textContent='此浏览器可联网玩，未提供离线缓存。';

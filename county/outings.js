@@ -1,8 +1,8 @@
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.26.1';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.27.0';
 // Six finite regional adventures using existing skills, tools, actors and combat.
-import {gain} from './progression.js?v=5.26.1';
-import {addInjury} from './injury.js?v=5.26.1';
-import {factionFriendly} from './factions.js?v=5.26.1';
+import {gain} from './progression.js?v=5.27.0';
+import {addInjury} from './injury.js?v=5.27.0';
+import {factionFriendly} from './factions.js?v=5.27.0';
 export const OUTINGS={
  boat:{name:'浅滩搁船',place:'ferry',holder:'boatman',tier:'初期',reward:8,skill:'carry',routes:['push','wood','leave'],outcomes:['new','claim','done','failed','left','died'],info:'船底卡在浅滩；用木料垫底更稳，雨天推船更难。完成后去码头找贺船工，报酬8文来自其现有余额。'},
  flood:{name:'雨后渡口受阻',place:'dock',holder:'boatman',tier:'初期',reward:0,skill:'carry',routes:['repair','bypass','leave'],outcomes:['new','done','failed','left','settled'],info:'渡口受阻期间进出旧渡口多走15分钟；修补需自己的木料2份。若不处理，乡邻三日后自行清理。没有钱物奖励。'},
@@ -37,7 +37,7 @@ export function outingPlan(s,id,route){const r=s.adventures.outings.records[id];
 export function outingFightBlocker(s){if(s.place!=='oldroad'||s.adventures.outings.records.road.outcome!=='new')return '请到旧道尚未处理的团伙处。';if(s.dead||s.pending||s.combat)return '先处理眼前选择或交手；死亡后不能继续。';if(!s.martial.known[s.martial.equipped]||s.hp<25||s.energy<20)return '主动实战需已学并选用武艺、气血25、精力20；可绕行或交涉。';return null;}
 export function settleOutingCombat(s,c,log){const r=s.adventures?.outings?.records.road;if(r?.outcome!=='fighting'||c.opponent!=='chief'||c.practice)return;r.outcome=c.ended==='victory'?'claim':c.ended==='death'?'died':'escaped';log.push(r.outcome==='claim'?'团伙败退，可回街市找柳掌柜交代；未自动发钱或掉装备。':r.outcome==='died'?'旧道团伙冒险：战败身亡。':'已撤离团伙交手，伤势与消耗保留；不重新开战，不发报酬。');}
 export function outingAction(s,id,{present,transact,advance,rng}){
- const [,key,route]=id.split(':'),x=s.adventures.outings,fail=t=>{s.result=[t];return false;};if(!Object.hasOwn(OUTINGS,key))return fail('没有这项县境冒险。');const d=OUTINGS[key],r=x.records[key],localPresent=(who,n)=>present(s,who,n)&&(who!=='hunter'||s.npcWorld.individuals.hunter.place===s.place);
+ const [,key,route]=id.split(':'),x=s.adventures.outings,fail=t=>{s.result=[t];return false;};if(!Object.hasOwn(OUTINGS,key))return fail('没有这项县境冒险。');if(key==='mine'&&s.dungeon?.status==='active')return fail('先结束矿道内的连续探索，再在洞口或作坊处理救工。');const d=OUTINGS[key],r=x.records[key],localPresent=(who,n)=>present(s,who,n)&&(who!=='hunter'||s.npcWorld.individuals.hunter.place===s.place);
  if(key==='flood'&&!x.floodDay)return fail('需实际出现雨天后，才有渡口泥障；不会编造过去的灾情。');
  if(route==='claim'){if(r.outcome!=='claim'||!d.reward||!localPresent(d.holder,15))return fail('需实际完成冒险，并回付款人在场时交代；不会重复发钱。');const p=s.npcWorld.individuals[d.holder];if(p.coins<d.reward||s.coins>10000000-d.reward)return fail('付款人现有余额不足或自己无法收款，成果保留，可稍后再来。');return transact(s,'交代：'+d.name,15,0,()=>{p.coins-=d.reward;s.coins+=d.reward;r.outcome='done';s.result.push('报酬'+d.reward+'文来自当事人余额，仅支付一次；没有装备或隐藏奖励。');},advance);}
  if(route==='inquire'){if(r.outcome!=='new'||r.informed||!localPresent(d.holder,15))return fail('请在尚未处理冒险且知情人在场时打听，只问一次。');return transact(s,'打听：'+d.name,15,0,()=>{r.informed=true;s.result.push(d.info,'情报保留，但不保证成功；现场选择显示当前概率与成本。');},advance);}
