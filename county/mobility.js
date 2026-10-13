@@ -1,6 +1,7 @@
-import {places} from './content.js?v=5.21.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.21.0';
-import {injuryEffects} from './injury.js?v=5.21.0';
+import {fieldBonus} from './field-skills.js?v=5.22.0';
+import {places} from './content.js?v=5.22.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.22.0';
+import {injuryEffects} from './injury.js?v=5.22.0';
 export const BODY_ARTS=['footwork','cloud_step'];
 export const makeMobility=()=>({art:null});
 export function mobilityValid(s){const m=s.mobility;return !!m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===1&&(m.art===null||BODY_ARTS.includes(m.art)&&s.martial?.known[m.art]===true);}
@@ -10,7 +11,7 @@ const pairs=[
  ['foot','hill','climb',120,20,14,12],['bamboo','hill','climb',240,20,16,15],['dock','ferry','climb',120,15,14,12],['hill','oldroad','climb',360,25,20,22]
 ];
 export const MOBILITY_ROUTES=Object.fromEntries(pairs.flatMap(([from,to,kind,required,saving,energy,damage])=>[[from+':'+to,{kind,required,saving,energy,damage}],[to+':'+from,{kind,required,saving,energy,damage}]]));
-export function mobilityPlan(s,to){const d=MOBILITY_ROUTES[s.place+':'+to],b=bodyStats(s);if(!d)return null;return {...d,saving:Math.min(d.saving,Math.max(0,places[to].minutes-15)),chance:Math.max(.15,Math.min(.92,(d.kind==='run'?.78:.65)+Math.min(.15,(b?.points||0)/2400)+(b?.tier===3?.08:0)-(s.weather==='雨'?.15:0)-(s.energy-d.energy<20?.10:0)-injuryEffects(s).movementPenalty*.03))};}
+export function mobilityPlan(s,to){const d=MOBILITY_ROUTES[s.place+':'+to],b=bodyStats(s);if(!d)return null;return {...d,saving:Math.min(d.saving,Math.max(0,places[to].minutes-15)),chance:Math.max(.15,Math.min(.92,(d.kind==='run'?.78:.65)+Math.min(.15,(b?.points||0)/2400)+(b?.tier===3?.08:0)+fieldBonus(s,'navigation')-(s.weather==='雨'?.15:0)-(s.energy-d.energy<20?.10:0)-injuryEffects(s).movementPenalty*.03))};}
 const legBlock=s=>s.injuries?.fracture||s.injuries?.critical||s.injuries?.strain>=2;
 export function mobilityBlocker(s,to,confirmed=false){
  if(s.dead)return '这段人生已经结束，轻功不能复活。';

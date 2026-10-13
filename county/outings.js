@@ -1,7 +1,8 @@
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.22.0';
 // Six finite regional adventures using existing skills, tools, actors and combat.
-import {gain} from './progression.js?v=5.21.0';
-import {addInjury} from './injury.js?v=5.21.0';
-import {factionFriendly} from './factions.js?v=5.21.0';
+import {gain} from './progression.js?v=5.22.0';
+import {addInjury} from './injury.js?v=5.22.0';
+import {factionFriendly} from './factions.js?v=5.22.0';
 export const OUTINGS={
  boat:{name:'浅滩搁船',place:'ferry',holder:'boatman',tier:'初期',reward:8,skill:'carry',routes:['push','wood','leave'],outcomes:['new','claim','done','failed','left','died'],info:'船底卡在浅滩；用木料垫底更稳，雨天推船更难。完成后去码头找贺船工，报酬8文来自其现有余额。'},
  flood:{name:'雨后渡口受阻',place:'dock',holder:'boatman',tier:'初期',reward:0,skill:'carry',routes:['repair','bypass','leave'],outcomes:['new','done','failed','left','settled'],info:'渡口受阻期间进出旧渡口多走15分钟；修补需自己的木料2份。若不处理，乡邻三日后自行清理。没有钱物奖励。'},
@@ -28,8 +29,8 @@ export function outingPlan(s,id,route){const r=s.adventures.outings.records[id];
  if(id==='boat'&&['push','wood'].includes(route)){const wood=route==='wood';return {minutes:wood?60:90,energy:wood?12:s.skills.carry>=12?18:24,chance:Math.min(.95,(wood?.95:r.informed?.85:.7)-(s.weather==='雨'?.1:0)),risk:wood?.05:.2,damage:8,injury:'bruise',input:wood?{wood:2}:{}};}
  if(id==='flood'&&route==='repair')return {minutes:60,energy:14,chance:s.skills.carry>=12||r.informed?.9:.7,risk:s.weather==='雨'?.2:.05,damage:8,injury:'bruise',input:{wood:2}};
  if(id==='traps'&&['talk','repair'].includes(route)){const repair=route==='repair';return {minutes:repair?45:30,energy:repair?8:6,chance:repair?(r.informed?.95:.8):s.bag.trap||s.skills.hunt>=12||r.informed?.9:.55,risk:0,damage:0,input:repair?{wood:1}:{}};}
- if(id==='lost'&&['safe','shortcut'].includes(route))return {minutes:route==='safe'?90:30,energy:route==='safe'?4:10,chance:route==='safe'?1:s.skills.forage>=20||r.informed?.8:.5,risk:0,damage:6,input:{}};
- if(id==='mine'&&['safe','risk'].includes(route)){const safe=route==='safe';return {minutes:safe?120:60,energy:safe?20:24,chance:safe?Math.min(.95,.8+(r.informed?.1:0)+(s.skills.mining>=30?.05:0)):s.skills.mining>=30||r.informed?.75:.5,risk:safe?.05:.25,damage:safe?8:30,injury:safe?'bruise':'strain',input:safe?{wood:2}:{},tool:safe?'pick':null};}
+ if(id==='lost'&&['safe','shortcut'].includes(route))return {minutes:route==='safe'?90:30,energy:route==='safe'?4:10,chance:route==='safe'?1:fieldChance(s,'navigation',s.skills.forage>=20||r.informed?.8:.5),risk:0,damage:6,input:{}};
+ if(id==='mine'&&['safe','risk'].includes(route)){const safe=route==='safe';return {minutes:safe?120:60,energy:safe?20:24,chance:safe?Math.min(.95,.8+(r.informed?.1:0)+(s.skills.mining>=30?.05:0)):s.skills.mining>=30||r.informed?.75:.5,risk:fieldRisk(s,safe?.05:.25),damage:safe?8:30,injury:safe?'bruise':'strain',input:safe?{wood:2}:{},tool:safe?'pick':null};}
  if(id==='road'&&route==='talk')return {minutes:45,energy:10,chance:r.informed||s.adventures.org.id==='caravan'||factionFriendly(s,'caravan')||s.relations.merchant>=3?.75:.4,risk:0,damage:0,input:{}};
  return null;
 }
@@ -46,7 +47,7 @@ export function outingAction(s,id,{present,transact,advance,rng}){
  if(key==='road'&&route==='pay'){const caseRecord=s.adventures.law.incidents.toll;if(caseRecord.status!=='new'||s.coins<4)return fail('需自己的4文且道路勒索记录尚未发生；与官道案件共用损失，不重复造案。');return transact(s,'交钱退开旧道团伙',15,0,()=>{s.coins-=4;Object.assign(caseRecord,{status:'open',loss:4,held:4,witness:false,reportTier:0});r.route='pay';r.outcome='paid';s.result.push('实际损失4文，写入道路勒索案件；可去码头问证、县衙报案，不保证追回。无报酬或强迫战斗。');},advance);}
  if(route==='fight')return fail('请通过实际团伙交手入口开始战斗。');
  const plan=outingPlan(s,key,route);if(!plan)return fail('没有这个冒险处理方式。');if(key==='traps'&&route==='talk'&&!localPresent(d.holder,plan.minutes))return fail('蒋猎户暂不在场或不能接洽，无法交涉；仍可准备材料修补或改日再来。');if(s.hp<25||plan.tool&&!s.bag[plan.tool]||Object.entries(plan.input).some(([id,n])=>s.bag[id]<n))return fail('需气血25及说明中的实际工具、材料；不足时不消耗尝试，可离开或准备后再来。');
- return transact(s,'冒险：'+d.name,plan.minutes,plan.energy,()=>{for(const [id,n] of Object.entries(plan.input))s.bag[id]-=n;r.route=route;const success=rng()<plan.chance;r.outcome=success?(d.reward?'claim':'done'):key==='lost'?'lost':'failed';
+ return transact(s,'冒险：'+d.name,plan.minutes,plan.energy,()=>{for(const [id,n] of Object.entries(plan.input))s.bag[id]-=n;r.route=route;const success=rng()<plan.chance;if(key==='lost'&&route==='shortcut')useFieldClue(s,'navigation');if(key==='mine')useFieldClue(s,'awareness');r.outcome=success?(d.reward?'claim':'done'):key==='lost'?'lost':'failed';
   if(key==='lost'&&!success){s.hp-=6;s.result.push('抄近路失向并擦伤6气血；可原路脱困，60分钟/精力0，不会困死。');}
   else if(plan.risk&&rng()<plan.risk){s.hp=Math.max(0,s.hp-plan.damage);addInjury(s,plan.injury);s.result.push('意外受伤，气血-'+plan.damage+'，新增'+(plan.injury==='strain'?'拉伤':'瘀伤')+'。');if(!s.hp){s.dead=true;r.outcome='died';s.result.push('伤重身亡，这段人生永久结束；不发报酬。');}}
   if(!s.dead){const line=gain(s,d.skill,success?2:1);if(line)s.result.push(line);s.result.push(success?(d.reward?'实际处理完成；需回当事人处交代才有报酬。':key==='flood'?'泥障已清，新增15分钟绕行取消；无钱物奖励。':'回到已知主路，无钱物奖励。'):key==='flood'?'修补没成功，材料与精力已消耗；乡邻三日后接手，未发奖励。':key==='lost'?'脱困入口始终保留，仍可休息或处理伤势。':'没能解决，时间、材料与精力已付出；其他人接手，此项不重开。');}
