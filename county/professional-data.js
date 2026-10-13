@@ -4,4 +4,4 @@ export const ARTISANS={
  tailor:{skill:'tailor',input:{cloth:1},lesson:'裁布与缝线练习',item:'cord',quantity:2,reward:6,order:'沈裁缝的绳线小单'},
  tanner:{skill:'leatherwork',input:{hide:1,wood:1},lesson:'试皮与鞣制练习',item:'leather',quantity:1,reward:9,order:'韩皮匠的熟皮小单'}
 };
-export const PROFESSIONAL_IDS=[...Object.values(CIVIC_TEACHERS),...Object.keys(ARTISANS)];
+export const PROFESSIONAL_IDS=[...Object.values(CIVIC_TEACHERS),...Object.keys(ARTISANS),'chessfriend','musician'];

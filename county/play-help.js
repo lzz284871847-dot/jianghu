@@ -1,7 +1,7 @@
-import {schoolCanTeach} from './npc-school.js?v=5.25.0';
-import {villageCanTeach} from './npc-village-school.js?v=5.25.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.25.0';
-import {canLearn,availableMoves} from './martial-progression.js?v=5.25.0';
+import {schoolCanTeach} from './npc-school.js?v=5.26.0';
+import {villageCanTeach} from './npc-village-school.js?v=5.26.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.26.0';
+import {canLearn,availableMoves} from './martial-progression.js?v=5.26.0';
 export function starterAdvice(s){
  const lines=['这些是可忽略的建议，不是强制主线。普通职业与武者都能完成县境目标。'];
  if((s.injuries?.cut||0)+(s.injuries?.critical||0)>0)lines.push('正在出血：先用药材处理切伤，或到河湾村找医者；带着出血睡觉可能危及生命。');
@@ -29,7 +29,7 @@ export function recoveryAdvice(s){
  const bleeding=(s.injuries.cut||0)+(s.injuries.critical||0);
  if(bleeding)lines.push('正在出血：先止血；跨日会失血，免费歇息或借宿也可能危及生命。'+(s.bag.herb&&s.injuries.cut?'背包药材优先处理切伤。':'重伤需医者诊治，诊金8文。'));
  else if(s.hp<60||s.energy<30)lines.push('身体需要恢复：歇息免费，2小时恢复精力30、气血10；河湾村可免费借宿。');
- if(s.coins<8)lines.push('诊金不足：先处理出血；身体允许时可做白天短工，或采集并出售现有物资。租房和入会可暂缓。');
+ if(s.coins<8&&(bleeding||s.hp<60||Object.keys(s.injuries).length))lines.push('诊金不足：先处理出血；身体允许时可做白天短工，或采集并出售现有物资。租房和入会可暂缓。');
  if(s.adventures.failed.length&&!s.adventures.quest)lines.push('委托失败仍可继续：药材、护送和救援可回委托人处重新约定；失物不重复。');
  return lines;
 }

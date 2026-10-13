@@ -1,11 +1,11 @@
-import {countyEventSurcharge} from './county-life.js?v=5.25.0';
-import {societyDay} from './society.js?v=5.25.0';
-import {farmDelivery} from './agriculture.js?v=5.25.0';
-import {markets} from './content.js?v=5.25.0';
+import {countyEventSurcharge} from './county-life.js?v=5.26.0';
+import {societyDay} from './society.js?v=5.26.0';
+import {farmDelivery} from './agriculture.js?v=5.26.0';
+import {markets} from './content.js?v=5.26.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
-export const initialMarket=()=>({market:{food:10,grain:16,wood:12,herb:8,rod:3,pick:3,trap:3,cloth:8,hide:4,leather:3,fine_cloth:2,cord:4},liuxi:{food:7,grain:12,wood:9,herb:7,cloth:6,hide:3,leather:2,fine_cloth:1,cord:3}});
+export const initialMarket=()=>({market:{paper:8,ink:6,bamboo_flute:2,food:10,grain:16,wood:12,herb:8,rod:3,pick:3,trap:3,cloth:8,hide:4,leather:3,fine_cloth:2,cord:4},liuxi:{food:7,grain:12,wood:9,herb:7,cloth:6,hide:3,leather:2,fine_cloth:1,cord:3}});
 export const makeCommerce=()=>({stock:Object.fromEntries(Object.entries(markets).map(([place,m])=>[place,Object.fromEntries([...new Set([...Object.keys(m.buy),...Object.keys(m.sell)])].map(key=>[key,initialMarket()[place][key]??0]))])),budget:{...INITIAL_BUDGET},lastDay:1});
 export function ensureCommerce(s){s.commerce??=makeCommerce();return s.commerce;}
 export function commerceValid(s){
@@ -54,7 +54,7 @@ export function dailyCommerce(s){
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+sold*(m.sell[key]||1));
    }
    // Only acquired stock above the baseline is cleared, so new shelf goods do not grant extra opening cash.
-   for(const key of ['cloth','hide','leather','fine_cloth','hardwood','cord']){const sold=Math.min(1,Math.max(0,(shelf[key]||0)-(initial[key]||0)));shelf[key]-=sold;commerce.budget[place]=Math.min(1000000,commerce.budget[place]+sold*(m.sell[key]||1));}
+   for(const key of ['cloth','hide','leather','fine_cloth','hardwood','cord','paper','ink','bamboo_flute','calligraphy_sheet']){if(!Object.hasOwn(shelf,key))continue;const sold=Math.min(1,Math.max(0,(shelf[key]||0)-(initial[key]||0)));shelf[key]-=sold;commerce.budget[place]=Math.min(1000000,commerce.budget[place]+sold*(m.sell[key]||1));}
    if(day%2===1){
     const delayed=place==='liuxi'&&day%11===7;
     if(delayed){messages.push('柳溪商路遇雨后泥泞，原定补货延迟；商铺只能靠现有存货交易。');continue;}

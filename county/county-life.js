@@ -1,7 +1,7 @@
-import {present as contactPresent} from './adventures.js?v=5.25.0';
-import {items,people,places} from './content.js?v=5.25.0';
-import {gain} from './progression.js?v=5.25.0';
-import {districtStatus} from './society.js?v=5.25.0';
+import {present as contactPresent} from './adventures.js?v=5.26.0';
+import {items,people,places} from './content.js?v=5.26.0';
+import {gain} from './progression.js?v=5.26.0';
+import {districtStatus} from './society.js?v=5.26.0';
 
 // Player-facing local life. No background shops, hereditary ownership or new population.
 export const BONDS={
