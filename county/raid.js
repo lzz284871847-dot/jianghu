@@ -1,0 +1,97 @@
+import {gain} from './progression.js?v=5.28.0';
+import {addInjury} from './injury.js?v=5.28.0';
+import {bodyStats,gainBodyUse} from './mobility.js?v=5.28.0';
+import {guideAvailable,guideReturnMinutes,expeditionClock,dungeonGuideLocation} from './dungeon.js?v=5.28.0';
+
+// One finite job and four scenes. Combat is the existing tactical engine.
+export const makeRaid=()=>({status:'new',stage:0,day:0,alert:0,observed:false,scouted:false,route:null,entry:null,attempts:[],gate:'new',fight:null,battles:0,person:'sealed',cargo:'sealed',reserve:0,loot:'new',exitTried:false,bribe:0,paid:0,guide:'none',until:0,returnAt:0});
+export const RAID_FOES={gate:'skirmisher',door:'brawler',pursuit:'chief'};
+export const RAID_ROOMS=['','寨外岗哨','侧门与围墙','囚棚与货房','离寨'];
+const clock=s=>expeditionClock(s),active=s=>s.raid?.status==='active';
+const reward=r=>(r.person==='rescued'&&['secured','returned'].includes(r.cargo))?24:(r.person==='rescued'||['secured','returned'].includes(r.cargo))?18:0;
+const burden=r=>(r.person==='held'?1:0)+(r.cargo==='held'?2:0)+(['wood','cloth','gear'].includes(r.loot)?1:0);
+function dismiss(s,text,after=0){const r=s.raid;if(r.guide!=='joined')return;r.guide='left';r.until=0;r.returnAt=clock(s)+after+guideReturnMinutes(s);s.result.push(text+'；蒋猎户按现有道路返程，工钱不退，你可独行或撤回。');}
+export function reconcileRaid(s){const r=s.raid;if(!r)return;if(s.dead&&active(s)){r.status='died';r.fight=null;if(r.person==='held')r.person='lost';if(r.cargo==='held')r.cargo='lost';}if(r.guide==='joined'&&(s.dead||s.pending||!['bamboo','hill','oldroad'].includes(s.place)||!guideAvailable(s,r.until)||r.alert===2&&(s.relations.hunter??0)<3))dismiss(s,r.alert===2?'守卫集结，猎户不愿继续冒险':'猎户伤病、精力、时间或路线不允许继续');}
+function assist(s,minutes){if(s.raid.guide!=='joined')return false;if(!guideAvailable(s,s.raid.until,minutes)){dismiss(s,'猎户无法再协助这一步');return false;}s.npcWorld.individuals.hunter.energy-=6;return true;}
+function xp(s,key,n){const line=gain(s,key,n);if(line)s.result.push(line);}
+function harm(s,n){s.hp=Math.max(0,s.hp-n);addInjury(s,'bruise');s.result.push('失手受伤：气血 -'+n+'，新增瘀伤；可能永久死亡。');if(!s.hp){s.dead=true;s.raid.status='died';s.raid.fight=null;dismiss(s,'你身亡，猎户自行离开');}}
+function finish(s,after=0){const r=s.raid;if(s.dead){r.status='died';r.fight=null;if(r.person==='held')r.person='lost';if(r.cargo==='held')r.cargo='lost';dismiss(s,'你身亡，同行结束',after);return;}if(r.person==='held')r.person='rescued';if(r.cargo==='held')r.cargo='secured';r.fight=null;r.status=reward(r)?'claim':'left';dismiss(s,'本次匪寨同行结束',after);s.result.push('退回山间旧道入口，沿县境道路自行返程；不回血、不发钱。'+(reward(r)?'可到街市向柳掌柜交代，报酬'+reward(r)+'文。':'没有带出可交付成果，无委托报酬。')+'副本与搜物不重开。');}
+function drop(s){const r=s.raid;if(r.person==='held')r.person='lost';if(r.cargo==='held')r.cargo='lost';if(['wood','cloth'].includes(r.loot)){s.bag[r.loot]-=2;r.loot='lost';}else if(r.loot==='gear'){delete s.equipment.owned.coarse_cloth;delete s.equipment.quality.coarse_cloth;r.loot='lost';}s.result.push('追击中放弃搬运：未送出的脚夫与货物失散，搜取的额外物资也遗落；不发对应报酬。');}
+export function raidPlan(s,key){const r=s.raid;const minutes={observe:30,bypass:45,climb:30,talk:30,tools:45,rescue:45,cargo:45,wood:30,cloth:30,gear:30,depart:15,exit:45,quickExit:20,withdraw:60,force:15}[key];if(minutes===undefined)return null;const help=r.guide==='joined'&&guideAvailable(s,r.until,minutes),bonus=help?.08:0,b=burden(r),body=bodyStats(s);
+ const p={minutes,energy:0,chance:1,risk:0,damage:0,input:{},skill:null};
+ if(key==='observe')Object.assign(p,{stage:1,energy:4,chance:Math.min(.95,.6+(s.skills.awareness>=12?.15:0)+bonus),skill:'awareness'});
+ if(key==='bypass')Object.assign(p,{stage:1,energy:8,chance:Math.min(.95,.65+(s.skills.navigation>=12?.15:0)+(r.scouted?.1:0)+bonus),damage:8,skill:'navigation'});
+ if(['climb','talk','tools','force'].includes(key)){p.stage=2;if(key==='climb')Object.assign(p,{energy:10,chance:Math.min(.95,.65+(body?.points>=120?.15:0)+(r.scouted?.1:0)+bonus),damage:12,skill:'navigation'});if(key==='talk')Object.assign(p,{energy:6,chance:Math.min(.9,.45+(s.skills.negotiation>=6?.2:0)+(r.scouted?.1:0)-r.alert*.1+bonus),fee:4,skill:'negotiation'});if(key==='tools')Object.assign(p,{energy:10,chance:Math.min(.95,.8+(s.skills.woodwork>=12?.1:0)+bonus),damage:8,input:{wood:1,cord:1},skill:'woodwork'});if(key==='force')p.energy=4;}
+ if(['rescue','cargo','wood','cloth','gear','depart'].includes(key)){p.stage=3;if(key==='rescue')Object.assign(p,{energy:8,chance:Math.min(.95,.8+(s.skills.medicine>=6?.1:0)+bonus),input:{herb:1},skill:'herb'});if(key==='cargo')Object.assign(p,{energy:12,chance:Math.min(.95,.75+(s.skills.carry>=12?.1:0)+bonus),skill:'carry'});if(['wood','cloth','gear'].includes(key))Object.assign(p,{energy:6,chance:Math.min(.95,.7+(s.skills.awareness>=12?.1:0)+bonus),skill:'awareness'});}
+ if(['exit','quickExit'].includes(key))Object.assign(p,{stage:4,energy:(key==='exit'?8:12)+b*2,chance:Math.max(.2,Math.min(.95,(key==='exit'?.8:.65)+(r.scouted?.1:0)-r.alert*.15-b*.05+bonus)),damage:key==='exit'?12:18,skill:'navigation'});
+ if(key==='withdraw')Object.assign(p,{stage:r.stage,risk:Math.max(.05,Math.min(.65,.15+r.alert*.15+b*.05-(help?.1:0))),damage:20});return p;
+}
+export function raidBlocker(s,key,present=()=>true){const r=s.raid,p=s.npcWorld.individuals.hunter;
+ if(s.dead||s.pending||s.combat||s.adventures.law.pursuit)return '先处理眼前交手或选择；永久死亡后不能继续。';
+ if(s.dungeon.status==='active')return '先结束废弃矿道，不能同时进入另一处副本。';
+ if(key==='accept')return r.status!=='new'||s.place!=='market'||!present(s,'merchant',15)||s.commerce.stock.market.cloth<2?'到街市柳掌柜营业在场时接洽，商铺须实际存有粗布2份；一次委托，不预付报酬。':null;
+ if(key==='claim')return r.status!=='claim'||!present(s,'merchant',15)||!reward(r)||s.npcWorld.individuals.merchant.coins<reward(r)||s.coins>10000000-reward(r)||r.cargo==='secured'&&s.commerce.stock.market.cloth>28?'需带出实际成果，到街市柳掌柜营业时交代；其钱款或货物接收容量不足时整笔保留，不重复结算。':null;
+ if(key==='invite')return r.status!=='ready'||r.guide!=='none'||s.place!=='bamboo'||s.adventures.companions.active!==null||dungeonGuideLocation(s,'hunter')!==undefined||s.adventures.companions.records.hunter.returnAt>clock(s)||s.minute<480||s.minute+15>1080||p.life.deathDay||p.life.sickDays||p.life.restDay===s.day||p.retirement.active||p.injuryDays||p.energy<20||!present(s,'hunter',15)||s.coins<3||p.coins>999997?'先接匪寨委托，在竹林白天接洽健康猎户；准备费3文，一次最多一名同伴，返程或其他同行时暂停邀请。':null;
+ if(key==='dismiss')return r.guide==='joined'?null:'没有当前匪寨同伴。';
+ if(key==='enter')return r.status!=='ready'||s.place!=='oldroad'||s.hp<25||s.energy<8?'先在街市接洽，再到山间旧道，气血25、精力8；一次副本，不强迫习武。':null;
+ if(!active(s)||s.place!=='oldroad')return '需在进行中的山中匪寨；已结束不会刷新。';
+ if(['gateFight','doorFight','pursuitFight'].includes(key)){const stage=key==='gateFight'?1:key==='doorFight'?2:4;if(r.stage!==stage||key==='doorFight'&&r.gate==='won'||!s.martial.known[s.martial.equipped]||s.hp<25||s.energy<20||r.battles>=2)return '此战需在对应场景、已学选用武艺、气血25、精力20，最多两场；可用其他解法或撤回。';return null;}
+ const plan=raidPlan(s,key);if(!plan||plan.stage!==r.stage)return '请按当前场景选择。';
+ if(key==='observe'&&r.observed)return '已察看，失败也不重掷。';
+ if(['climb','talk','tools'].includes(key)&&r.attempts.includes(key))return '这条入寨办法已尝试，不能读档重试；可换另一办法或撤回。';
+ if(key==='climb'&&!(bodyStats(s)?.points>=30))return '需实际选用身法积累30，不能凭空翻墙；可交涉、用工具或交手。';
+ if(key==='tools'&&s.skills.woodwork<6)return '拆侧门需实际木工6、自备木料绳线。';
+ if(key==='force'&&r.gate!=='won')return '需先在寨外实际战胜岗哨，才有已打通的入口。';
+ if(key==='rescue'&&r.person!=='sealed'||key==='cargo'&&r.cargo!=='sealed'||['wood','cloth','gear'].includes(key)&&r.loot!=='new')return '这一处已尝试或取走，不能重救、重取或同时拿多份额外物资。';
+ if(['exit','quickExit'].includes(key)&&r.exitTried)return '原路线已被追兵截住；可应付追兵，或承担失散风险零精力撤回。';
+ if(key!=='withdraw'&&key!=='depart'&&s.hp<25)return '气血不足25，仍可整理撤离或零精力强行撤回。';
+ if(s.energy<plan.energy||plan.fee&&s.coins<plan.fee)return '需精力'+plan.energy+(plan.fee?'、自己的4文通行钱':'')+'；不足可零精力撤回。';
+ if(Object.entries(plan.input).some(([k,n])=>s.bag[k]<n))return '缺自己的'+Object.entries(plan.input).map(([k,n])=>({wood:'木料',cord:'绳线',herb:'常见药材'}[k])+'×'+n).join('、')+'；未消耗投入。';
+ if(['wood','cloth'].includes(key)&&s.bag[key]>999998||key==='gear'&&Object.hasOwn(s.equipment.owned,'coarse_cloth'))return '背包容量不足或已有同名粗布衣，不覆盖旧装备；可选另一处物资或直接离寨。';return null;
+}
+export function raidAction(s,id,{settle,rng,startFight,present}){const [,key,...extra]=String(id).split(':'),why=extra.length?'没有这项匪寨行动。':raidBlocker(s,key,present);if(why){s.result=[why];return false;}const r=s.raid;
+ if(key==='accept')return settle(s,'接洽山中匪寨',15,0,()=>{r.status='ready';r.day=s.day;r.reserve=2;s.commerce.stock.market.cloth-=2;s.result.push('匪徒带走铺中实际粗布2份，并扣留一名脚夫；货物存入本次匪寨记录，不在背包。带出脚夫或货物一项实付18文，两项24文；柳掌柜本人付款，缺钱保留成果。只有一次，不预支钱物。');});
+ if(key==='claim')return settle(s,'交代山中匪寨',15,0,()=>{const pay=reward(r);s.npcWorld.individuals.merchant.coins-=pay;s.coins+=pay;r.paid=pay;if(r.cargo==='secured'){s.commerce.stock.market.cloth+=r.reserve;r.reserve=0;r.cargo='returned';}r.status='done';s.relations.merchant=Math.min(100,s.relations.merchant+2);s.result.push('实际报酬'+pay+'文来自柳掌柜现有钱袋；找回的粗布实还铺中。采用交涉或潜入不减报酬，无击杀追加钱款，不重付。');});
+ if(key==='invite')return settle(s,'邀请猎户探匪寨',15,0,()=>{s.coins-=3;s.npcWorld.individuals.hunter.coins+=3;s.npcWorld.individuals.hunter.energy-=2;if(rng()<((s.relations.hunter??0)>=3?.9:.7)){r.guide='joined';r.until=Math.min(clock(s)+600,s.day*1440+1080);s.result.push('猎户答应只走竹林—南山坡—山间旧道，最多十小时且不晚于18时；实际协助耗他6精力，不代打。关系未熟而守卫集结时会退出。');}else{r.guide='refused';s.result.push('猎户做了准备后拒绝冒险，3文准备工钱已付不退；可独行，不重邀。');}});
+ if(key==='dismiss')return settle(s,'结束匪寨同行',0,0,()=>dismiss(s,'你让猎户自行返程'));
+ if(key==='enter')return settle(s,'进入山中匪寨',15,2,()=>{r.status='active';r.stage=1;s.result.push('四段：岗哨、侧门、囚棚货房、离寨。警戒与搬运负担影响脱身；可不战斗，随时承担明示风险撤回，不自动发奖。');});
+ if(['gateFight','doorFight','pursuitFight'].includes(key))return settle(s,'准备真实交手 · '+labels[key],15,0,()=>{r.fight=key==='gateFight'?'gate':key==='doorFight'?'door':'pursuit';r.battles++;r.alert=2;if(r.fight==='gate')r.route='force';if(r.fight==='door')r.entry='force';startFight(RAID_FOES[r.fight]);s.result.push('真实战术交手，会消耗气血、精力与耐久，可能永久死亡；同伴不代打，获胜不额外掉钱或开启旧道行囊。');});
+ const p=raidPlan(s,key);return settle(s,'山中匪寨 · '+labels[key],p.minutes,p.energy,()=>{const helped=p.skill||key==='withdraw'?assist(s,p.minutes):false;for(const [k,n] of Object.entries(p.input))s.bag[k]-=n;if(p.fee){s.coins-=p.fee;r.bribe+=p.fee;}const success=rng()<p.chance;
+  if(key==='observe'){r.observed=true;r.scouted=success;if(!success)r.alert=Math.min(2,r.alert+1);s.result.push(success?'记下巡逻与退路，本次潜入和撤离更有把握。':'察看未成，被岗哨注意；警戒提高，不重查。');}
+  else if(key==='bypass'){r.route='bypass';r.gate='passed';r.stage=2;if(!success){r.alert=Math.min(2,r.alert+1);harm(s,p.damage);}s.result.push('进入侧门；绕行失手会受伤并提高警戒，不强迫战斗。');}
+  else if(['climb','talk','tools','force'].includes(key)){if(key!=='force')r.attempts.push(key);if(success){r.entry=key;r.stage=3;}else{r.alert=Math.min(2,r.alert+1);if(p.damage)harm(s,p.damage);}s.result.push(success?'进入第三段 · 囚棚与货房。':'此办法未成，投入已付；可换未尝试办法、交手或撤回。');}
+  else if(['rescue','cargo','wood','cloth','gear'].includes(key)){if(key==='rescue')r.person=success?'held':'lost';else if(key==='cargo')r.cargo=success?'held':'lost';else{r.loot=success?key:'empty';if(success&&['wood','cloth'].includes(key))s.bag[key]+=2;if(success&&key==='gear'){s.equipment.owned.coarse_cloth=12;s.equipment.quality.coarse_cloth=1;}}const count=(r.person!=='sealed'?1:0)+(r.cargo!=='sealed'?1:0)+(r.loot!=='new'?1:0);if(!success||count>=2)r.alert=Math.min(2,r.alert+1);s.result.push(success?(key==='rescue'?'脚夫暂时脱困，需实际带出寨子才有报酬。':key==='cargo'?'找到被带走的粗布2份，作为委托货物搬运，不能自行出售。':'取得一处有限旧物，不自动穿戴；其余额外物资不能再取。'):'未取得有效成果，尝试已用完。');s.result.push('多取目标会耗时并提高警戒；当前搬运负担'+burden(r)+'。');}
+  else if(key==='depart'){r.stage=4;s.result.push('进入第四段 · 离寨。可以按概率撤离，或应付追兵；强行撤回可能伤亡、失散和丢货。');}
+  else if(['exit','quickExit'].includes(key)){r.exitTried=true;if(success)finish(s,p.minutes);else{r.alert=2;harm(s,p.damage);s.result.push('未能脱身，追兵堵住原路；不重掷原路线，可交手或零精力强行撤回。');}}
+  else if(key==='withdraw'){if(rng()<p.risk){drop(s);harm(s,p.damage);if(helped){s.npcWorld.individuals.hunter.injuryDays=Math.max(1,s.npcWorld.individuals.hunter.injuryDays);dismiss(s,'猎户也受伤，先行返程',p.minutes);}}finish(s,p.minutes);}
+  if(!s.dead&&key==='climb')gainBodyUse(s,true);if(!s.dead&&p.skill)xp(s,p.skill,success?2:1);if(s.dead)finish(s,p.minutes);
+ });
+}
+export function settleRaidCombat(s,c,log){const r=s.raid;if(!r||!active(s)||!r.fight||c.practice||c.opponent!==RAID_FOES[r.fight])return;const kind=r.fight;r.fight=null;if(c.ended==='death'){s.dead=true;finish(s);log.push('匪寨战败身亡，成果不结算。');return;}if(c.ended==='escaped'){if(kind==='gate')r.gate='escaped';finish(s);log.push('脱离匪寨交手；保留伤势消耗，实际带出的成果回街市交代，不发胜利奖励。');return;}if(c.ended==='victory'){if(kind==='gate'){r.gate='won';r.stage=2;}else if(kind==='door')r.stage=3;else finish(s);log.push(kind==='pursuit'?'追兵败退，带出的成果仍需返程交代。':'这一段守卫败退，可继续下一场景；未回血、未补精力、没有额外钱物。');}}
+const labels={observe:'察看岗哨与退路',bypass:'绕过岗哨',gateFight:'正面突破岗哨',climb:'用实际身法翻墙',talk:'交涉侧门通行',tools:'拆开侧门',force:'从已打通的岗哨进入',doorFight:'与侧门守卫交手',rescue:'用药照料并救出脚夫',cargo:'寻找并搬走委托货物',wood:'搜取一处木料',cloth:'搜取一处粗布',gear:'搜取一件旧粗布衣',depart:'整理目标准备离寨',exit:'按原路线稳妥撤离',quickExit:'冒险走险路撤离',pursuitFight:'应付追兵头目',withdraw:'零精力强行撤回'};
+export function raidOptions(s,present){const r=s.raid,out=[],add=(key,label,preview)=>out.push({id:'raid:'+key,label,preview,blocker:raidBlocker(s,key,present)});if(s.dead)return out;
+ if(r.status==='new'&&s.place==='market')add('accept','接洽副本 · 山中匪寨','15分钟；柳掌柜的粗布2份实际转入匪寨记录。找回货物或带回脚夫一项18文，两项24文，由本人实付；缺钱保留成果，不预付，不限期，一次。');
+ if(r.status==='claim'&&s.place==='market')add('claim','交代副本 · 山中匪寨','15分钟；当前成果应付'+reward(r)+'文；货物实还铺中，付款余额或库存容量不足时整笔保留。采用潜入、交涉或交手都按同样成果结算。');
+ if(r.status==='ready'&&s.place==='bamboo'&&r.guide==='none')add('invite','邀请蒋猎户 · 山中匪寨','15分钟；实际准备费3文，成功率'+((s.relations.hunter??0)>=3?90:70)+'%，拒绝仍耗准备工钱，一次邀请。伤病、精力不足或到18时离队；关系不足3时守卫集结也会退出。');
+ if(['new','ready'].includes(r.status)&&s.place==='oldroad')add('enter','进入副本 · 山中匪寨','四场景进阶冒险，15分钟/精力2，需气血25、精力8；先在街市接洽。可绕行后交涉（需4文）、身法翻墙（30积累）、拆门（木工6、木料1绳线1），或真实交手；救人需药材1。气血、精力、伤势、耐久贯穿全程，可能永久死亡；同伴不代打。');
+ if(r.guide==='joined')add('dismiss','让匪寨同伴返程','0分钟/精力0；工钱不退，仍可独行。');
+ if(active(s)&&!s.combat){const keys=r.stage===1?['observe','bypass','gateFight']:r.stage===2?[...(r.gate==='won'?['force']:['climb','talk','tools','doorFight'])]:r.stage===3?['rescue','cargo','wood','cloth','gear','depart']:['exit','quickExit','pursuitFight'];for(const key of [...keys,'withdraw']){const p=raidPlan(s,key);let info;if(!p)info='15分钟准备，真实'+({gateFight:'游斗岗哨',doorFight:'莽汉守卫',pursuitFight:'山贼头目'}[key])+'战术交手；需已学武艺、气血25、精力20。可能受伤、败逃或永久死亡，最多两场，不重置状态、不追加报酬。';else info=p.minutes+'分钟/精力'+p.energy+'；'+(key==='withdraw'?Math.round(p.risk*100)+'%受伤20气血、成果失散和额外物资遗落；可能永久死亡。':'成功率'+Math.round(p.chance*100)+'%；'+(p.damage?'失败损失'+p.damage+'气血并瘀伤，可能死亡。':'本步骤无身体伤害。'))+(p.fee?'给守门人4文，失败也付、只试一次。':'')+(Object.keys(p.input).length?'自己的'+Object.entries(p.input).map(([k,n])=>({wood:'木料',cord:'绳线',herb:'常见药材'}[k])+'×'+n).join('、')+'。':'')+(['wood','cloth','gear'].includes(key)?'最多尝试一处额外物资：木料2、粗布2或耐久12/30普通粗布衣，不自动穿戴；搜物增加撤离负担。':'')+(['rescue','cargo'].includes(key)?'需要带出寨子才有报酬；取多个目标提高警戒和撤离负担。':'')+(['exit','quickExit'].includes(key)?'本次只试一条退路，失败后可交手或强行撤回。':'');add(key,labels[key],info);}}
+ return out;
+}
+export function raidSummary(s){const r=s.raid;if(r.status==='new')return null;return '山中匪寨 · '+({ready:'待到山间旧道',active:'第'+r.stage+'/4段 · '+RAID_ROOMS[r.stage]+(r.fight?' · 正在交手':''),claim:'已脱身，待领'+reward(r)+'文',done:'已交代，实领'+r.paid+'文',left:'已撤回，无交付成果',failed:'未完成',died:'身亡'}[r.status])+'；警戒'+r.alert+'/2；脚夫'+({sealed:'待救',held:'需护送出寨',rescued:'已带出',lost:'未带出'}[r.person])+'；货物'+({sealed:'仍在寨内',held:'搬运中',secured:'已带出待归还',returned:'已归还',lost:'未带出'}[r.cargo])+'；额外物资'+({new:'未搜取',wood:'木料2',cloth:'粗布2',gear:'旧粗布衣',empty:'无所得',lost:'已遗落'}[r.loot])+'；再访不重开，不自动领钱。';}
+export function raidValid(s){const r=s.raid,e=makeRaid(),int=(v,max)=>Number.isSafeInteger(v)&&v>=0&&v<=max;
+ if(!r||typeof r!=='object'||Array.isArray(r)||Object.keys(r).length!==Object.keys(e).length||Object.keys(e).some(k=>!Object.hasOwn(r,k))||!['new','ready','active','claim','done','left','failed','died'].includes(r.status)||!int(r.stage,4)||!int(r.day,s.day)||!int(r.alert,2)||![true,false].includes(r.observed)||![true,false].includes(r.scouted)||r.scouted&&!r.observed||![null,'bypass','force'].includes(r.route)||![null,'climb','talk','tools','force'].includes(r.entry)||!Array.isArray(r.attempts)||r.attempts.length>3||new Set(r.attempts).size!==r.attempts.length||r.attempts.some(x=>!['climb','talk','tools'].includes(x))||!['new','passed','won','escaped'].includes(r.gate)||r.fight!==null&&!Object.hasOwn(RAID_FOES,r.fight)||!int(r.battles,2)||!['sealed','held','rescued','lost'].includes(r.person)||!['sealed','held','secured','returned','lost'].includes(r.cargo)||![0,2].includes(r.reserve)||!['new','wood','cloth','gear','empty','lost'].includes(r.loot)||typeof r.exitTried!=='boolean'||![0,4].includes(r.bribe)||![0,18,24].includes(r.paid)||!['none','joined','left','refused'].includes(r.guide)||!int(r.until,clock(s)+600)||!int(r.returnAt,clock(s)+500))return false;
+ if(r.status==='new')return Object.entries(e).every(([k,v])=>Array.isArray(v)?r[k].length===0:r[k]===v);
+ if(!r.day||r.reserve!==(r.cargo==='returned'?0:2))return false;
+ if(r.status==='ready'&&(r.stage||r.alert||r.observed||r.route||r.entry||r.attempts.length||r.battles||r.person!=='sealed'||r.cargo!=='sealed'||r.loot!=='new'||r.exitTried||r.bribe||r.paid))return false;
+ if(r.status!=='ready'&&!r.stage||r.status==='died'&&!s.dead||r.paid&&(r.status!=='done'||r.paid!==reward(r))||r.status==='done'&&!r.paid||r.status==='claim'&&!reward(r)||r.status==='left'&&reward(r))return false;
+ if(active(s)&&(s.place!=='oldroad'||s.dead||s.pending||s.dungeon.status==='active'))return false;
+ if(r.fight&&(r.status!=='active'||s.combat?.opponent!==RAID_FOES[r.fight]||s.combat.practice||r.stage!==({gate:1,door:2,pursuit:4}[r.fight])||!r.battles))return false;
+ if(active(s)&&!!s.combat!==!!r.fight)return false;
+ if(r.stage>=2&&!r.route||r.stage>=3&&!r.entry||r.stage<3&&(r.person!=='sealed'||r.cargo!=='sealed'||r.loot!=='new')||r.stage<4&&r.exitTried||r.entry==='talk'&&!r.attempts.includes('talk')||r.entry==='tools'&&!r.attempts.includes('tools')||r.entry==='climb'&&!r.attempts.includes('climb')||r.bribe!== (r.attempts.includes('talk')?4:0))return false;
+ if(['held'].includes(r.person)&&r.status!=='active'||r.cargo==='held'&&r.status!=='active'||['rescued'].includes(r.person)&&r.status==='active'||['secured','returned'].includes(r.cargo)&&r.status==='active'||r.cargo==='returned'&&r.status!=='done')return false;
+ if(active(s)&&(['wood','cloth'].includes(r.loot)&&s.bag[r.loot]<2||r.loot==='gear'&&(s.equipment.owned.coarse_cloth!==12||s.equipment.quality.coarse_cloth!==1)))return false;
+ if(r.gate==='won'&&(r.route!=='force'||!r.battles)||r.stage>=2&&r.route==='force'&&r.gate!=='won'||r.stage>=3&&r.entry==='force'&&!r.battles)return false;
+ if(r.guide==='joined'&&(r.until<clock(s)||r.returnAt||s.adventures.companions.active!==null||s.dungeon.guide==='joined'||!['ready','active'].includes(r.status)||!['bamboo','hill','oldroad'].includes(s.place)))return false;
+ if(r.guide!=='joined'&&r.until||r.guide!=='left'&&r.returnAt)return false;return true;
+}

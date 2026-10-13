@@ -1,8 +1,8 @@
-import {dungeonGuideLocation} from './dungeon.js?v=5.27.1';
-import {rememberExperience} from './county-life.js?v=5.27.1';
-import {people,places,items} from './content.js?v=5.27.1';
-import {gain} from './progression.js?v=5.27.1';
-import {travelBusy} from './npc-journeys.js?v=5.27.1';
+import {dungeonGuideLocation} from './dungeon.js?v=5.28.0';
+import {rememberExperience} from './county-life.js?v=5.28.0';
+import {people,places,items} from './content.js?v=5.28.0';
+import {gain} from './progression.js?v=5.28.0';
+import {travelBusy} from './npc-journeys.js?v=5.28.0';
 export const COOPERATIONS={
  boat:{name:'船工同行修架',actor:'boatman',from:'dock',site:'ferry',corridor:['dock','ferry'],fee:3,payer:'merchant',claim:'market',total:12,share:4,skill:'carry',input:{wood:1},dispute:'route',info:'贺船工同行到旧渡口修货架。工钱3文，关系3可免；需自己木料1份。分歧是稳妥处理或说服冒险。雨天更难，实际工钱共12文由柳掌柜支付，协作时船工分4文。'},
  hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
@@ -33,7 +33,7 @@ export function beforeCompanionMove(s,to){const id=s.adventures.companions.activ
 function near(s,d){const p=s.npcWorld.individuals[d.actor],expected=people[d.actor]?.place??p.place;return s.place===d.from&&expected===d.from&&!companionBusy(s,d.actor)&&fit(s,d,15);}
 export function companionAction(s,id,{transact,advance,rng}){const [,key,choice]=id.split(':'),d=COOPERATIONS[key],c=s.adventures.companions,r=c.records[key],fail=t=>{s.result=[t];return false;};if(!d)return fail('没有这项熟人合作。');const p=s.npcWorld.individuals[d.actor];
  if(choice==='invite'){
-  if(r.status!=='new'||c.active!==null||s.dungeon?.guide==='joined')return fail('一次只邀一人，每条合作一次；先交代或结束当前同行。');
+  if(r.status!=='new'||c.active!==null||s.dungeon?.guide==='joined'||s.raid?.guide==='joined')return fail('一次只邀一人，每条合作一次；先交代或结束当前同行。');
   if(!near(s,d))return fail('此人不在岗、患病、受伤、外出或返程中；改日再来。');
   if(key==='peer'&&(!Object.keys(s.martial.known).length||!p.study.learnedDay))return fail('双方需实际学过武艺；不会凭空授武或补写同门记录。');
   const trusted=(s.relations[d.actor]??0)>=3||key==='peer'&&sameMaster(s),fee=trusted?0:d.fee;if(s.coins<fee||p.coins>1000000-fee)return fail('实际邀请工钱或收款容量不足；可独自进行原有玩法。');
