@@ -1,4 +1,4 @@
-export const VERSION='5.23.0';
+export const VERSION='5.24.0';
 const place=(name,area,routes,minutes,text,facilities,work=false)=>({name,area,routes,minutes,text,facilities,work});
 export const places={
  county:place('青河县城','县城与近郊',['market','inn','workshop','school','road','village','dock'],15,'你站在县城街口。县衙告示写着本县道路与危险地带，出城由自己决定。',['县衙告示','赵捕快接洽','街边短工'],true),
@@ -18,7 +18,7 @@ export const places={
  mine:place('旧矿洞','山林与旧道',['hill'],45,'浅层铁矿供日常冶炼，深层矿脉需要采矿经验。精铁、寒铁与陨铁碎料越来越难寻，深入采矿可能受伤。',['浅层铁矿','深层精铁','寒铁矿脉','陨铁碎料']),
  oldroad:place('山间旧道','山林与旧道',['hill'],60,'危险地段：可能遇拦路人。可以绕开；交手可能死亡，胜利没有神装。远山出口暂未开放。',['危险旧道','崖生药花（采药60）','远山出口（未开放）'])
 };
-export const skills={carry:'搬运',forage:'采集',herb:'采药',fish:'钓鱼',mining:'采矿',hunt:'狩猎',farming:'农耕',cook:'烹饪',smelt:'冶炼',fist:'拳脚',battle:'临战判断',trade:'经商',medicine:'制药',tailor:'裁缝',leatherwork:'制革',woodwork:'木工',navigation:'辨路',tracking:'追踪',awareness:'察看'};
+export const skills={carry:'搬运',forage:'采集',herb:'采药',fish:'钓鱼',mining:'采矿',hunt:'狩猎',farming:'农耕',cook:'烹饪',smelt:'冶炼',fist:'拳脚',battle:'临战判断',trade:'经商',medicine:'制药',tailor:'裁缝',leatherwork:'制革',woodwork:'木工',navigation:'辨路',tracking:'追踪',awareness:'察看',negotiation:'交涉',literacy:'识字',accounting:'账算'};
 export const items={food:'干粮',grain:'粮食',vegetable:'蔬菜',wood:'木料',herb:'常见药材',fish:'鲜鱼',ore:'铁矿石',iron:'铁料',meat:'猎物肉',rod:'钓竿',pick:'矿镐',trap:'猎具',fine_ore:'精铁矿',cold_ore:'寒铁矿',meteor_ore:'陨铁碎料',aromatic_herb:'芳草',mountain_root:'山参根',cliff_bloom:'崖生药花',stop_powder:'止血散',wound_salve:'舒筋膏',inner_decoction:'调息汤',rescue_pill:'护命丸',cloth:'粗布',hide:'生皮',leather:'熟皮',fine_cloth:'细布',hardwood:'硬木料',cord:'绳线',vegetable_congee:'菜粥',fish_rice:'鱼饭',jerky:'肉干',herbal_meal:'养身药膳'};
 const node=(name,places,minutes,energy,skill,chance,capacity,output,tool=null,risk=0,damage=0)=>({name,places,minutes,energy,skill,chance,capacity,output,tool,risk,damage});
 export const resources={
