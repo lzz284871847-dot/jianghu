@@ -1,21 +1,23 @@
-import {places} from './content.js?v=5.27.1';
-import {gain} from './progression.js?v=5.27.1';
-import {addInjury} from './injury.js?v=5.27.1';
-import {travelBusy} from './npc-journeys.js?v=5.27.1';
+import {places} from './content.js?v=5.28.0';
+import {gain} from './progression.js?v=5.28.0';
+import {addInjury} from './injury.js?v=5.28.0';
+import {travelBusy} from './npc-journeys.js?v=5.28.0';
 
 // One finite expedition, sharing the existing mine rescue and its actual payer.
 export const makeDungeon=()=>({status:'new',stage:0,day:0,surveyed:false,inspected:false,route:null,loot:'new',rescue:'new',guide:'none',until:0,returnAt:0});
-const clock=s=>s.day*1440+s.minute;
+export const expeditionClock=s=>s.day*1440+s.minute;
+const clock=expeditionClock;
 const active=s=>s.dungeon?.status==='active';
-export const dungeonMovementBlocker=s=>active(s)?'正在废弃矿道内；先从副本行动撤回洞口，再走县境道路。':null;
-export const dungeonGuideLocation=(s,id)=>id!=='hunter'?undefined:s.dungeon?.guide==='joined'?s.place:s.dungeon?.returnAt>clock(s)?null:undefined;
-function returnMinutes(s){const q=[[s.place,0]],seen=new Set();while(q.length){const [id,n]=q.shift();if(id==='bamboo')return n;if(seen.has(id))continue;seen.add(id);for(const to of places[id].routes)q.push([to,n+places[to].minutes]);}return 120;}
-function dismiss(s,text,after=0){const d=s.dungeon;if(d.guide!=='joined')return;d.guide='left';d.until=0;d.returnAt=clock(s)+after+returnMinutes(s);s.result.push(text+'；蒋猎户按县境道路返程，工钱不退，材料与伤势保留。');}
-function fitGuide(s,minutes=0){const p=s.npcWorld.individuals.hunter;return !p.life.deathDay&&!p.life.sickDays&&p.life.restDay!==s.day&&!p.retirement.active&&!p.injuryDays&&!travelBusy(s,'hunter')&&p.energy>=6&&clock(s)+minutes<=s.dungeon.until;}
+export const dungeonMovementBlocker=s=>s.raid?.status==='active'?'正在山中匪寨内；先处理副本或交手，再撤回旧道。':active(s)?'正在废弃矿道内；先从副本行动撤回洞口，再走县境道路。':null;
+export const dungeonGuideLocation=(s,id)=>{if(id!=='hunter')return undefined;const trips=[s.dungeon,s.raid].filter(Boolean);if(trips.some(d=>d.guide==='joined'))return s.place;return trips.some(d=>d.returnAt>clock(s))?null:undefined;};
+export function guideReturnMinutes(s){const q=[[s.place,0]],seen=new Set();while(q.length){const [id,n]=q.shift();if(id==='bamboo')return n;if(seen.has(id))continue;seen.add(id);for(const to of places[id].routes)q.push([to,n+places[to].minutes]);}return 120;}
+function dismiss(s,text,after=0){const d=s.dungeon;if(d.guide!=='joined')return;d.guide='left';d.until=0;d.returnAt=clock(s)+after+guideReturnMinutes(s);s.result.push(text+'；蒋猎户按县境道路返程，工钱不退，材料与伤势保留。');}
+export function guideAvailable(s,until,minutes=0){const p=s.npcWorld.individuals.hunter;return !p.life.deathDay&&!p.life.sickDays&&p.life.restDay!==s.day&&!p.retirement.active&&!p.injuryDays&&!travelBusy(s,'hunter')&&p.energy>=6&&clock(s)+minutes<=until;}
+const fitGuide=(s,minutes=0)=>guideAvailable(s,s.dungeon.until,minutes);
 export function reconcileDungeon(s){const d=s.dungeon;if(!d)return;if(s.dead&&active(s))d.status='died';if(d.guide==='joined'&&(s.dead||s.pending||s.combat||!['bamboo','hill','mine'].includes(s.place)||!fitGuide(s)))dismiss(s,'同伴结束这次矿道同行');}
 export function dungeonValid(s){const d=s.dungeon,empty=makeDungeon(),int=(v,max)=>Number.isSafeInteger(v)&&v>=0&&v<=max;
  if(!d||typeof d!=='object'||Array.isArray(d)||Object.keys(d).length!==Object.keys(empty).length||Object.keys(empty).some(k=>!Object.hasOwn(d,k))||!['new','active','done','left','died'].includes(d.status)||!int(d.stage,4)||!int(d.day,s.day)||typeof d.surveyed!=='boolean'||typeof d.inspected!=='boolean'||d.surveyed&&!d.inspected||![null,'safe','quick'].includes(d.route)||!['new','ore','fine','empty','skipped'].includes(d.loot)||!['new','saved','failed','skipped','unavailable'].includes(d.rescue)||!['none','joined','left','refused'].includes(d.guide)||!int(d.until,clock(s)+600)||!int(d.returnAt,clock(s)+500))return false;
- if(d.guide==='joined'&&(d.until<clock(s)||d.returnAt||s.adventures.companions.active!==null||!['bamboo','hill','mine'].includes(s.place)||['done','left','died'].includes(d.status)))return false;
+ if(d.guide==='joined'&&(d.until<clock(s)||d.returnAt||s.adventures.companions.active!==null||s.raid?.guide==='joined'||!['bamboo','hill','mine'].includes(s.place)||['done','left','died'].includes(d.status)))return false;
  if(d.guide!=='joined'&&d.until||d.guide!=='left'&&d.returnAt)return false;
  if(d.status==='new')return d.stage===0&&d.day===0&&!d.inspected&&!d.surveyed&&d.route===null&&d.loot==='new'&&d.rescue==='new';
  if(!d.day||!d.stage||d.status==='died'&&!s.dead||s.dead&&d.status==='active')return false;
@@ -34,8 +36,9 @@ export function dungeonPlan(s,key){const d=s.dungeon,help=d.guide==='joined'&&fi
  return ({inspect:{stage:1,minutes:30,energy:4,chance:Math.min(.95,.65+(s.skills.awareness>=12?.15:0)+bonus),risk:0,damage:0,input:{},skill:'awareness'},safe:{stage:1,minutes:60,energy:8,chance:1,risk:.03,damage:8,input:{wood:1},skill:'woodwork'},quick:{stage:1,minutes:30,energy:10,chance:1,risk:d.surveyed?.12:.35,damage:12,input:{},skill:'navigation'},mine:{stage:2,minutes:45,energy:12,chance:Math.min(.9,.6+(s.skills.mining>=30?.15:0)+bonus),risk:d.route==='safe'?.05:.18,damage:10,input:{},skill:'mining'},skip:{stage:2,minutes:15,energy:0,chance:1,risk:0,damage:0,input:{},skill:null},rescue:{stage:3,minutes:75,energy:16,chance:Math.min(.95,.85+(s.skills.woodwork>=12?.05:0)+bonus),risk:.05,damage:8,input:{wood:2,cord:1},skill:'woodwork'},lift:{stage:3,minutes:45,energy:20,chance:Math.min(.85,.5+(s.skills.carry>=12?.15:0)+bonus),risk:d.surveyed?.15:.3,damage:24,input:{},skill:'carry'},pass:{stage:3,minutes:15,energy:0,chance:1,risk:0,damage:0,input:{},skill:null},exit:{stage:4,minutes:30,energy:0,chance:1,risk:0,damage:0,input:{},skill:null},withdraw:{stage:d.stage,minutes:60,energy:0,chance:1,risk:d.surveyed?.05:.2,damage:8,input:{},skill:null}})[key]??null;
 }
 export function dungeonBlocker(s,key){const d=s.dungeon,p=s.npcWorld.individuals.hunter;
+ if(s.raid?.status==='active')return '先结束山中匪寨，不能同时进入另一处副本。';
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit)return '先处理眼前事件；永久死亡后不能进入或继续。';
- if(key==='invite')return d.status!=='new'||d.guide!=='none'||s.place!=='bamboo'||s.adventures.companions.active!==null||s.adventures.companions.records.hunter.returnAt>clock(s)||s.minute<480||s.minute+15>1080||p.life.deathDay||p.life.sickDays||p.life.restDay===s.day||p.retirement.active||p.injuryDays||travelBusy(s,'hunter')||p.energy<20||s.coins<3||p.coins>999997?'需在竹林白天接洽健康猎户、自己的3文且无其他同行；每次副本只问一次。':null;
+ if(key==='invite')return d.status!=='new'||d.guide!=='none'||s.place!=='bamboo'||s.adventures.companions.active!==null||s.raid?.guide==='joined'||(s.raid?.returnAt??0)>clock(s)||s.adventures.companions.records.hunter.returnAt>clock(s)||s.minute<480||s.minute+15>1080||p.life.deathDay||p.life.sickDays||p.life.restDay===s.day||p.retirement.active||p.injuryDays||travelBusy(s,'hunter')||p.energy<20||s.coins<3||p.coins>999997?'需在竹林白天接洽健康猎户、自己的3文且无其他同行；每次副本只问一次。':null;
  if(key==='dismiss')return d.guide==='joined'?null:'当前没有矿道同伴。';
  if(key==='enter')return d.status!=='new'||s.place!=='mine'||s.hp<25||s.energy<8?'需到旧矿洞、气血25、精力8；副本仅进入一次。':null;
  if(!active(s)||s.place!=='mine')return '需在进行中的废弃矿道内；已结束不会刷新。';
