@@ -1,11 +1,12 @@
-import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.25.0';
-import {items} from './content.js?v=5.25.0';
-import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.25.0';
-import {gain} from './progression.js?v=5.25.0';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.26.0';
+import {items} from './content.js?v=5.26.0';
+import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.26.0';
+import {gain} from './progression.js?v=5.26.0';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
 export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});
 export const CRAFTS={
+ bamboo_flute:{name:'制作竹箫',skill:'woodwork',required:6,input:{wood:2,cord:1},output:{bamboo_flute:1},fee:1,chance:.85,minutes:60,energy:8},
  cord:{name:'裁布搓绳线',skill:'tailor',required:0,input:{cloth:1},output:{cord:2},fee:1,chance:.90,minutes:45,energy:6},
  tanning:{name:'鞣制熟皮',skill:'leatherwork',required:0,input:{hide:1,wood:1},output:{leather:1},fee:1,chance:.85,minutes:90,energy:12},
  fine_cloth:{name:'整理细布',skill:'tailor',required:12,input:{cloth:3,wood:1},output:{fine_cloth:1},fee:1,chance:.80,minutes:90,energy:10},
@@ -22,7 +23,7 @@ export const CRAFTS={
  river_spear:gear('woodwork',60,{wood:5,hardwood:1,iron:16,cold_ore:2},25,.70,{extraSkill:'smelt',extraRequired:30}),
  dragon_staff:gear('woodwork',120,{wood:5,hardwood:2,iron:35,meteor_ore:2},50,.60,{extraSkill:'smelt',extraRequired:60})
 };
-const label=key=>EQUIPMENT[key]?.name||({cord:'绳线',tanning:'熟皮',fine_cloth:'细布',rod:'钓竿',trap:'猎具',pick:'矿镐'}[key])||CRAFTS[key]?.name;
+const label=key=>EQUIPMENT[key]?.name||({cord:'绳线',tanning:'熟皮',fine_cloth:'细布',rod:'钓竿',trap:'猎具',pick:'矿镐',bamboo_flute:'竹箫'}[key])||CRAFTS[key]?.name;
 export function craftPlan(s,key,kind='make'){
  const d=CRAFTS[key];if(!d||!['make','repair'].includes(kind)||kind==='repair'&&!d.gear)return null;
  const repair=kind==='repair',work=d.gear?equipmentWorkCost(EQUIPMENT[key],repair?'repair':'craft'):{minutes:d.minutes,energy:d.energy};
