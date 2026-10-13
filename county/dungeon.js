@@ -1,7 +1,7 @@
-import {places} from './content.js?v=5.27.0';
-import {gain} from './progression.js?v=5.27.0';
-import {addInjury} from './injury.js?v=5.27.0';
-import {travelBusy} from './npc-journeys.js?v=5.27.0';
+import {places} from './content.js?v=5.27.1';
+import {gain} from './progression.js?v=5.27.1';
+import {addInjury} from './injury.js?v=5.27.1';
+import {travelBusy} from './npc-journeys.js?v=5.27.1';
 
 // One finite expedition, sharing the existing mine rescue and its actual payer.
 export const makeDungeon=()=>({status:'new',stage:0,day:0,surveyed:false,inspected:false,route:null,loot:'new',rescue:'new',guide:'none',until:0,returnAt:0});
@@ -73,4 +73,4 @@ export function dungeonOptions(s){const d=s.dungeon,out=[],add=(key,label,previe
  if(active(s)){for(const key of d.stage===1?['inspect','safe','quick']:d.stage===2?['mine','skip']:d.stage===3?d.rescue==='unavailable'?['pass']:['rescue','lift','pass']:['exit']){const p=dungeonPlan(s,key);add(key,names[key],p.minutes+'分钟/精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%；'+(Object.keys(p.input).length?'自己的'+Object.entries(p.input).map(([k,n])=>({wood:'木料',cord:'绳线'}[k])+'×'+n).join('、')+'；':'')+(p.risk?Math.round(p.risk*100)+'%损失'+p.damage+'气血并拉伤，可能永久死亡。':'本步骤无身体伤害。')+(key==='mine'?'有限矿料，只尝试一次，高级矿需采矿150。':['rescue','lift'].includes(key)?'成功后回作坊自主领取原救工10文，缺钱成果保留；失败结束救援。':'')+(d.guide==='joined'?'协助要看猎户当时健康、精力和剩余时间；本步可能离队。':''));}const p=dungeonPlan(s,'withdraw');add('withdraw',names.withdraw,'60分钟/精力0；'+Math.round(p.risk*100)+'%损失8气血并拉伤，可能死亡。低精力也可退；已获得矿料和救援成果保留，未走场景不重开。');}
  return out;
 }
-export function dungeonSummary(s){const d=s.dungeon;return d.status==='new'?null:'废弃矿道 · '+({active:'第'+d.stage+'/4段 · '+['','入口岔路','有限矿堆','塌落支巷','返回洞口'][d.stage],done:'已返回',left:'已撤回',died:'身亡'}[d.status])+'；矿堆'+({new:'未处理',ore:'铁矿2',fine:'精铁1',empty:'无所得',skipped:'已跳过'}[d.loot])+'；救工'+({new:'未处理',saved:'已救出，回作坊领取10文',failed:'未成',skipped:'已略过',unavailable:'已有旧结局'}[d.rescue])+'；同行'+({none:'独行',joined:'蒋猎户（不晚于18时）',left:'已离队',refused:'拒绝同行'}[d.guide])+'。再访不刷新材料或救援。';}
+export function dungeonSummary(s){const d=s.dungeon;return d.status==='new'?null:'废弃矿道 · '+({active:'第'+d.stage+'/4段 · '+['','入口岔路','有限矿堆','塌落支巷','返回洞口'][d.stage],done:'已返回',left:'已撤回',died:'身亡'}[d.status])+'；矿堆'+({new:'未处理',ore:'铁矿2',fine:'精铁1',empty:'无所得',skipped:'已跳过'}[d.loot])+'；救工'+({new:'未处理',saved:s.adventures.outings.records.mine.outcome==='done'?'已救出，10文已领取':s.adventures.outings.records.mine.outcome==='died'?'救援成果随人生结束':'已救出，回作坊领取10文',failed:'未成',skipped:'已略过',unavailable:'已有旧结局'}[d.rescue])+'；同行'+({none:'独行',joined:'蒋猎户（不晚于18时）',left:'已离队',refused:'猎户已拒绝'}[d.guide])+'。再访不刷新材料或救援。';}
