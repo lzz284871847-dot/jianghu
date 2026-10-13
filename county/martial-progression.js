@@ -1,20 +1,21 @@
-import {settleSpoils} from './spoils.js?v=5.19.0';
-import {settleOutingCombat} from './outings.js?v=5.19.0';
-import {finishMentorPractice} from './player-mentor.js?v=5.19.0';
-import {finishTrial} from './trials.js?v=5.19.0';
-import {settleExplorationCombat} from './exploration.js?v=5.19.0';
-import {finishFeedbackBout} from './world-feedback.js?v=5.19.0';
-import {recordAdventureVictory} from './adventures.js?v=5.19.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.19.0';
-import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.19.0';
-import {useMove,usableMoves} from './martial-moves.js?v=5.19.0';
+import {gainBodyUse} from './mobility.js?v=5.20.0';
+import {settleSpoils} from './spoils.js?v=5.20.0';
+import {settleOutingCombat} from './outings.js?v=5.20.0';
+import {finishMentorPractice} from './player-mentor.js?v=5.20.0';
+import {finishTrial} from './trials.js?v=5.20.0';
+import {settleExplorationCombat} from './exploration.js?v=5.20.0';
+import {finishFeedbackBout} from './world-feedback.js?v=5.20.0';
+import {recordAdventureVictory} from './adventures.js?v=5.20.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.20.0';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.20.0';
+import {useMove,usableMoves} from './martial-moves.js?v=5.20.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
 export function canLearn(s,id){const art=MARTIAL_ARTS[id];if(!art)return '不存在这门武学。';const m=ensureMartial(s);if(m.known[id])return '已经学过。';if(art.tier>1){const trained=Object.entries(m.known).filter(([k,v])=>v&&MARTIAL_ARTS[k].tier===art.tier-1&&(m.practice[k]||0)>=120).length;if(trained<2)return '需先把至少两门前一阶段武学练至熟练（各120点）。';}const teachingPlace=art.source==='village'?'village':'school';if(s.place!==teachingPlace)return teachingPlace==='village'?'这门武学要到河湾村求教。':'这门武学需到县城武馆求教。';if(art.tier>1){const trust=art.tier===2?5:12;if((s.relations?.master||0)<trust)return '高阶授艺需周师傅信任达到'+trust+'点，请先在武馆结识教习。';}if(s.coins<art.tier*8)return '学费不足。';return null;}
 export function learn(s,id){const error=canLearn(s,id);if(error){s.result=[error];return false;}const art=MARTIAL_ARTS[id],m=ensureMartial(s);s.coins-=art.tier*8;m.known[id]=true;m.practice[id]=0;m.insight[id]=0;m.experience[id]=0;m.mastery[id]=0;if(!m.equipped||!m.known[m.equipped])m.equipped=id;s.result=['学会'+art.name+'的基础架构。','扣除学费'+art.tier*8+'文；招式需逐步练熟。'];return true;}
 export function equip(s,id){const m=ensureMartial(s);if(!m.known[id]){s.result=['尚未学会这门武学。'];return false;}m.equipped=id;s.result=['当前使用'+MARTIAL_ARTS[id].name];return true;}
-export function train(s,id,playerSession=false){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!art||!m.known[id]){s.result=['需要先学会这门武学。'];return false;}if((m.practice[id]||0)>=MAX&&(m.insight[id]||0)>=MAX){s.result=['这门武学的练习积累已满，不再消耗时间与精力。'];return false;}if(s.energy<12||s.hp<25){s.result=['身体状态不允许继续练习。'];return false;}const prior=m.practice[id]||0;const threshold=120;if(playerSession&&prior>=threshold&&(m.experience[id]||0)<6){s.result=['练到熟练关口，需要至少三次实际出招积累（实战经验6点），再继续提升熟练；可到武馆参加陪练。'];return false;}s.energy-=12;m.practice[id]=Math.min(MAX,playerSession&&(m.experience[id]||0)<6?threshold:MAX,prior+(playerSession?24:12));m.insight[id]=Math.min(MAX,(m.insight[id]||0)+(playerSession?6:3));s.result=['练习'+art.name,...(playerSession&&m.practice[id]===threshold&&(m.experience[id]||0)<6?['已到熟练关口；接下来需要真实交手经验才能突破。']:[]),playerSession?'精力 -12；熟练 +24；领悟 +6。':'精力 -12；熟练 +12；领悟 +3。'];return true;}
+export function train(s,id,playerSession=false){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!art||!m.known[id]){s.result=['需要先学会这门武学。'];return false;}if((m.practice[id]||0)>=MAX&&(m.insight[id]||0)>=MAX){s.result=['这门武学的练习积累已满，不再消耗时间与精力。'];return false;}if(s.energy<12||s.hp<25){s.result=['身体状态不允许继续练习。'];return false;}const prior=m.practice[id]||0;const threshold=120;if(playerSession&&prior>=threshold&&(m.experience[id]||0)<6){s.result=[art.category==='身法'?'练到熟练关口，需要三次实际越障、运身法撤退或身法出招，积累运用经验6点后再练习。':'练到熟练关口，需要至少三次实际出招积累（实战经验6点），再继续提升熟练；可到武馆参加陪练。'];return false;}s.energy-=12;m.practice[id]=Math.min(MAX,playerSession&&(m.experience[id]||0)<6?threshold:MAX,prior+(playerSession?24:12));m.insight[id]=Math.min(MAX,(m.insight[id]||0)+(playerSession?6:3));s.result=['练习'+art.name,...(playerSession&&m.practice[id]===threshold&&(m.experience[id]||0)<6?[art.category==='身法'?'已到熟练关口；需实际越障、身法撤退或出招经验才能突破。':'已到熟练关口；接下来需要真实交手经验才能突破。']:[]),playerSession?'精力 -12；熟练 +24；领悟 +6。':'精力 -12；熟练 +12；领悟 +3。'];return true;}
 export function availableMoves(s,id){const m=ensureMartial(s),art=MARTIAL_ARTS[id];if(!art||!m.known[id])return [];const points=(m.practice[id]||0)+(m.insight[id]||0)+(m.experience[id]||0)+(m.mastery[id]||0);return art.moves.filter((move,i)=>i===0||points>=i*120);}
 export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s);if(!m.known[m.equipped])throw Error('尚未学会当前武学');if(s.combat)throw Error('交手尚未结束');s.combat=newCombat(opponent,m.equipped);s.result=['与'+OPPONENTS[opponent].name+'交手。撤退并不保证成功。'];}
 // Victory grants limited insight, not free equipment or money. Flight and death grant no victory reward.
@@ -38,7 +39,7 @@ function finalizeCombat(s,c,log){
  }else if(c.ended==='escaped'){log.push('成功脱身，未获得胜利奖励；气血和伤势保留。');if(s.hp<60||Object.keys(s.injuries||{}).length)log.push('败逃后身体仍未恢复；再次挑战前宜先疗伤、歇息，否则可能伤重身亡。');else log.push('撤退虽然保住了身体，但此次交手未得到胜利领悟；可以调整武学与战术再战。');}
  else if(c.ended==='death')log.push('战败身亡，这段人生结束。');
 }
-export function martialTurn(s,action,rng){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng);const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}stopPractice(s,s.combat,result.log);result.ended=s.combat.ended||null;if(result.ended){finalizeCombat(s,s.combat,result.log);s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
+export function martialTurn(s,action,rng,useBody=false){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng,useBody);if(useBody){const oldResult=s.result;s.result=result.log;gainBodyUse(s,true);s.result=oldResult;}const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}stopPractice(s,s.combat,result.log);result.ended=s.combat.ended||null;if(result.ended){finalizeCombat(s,s.combat,result.log);s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
 
 // Move turns resolve the chosen technique and an actual enemy response in one transaction.
 export function martialMoveTurn(s,moveId,rng=()=>.5){
