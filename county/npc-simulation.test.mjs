@@ -6,9 +6,9 @@ import {npcAt,npcWorldValid,makeNPCWorld,tickNPCs} from './npc-simulation.js';
 
 test('NPC registry has stable identities and three-layer population representation',()=>{
  const s=fresh(),ids=Object.keys(s.npcWorld.individuals);
- assert.equal(ids.length,18);
+ assert.equal(ids.length,23);
  assert.equal(new Set(ids).size,ids.length);
- assert.equal(ids.filter(id=>s.npcWorld.individuals[id].level==='detailed').length,6);
+ assert.equal(ids.filter(id=>s.npcWorld.individuals[id].level==='detailed').length,11);
  assert.equal(ids.filter(id=>s.npcWorld.individuals[id].level==='ordinary').length,12);
  assert.equal(s.npcWorld.background.county.population,1200);
  assert.ok(npcAt(s,'dock').some(x=>x.name==='阿旺'));

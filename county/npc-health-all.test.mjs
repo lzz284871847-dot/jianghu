@@ -7,8 +7,8 @@ import {makeLife} from './npc-mortality.js';
 import {clinicSummary} from './npc-clinic.js';
 import {schoolCanTeach,schoolSummary} from './npc-school.js';
 const setup=(day=28)=>{const s=fresh();s.day=day;s.weather='晴';s.npcWorld.lastDay=day-1;for(const p of Object.values(s.npcWorld.individuals)){p.lastDay=day-1;p.food=5;}for(const n of Object.values(s.nodes))n.refreshDay=day%2?day+2:day+1;return s;};
-test('all eighteen existing residents settle their health daily without new persons or disease fields',()=>{
- const s=setup();tickNPCs(s,s.day);const ps=Object.values(s.npcWorld.individuals);assert.equal(ps.length,18);assert.ok(ps.every(p=>p.life.healthDay===28));assert.deepEqual(restore(JSON.stringify(s)).npcWorld,s.npcWorld);const snap=JSON.stringify(s);tickNPCs(s,28);assert.equal(JSON.stringify(s),snap);
+test('all twenty-three registered residents settle their health daily without new persons or disease fields',()=>{
+ const s=setup();tickNPCs(s,s.day);const ps=Object.values(s.npcWorld.individuals);assert.equal(ps.length,23);assert.ok(ps.every(p=>p.life.healthDay===28));assert.deepEqual(restore(JSON.stringify(s)).npcWorld,s.npcWorld);const snap=JSON.stringify(s);tickNPCs(s,28);assert.equal(JSON.stringify(s),snap);
 });
 test('ordinary workers rest through treatment day then resume existing work, not unemployment',()=>{
  for(const id of ['dockhand01','smithapprentice','laborer']){const s=setup(),p=s.npcWorld.individuals[id];p.life.sickDays=4;const work=p.workDays,unemployed=p.unemployedDays,herbs=s.commerce.stock.market.herb;tickNPCs(s,28);assert.equal(p.workDays,work,id);assert.equal(p.unemployedDays,unemployed,id);assert.equal(p.life.sickDays,0,id);assert.equal(p.life.restDay,28,id);assert.equal(s.commerce.stock.market.herb,herbs-1,id);s.day=29;tickNPCs(s,29);assert.ok(p.workDays>work,id);}

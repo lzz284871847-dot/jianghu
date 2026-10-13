@@ -1,19 +1,20 @@
-import {companionLocation} from './companions.js?v=5.24.0';
-import {makeVillageSchool,villageSchoolValid} from './npc-village-school.js?v=5.24.0';
-import {saveResident} from './npc-residents.js?v=5.24.0';
-import {makeJourneys,journeysValid,journeySteps,journeyDepartures,travelBusy} from './npc-journeys.js?v=5.24.0';
-import {makeClinic,clinicValid,clinicDoctor} from './npc-clinic.js?v=5.24.0';
-import {makeSchool,schoolValid} from './npc-school.js?v=5.24.0';
-import {npcSparringDay} from './npc-sparring.js?v=5.24.0';
-import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=5.24.0';
-import {npcHealthDay} from './npc-health.js?v=5.24.0';
-import {makeLife,lifeValid,alive,recoveryFor} from './npc-mortality.js?v=5.24.0';
-import {makeLineage,lineageValid} from './npc-lineage.js?v=5.24.0';
-import {makeContracts,contractsValid} from './npc-contracts.js?v=5.24.0';
-import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=5.24.0';
-import {makeHouseholds,householdsValid} from './npc-households.js?v=5.24.0';
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid} from './npc-economy.js?v=5.24.0';
-import {people,places} from './content.js?v=5.24.0';
+import {PROFESSIONAL_IDS} from './professional-data.js?v=5.25.0';
+import {companionLocation} from './companions.js?v=5.25.0';
+import {makeVillageSchool,villageSchoolValid} from './npc-village-school.js?v=5.25.0';
+import {saveResident} from './npc-residents.js?v=5.25.0';
+import {makeJourneys,journeysValid,journeySteps,journeyDepartures,travelBusy} from './npc-journeys.js?v=5.25.0';
+import {makeClinic,clinicValid,clinicDoctor} from './npc-clinic.js?v=5.25.0';
+import {makeSchool,schoolValid} from './npc-school.js?v=5.25.0';
+import {npcSparringDay} from './npc-sparring.js?v=5.25.0';
+import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=5.25.0';
+import {npcHealthDay} from './npc-health.js?v=5.25.0';
+import {makeLife,lifeValid,alive,recoveryFor} from './npc-mortality.js?v=5.25.0';
+import {makeLineage,lineageValid} from './npc-lineage.js?v=5.25.0';
+import {makeContracts,contractsValid} from './npc-contracts.js?v=5.25.0';
+import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=5.25.0';
+import {makeHouseholds,householdsValid} from './npc-households.js?v=5.25.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid} from './npc-economy.js?v=5.25.0';
+import {people,places} from './content.js?v=5.25.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
@@ -30,7 +31,7 @@ export function makeNPCWorld(day=1){
  const individuals={};
  for(const [id,p] of Object.entries(people))individuals[id]=makePerson(id,p.name,p.off,p.role,p.age,'detailed');
  for(const [id,name,place,role,age] of ordinary)individuals[id]=makePerson(id,name,place,role,age,'ordinary');
- for(const person of Object.values(individuals)){person.lastDay=day;person.retirement.lastDay=day;person.study.lastDay=day;person.outlook.lastDay=day;}
+ for(const person of Object.values(individuals)){person.lastDay=day;person.retirement.lastDay=day;person.study.lastDay=day;person.outlook.lastDay=day;if(PROFESSIONAL_IDS.includes(person.id)){person.place=people[person.id].place;person.life.healthDay=day;person.life.restDay=day%7===0?day:0;}}
  return {villageSchool:makeVillageSchool(day),journeys:makeJourneys(day),clinic:makeClinic(day),school:makeSchool(day),individuals,lineage:makeLineage(day),households:makeHouseholds(),social:makeSocial(day),contracts:makeContracts(day),background:{county:{population:1200,families:360},village:{population:700,families:210},liuxi:{population:350,families:100}},lastDay:day};
 }
 export function npcWorldValid(s){
@@ -51,7 +52,9 @@ const record=(p,line)=>{p.history=[line,...p.history].slice(0,8);};
 export function tickNPCs(s,day){
  if(s.npcWorld.lastDay>=day)return [];
  const notes=[];
- const residents=Object.values(s.npcWorld.individuals);
+ // Professional shopkeepers use a bounded attendance schedule, not the wider career/family simulation.
+ for(const key of PROFESSIONAL_IDS){const p=s.npcWorld.individuals[key];if(p.lastDay<day&&!p.life.deathDay){p.energy=Math.min(100,p.energy+12);p.place=people[key].place;p.life.healthDay=day;p.life.restDay=day%7===0||p.life.sickDays>0||p.injuryDays>0?day:0;if(p.injuryDays>0)p.injuryDays--;if(p.life.sickDays>0){p.life.sickDays--;if(!p.life.sickDays){p.life.illnessDays=0;p.life.careDays=0;}}p.history=[day%7===0?'第'+day+'日休工，暂停授课和接单。':'第'+day+'日整理纸墨与工具，按营业时间接洽。',...p.history].slice(0,8);}p.lastDay=day;}
+ const residents=Object.values(s.npcWorld.individuals).filter(p=>!PROFESSIONAL_IDS.includes(p.id));
  // Recover before finite clinical effort is spent; the current doctor settles
  // their own health first, so an ill doctor cannot treat earlier-loop patients.
  for(const p of residents){

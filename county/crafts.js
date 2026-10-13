@@ -1,6 +1,7 @@
-import {items} from './content.js?v=5.24.0';
-import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.24.0';
-import {gain} from './progression.js?v=5.24.0';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.25.0';
+import {items} from './content.js?v=5.25.0';
+import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.25.0';
+import {gain} from './progression.js?v=5.25.0';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
 export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});
@@ -25,7 +26,7 @@ const label=key=>EQUIPMENT[key]?.name||({cord:'绳线',tanning:'熟皮',fine_clo
 export function craftPlan(s,key,kind='make'){
  const d=CRAFTS[key];if(!d||!['make','repair'].includes(kind)||kind==='repair'&&!d.gear)return null;
  const repair=kind==='repair',work=d.gear?equipmentWorkCost(EQUIPMENT[key],repair?'repair':'craft'):{minutes:d.minutes,energy:d.energy};
- return {...d,...work,name:label(key),required:repair?Math.ceil(d.required/2):d.required,extraRequired:repair?Math.ceil((d.extraRequired||0)/2):d.extraRequired,input:repair?Object.fromEntries(Object.entries(d.input).filter(([k])=>!['fine_ore','cold_ore','meteor_ore'].includes(k)).map(([k,n])=>[k,Math.max(1,Math.ceil(n/3))])):d.input,fee:repair?Math.max(1,Math.ceil(d.fee/4)):d.fee,chance:repair?1:Math.min(.95,d.chance+Math.min(.1,(s.skills[d.skill]||0)*.001))*(s.energy-work.energy<20?.75:1)};
+ return {...d,...work,name:label(key),required:repair?Math.ceil(d.required/2):d.required,extraRequired:repair?Math.ceil((d.extraRequired||0)/2):d.extraRequired,input:repair?Object.fromEntries(Object.entries(d.input).filter(([k])=>!['fine_ore','cold_ore','meteor_ore'].includes(k)).map(([k,n])=>[k,Math.max(1,Math.ceil(n/3))])):d.input,fee:repair?Math.max(1,Math.ceil(d.fee/4)):d.fee,chance:repair?1:Math.min(.95,d.chance+Math.min(.1,(s.skills[d.skill]||0)*.001)+(craftGuidance(s,d.skill)?.05:0))*(s.energy-work.energy<20?.75:1)};
 }
 export function craftBlocker(s,key,kind='make'){
  const d=craftPlan(s,key,kind);if(!d)return '没有这项手艺作业。';
@@ -47,7 +48,7 @@ export function craftAction(s,id,{settle,rng}){
  const d=craftPlan(s,key,kind),repair=kind==='repair',roll=repair?0:rng(),success=repair||roll<d.chance;
  return settle(s,(repair?'自行修理 · ':'亲手制作 · ')+d.name,d.minutes,d.energy,()=>{
   for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;s.coins-=d.fee;s.npcWorld.individuals.smith.coins+=d.fee;
-  if(success){if(d.gear){s.equipment.owned[key]=EQUIPMENT[key].durability;if(!repair)s.equipment.quality[key]=roll<.05?2:1;}else for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push(repair?'修理完成，原品质与穿戴状态保留。':'制作成功，不自动穿戴或使用。');}
+  if(!repair)useCraftGuidance(s,d.skill);if(success){if(d.gear){s.equipment.owned[key]=EQUIPMENT[key].durability;if(!repair)s.equipment.quality[key]=roll<.05?2:1;}else for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push(repair?'修理完成，原品质与穿戴状态保留。':'制作成功，不自动穿戴或使用。');}
   else s.result.push('手艺或材料处理失误，本次失败，投入材料与台位费不退，没有成品。');
   s.result.push('台位与工具费'+d.fee+'文实际支付给许铁匠。');
  },{[d.skill]:repair?1:success?3:1});
