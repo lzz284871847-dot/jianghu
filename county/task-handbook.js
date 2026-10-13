@@ -1,16 +1,16 @@
-import {countyLifeTasks} from './county-life.js?v=5.23.0';
-import {SPOILS} from './spoils.js?v=5.23.0';
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.23.0';
-import {places,people,markets,items} from './content.js?v=5.23.0';
-import {QUESTS} from './adventure-data.js?v=5.23.0';
-import {BUSINESSES,businessFarmProfile} from './business.js?v=5.23.0';
-import {EQUIPMENT} from './equipment.js?v=5.23.0';
-import {marketPrice} from './commerce.js?v=5.23.0';
-import {districtStatus} from './society.js?v=5.23.0';
-import {OUTINGS} from './outings.js?v=5.23.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.23.0';
-import {POLICE_JOBS} from './law.js?v=5.23.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.23.0';
+import {countyLifeTasks} from './county-life.js?v=5.24.0';
+import {SPOILS} from './spoils.js?v=5.24.0';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.24.0';
+import {places,people,markets,items} from './content.js?v=5.24.0';
+import {QUESTS} from './adventure-data.js?v=5.24.0';
+import {BUSINESSES,businessFarmProfile} from './business.js?v=5.24.0';
+import {EQUIPMENT} from './equipment.js?v=5.24.0';
+import {marketPrice} from './commerce.js?v=5.24.0';
+import {districtStatus} from './society.js?v=5.24.0';
+import {OUTINGS} from './outings.js?v=5.24.0';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.24.0';
+import {POLICE_JOBS} from './law.js?v=5.24.0';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.24.0';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
@@ -25,7 +25,7 @@ export function handbook(s){const a=s.adventures,cards=[];const add=(title,place
  else if(d.kind==='smith'){const eq=['wood_staff','iron_sword','steel_blade'][d.t],item=EQUIPMENT[eq];next='打造'+item.name+'，完好且卸下后交给许铁匠。';blocker=s.equipment.owned[eq]!==item.durability?'尚缺指定完好装备；查看作坊打造材料与门槛。':Object.values(s.equipment.equipped).includes(eq)?'请先卸下交付装备。':contactBlock(s,'smith');if(s.npcWorld.individuals.smith.coins<[7,30,110][d.t]+(s.equipment.quality[eq]===2?[3,8,20][d.t]:0))blocker+='付款人现有余额不足。';}
  else if(d.kind==='clinic'){next=r.step===2?'向医者验收药包，等待实际付款。':'医者指导下配药，随后交付。';blocker=contactBlock(s,'doctor',r.step===2?15:60+30*d.t);if(s.npcWorld.clinic.holder!=='doctor')blocker+='沈医者不主持诊所，暂停此项。';if(!r.step){blocker+=materialBlock(s,{herb:2+d.t,wood:1});if(s.coins<d.t+1)blocker+='缺耗材费'+(d.t+1)+'文。';if(s.energy<12+4*d.t)blocker+='精力不足。';}else if(s.npcWorld.individuals.doctor.coins<[15,23,32][d.t])blocker+='医者现有资金不足，药包保留。';}
  else {place='liuxi';next=r.step?'按当前收购价结算；缺钱付款时保留货物，也可撤回自行出售。':'到柳溪查验一次货物，再结算。';goods+=' 当前收购单价'+marketPrice(s,'liuxi','sell','herb')+'文。';}
- if(['market','liuxi'].includes(place)){const m=markets[place];if(districtStatus(s,place).closed)blocker+='商铺暂时歇业。';else if(s.minute<m.open||s.minute+15>m.close)blocker+='商铺需8—'+Math.floor(m.close/60)+'时营业。';if(d.kind==='farm'&&r.step||d.kind==='merchant'&&r.step){const key=d.kind==='farm'?'vegetable':'herb',price=marketPrice(s,place,'sell',key),pay=r.cargo*price+(d.kind==='merchant'&&r.cargo?[2,5,10][d.t]:0);if(s.commerce.budget[place]<pay)blocker+='买方现有资金不足，成果保留。';if(s.commerce.stock[place][key]+r.cargo>30)blocker+='买方收购容量不足。';}}
+ if(['market','liuxi'].includes(place)){const m=markets[place];if(districtStatus(s,place).closed)blocker+='商铺暂时歇业。';else if(s.minute<m.open||s.minute+15>m.close)blocker+='商铺需8—'+Math.floor(m.close/60)+'时营业。';if(d.kind==='farm'&&r.step||d.kind==='merchant'&&r.step){const key=d.kind==='farm'?businessFarmProfile(d).item:'herb',price=marketPrice(s,place,'sell',key),pay=r.cargo*price+(d.kind==='merchant'&&r.cargo?[2,5,10][d.t]:0);if(s.commerce.budget[place]<pay)blocker+='买方现有资金不足，成果保留。';if(s.commerce.stock[place][key]+r.cargo>30)blocker+='买方收购容量不足。';}}
  add(d.name,place,next,r.due,goods,blocker,'business');}
  const m=a.mentor;if(m.active){const place=m.stage?'school':m.active==='delivery'?'workshop':m.active==='inquiry'?'bamboo':'school';add(MENTOR_TASKS[m.active].name,place,m.stage?'向师傅交代，付款不足保留成果。':MENTOR_TASKS[m.active].description,m.dueDay,'已交材料不退，实际切磋才计参与。','','mentor');}
  for(const [id,r] of Object.entries(a.law.jobs))if(r.status==='active'){const place=r.step?(id==='escort'?'liuxi':'county'):id==='witness'?'fields':id==='lost'?'bamboo':'ferry';add(POLICE_JOBS[id].name,place,r.step?'实际交代后付款。':POLICE_JOBS[id].description,r.dueDay,'不预付报酬；可撤回。','','law');}
