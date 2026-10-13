@@ -1,7 +1,7 @@
-import {countyEventSurcharge} from './county-life.js?v=5.22.0';
-import {societyDay} from './society.js?v=5.22.0';
-import {farmDelivery} from './agriculture.js?v=5.22.0';
-import {markets} from './content.js?v=5.22.0';
+import {countyEventSurcharge} from './county-life.js?v=5.23.0';
+import {societyDay} from './society.js?v=5.23.0';
+import {farmDelivery} from './agriculture.js?v=5.23.0';
+import {markets} from './content.js?v=5.23.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
@@ -48,7 +48,7 @@ export function dailyCommerce(s){
    for(const key of ['food','grain','herb'])if(Object.hasOwn(shelf,key))shelf[key]=Math.max(0,shelf[key]-(place==='market'?2:1));
    // Residents independently buy fish, meat, vegetables and building inputs brought in by traders.
    // Proceeds return to the shop's purse. The stock is consumed rather than accumulating indefinitely.
-   const localDemand={market:{vegetable:3,fish:2,meat:1,wood:1,iron:1,aromatic_herb:1,mountain_root:1,cliff_bloom:1,stop_powder:1,wound_salve:1,inner_decoction:1,rescue_pill:1},liuxi:{vegetable:2,fish:2,meat:1,wood:1,iron:1,aromatic_herb:1,mountain_root:1,cliff_bloom:1,stop_powder:1,wound_salve:1,inner_decoction:1,rescue_pill:1}}[place];
+   const localDemand={market:{vegetable:3,fish:2,meat:1,wood:1,iron:1,aromatic_herb:1,mountain_root:1,cliff_bloom:1,stop_powder:1,wound_salve:1,inner_decoction:1,rescue_pill:1,vegetable_congee:1,fish_rice:1,jerky:1,herbal_meal:1},liuxi:{vegetable:2,fish:2,meat:1,wood:1,iron:1,aromatic_herb:1,mountain_root:1,cliff_bloom:1,stop_powder:1,wound_salve:1,inner_decoction:1,rescue_pill:1,vegetable_congee:1,fish_rice:1,jerky:1,herbal_meal:1}}[place];
    for(const [key,wanted] of Object.entries(localDemand))if(Object.hasOwn(shelf,key)){
     const sold=Math.min(wanted,shelf[key]);shelf[key]-=sold;
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+sold*(m.sell[key]||1));

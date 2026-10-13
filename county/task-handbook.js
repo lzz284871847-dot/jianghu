@@ -1,16 +1,16 @@
-import {countyLifeTasks} from './county-life.js?v=5.22.0';
-import {SPOILS} from './spoils.js?v=5.22.0';
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.22.0';
-import {places,people,markets,items} from './content.js?v=5.22.0';
-import {QUESTS} from './adventure-data.js?v=5.22.0';
-import {BUSINESSES} from './business.js?v=5.22.0';
-import {EQUIPMENT} from './equipment.js?v=5.22.0';
-import {marketPrice} from './commerce.js?v=5.22.0';
-import {districtStatus} from './society.js?v=5.22.0';
-import {OUTINGS} from './outings.js?v=5.22.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.22.0';
-import {POLICE_JOBS} from './law.js?v=5.22.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.22.0';
+import {countyLifeTasks} from './county-life.js?v=5.23.0';
+import {SPOILS} from './spoils.js?v=5.23.0';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.23.0';
+import {places,people,markets,items} from './content.js?v=5.23.0';
+import {QUESTS} from './adventure-data.js?v=5.23.0';
+import {BUSINESSES,businessFarmProfile} from './business.js?v=5.23.0';
+import {EQUIPMENT} from './equipment.js?v=5.23.0';
+import {marketPrice} from './commerce.js?v=5.23.0';
+import {districtStatus} from './society.js?v=5.23.0';
+import {OUTINGS} from './outings.js?v=5.23.0';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.23.0';
+import {POLICE_JOBS} from './law.js?v=5.23.0';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.23.0';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
@@ -21,7 +21,7 @@ export function handbook(s){const a=s.adventures,cards=[];const add=(title,place
  if(a.outings.records.lost.outcome==='lost')add('林间脱困','foot','使用脱困返回，零精力仍能走回原路。',0,'不回血、不瞬移。','','outings');
  if(a.quest){const q=a.quest,d=QUESTS[q.id],place=q.id==='parcel'&&!q.stage?'bamboo':q.id==='escort'?(q.stage?'liuxi':'ferry'):q.id==='rescue'&&!q.stage?'hill':d.from;const next=q.id==='medicine'?'备药材2份，向医者交付':q.id==='parcel'?q.stage?'交还找到的货包':'搜寻失落货包':q.id==='escort'?q.stage?'向魏婶交接':'选择稳妥或近路':q.stage?'回村交代救援':'携药材1份救助';add(d.name,place,next,q.dueDay,'没有预付报酬；可撤回，已花耗不退。',q.id==='medicine'?materialBlock(s,{herb:2}):q.id==='rescue'&&!q.stage?materialBlock(s,{herb:1}):'', 'quests');}
  for(const [id,d] of Object.entries(BUSINESSES)){const r=a.business.records[id];if(r.status==='failed'&&r.cargo){add(d.name,s.place,'腾出背包空间，领取留存货物。',0,'留存货物'+r.cargo+'份。','','business');continue;}if(r.status!=='active')continue;let place=d.place,next='',blocker='',goods='投入估值'+r.cost+'文；留存货物'+r.cargo+'份；尚未收款。';
- if(d.kind==='farm'){place=r.step?'market':'fields';next=r.step?'按街市当前收购价供菜，或撤回取回自己蔬菜。':s.day<r.accepted+2?'照看小畦；第'+(r.accepted+2)+'日起可收获。':'白天照看、收获；随后去街市供菜。';if(!r.step&&s.day<r.accepted+2)blocker='尚未满两个游戏日，可做别的工作，不需现实等待。';if(!r.step&&(s.minute<360||s.minute+60>1080))blocker+='田间作业需6—18时。';if(!r.step&&s.energy<12)blocker+='收获需精力12。';}
+ if(d.kind==='farm'){const p=businessFarmProfile(d);place=r.step?(s.place==='fields'?'fields':'market'):'fields';next=r.step?'可在田地自留收成，或按街市当前收购价供货。':s.day<r.accepted+p.mature?'照看小畦；第'+(r.accepted+p.mature)+'日起可收获。':'白天照看、收获；随后自留或街市供货。';if(!r.step&&s.day<r.accepted+p.mature)blocker='尚未满'+({2:'两个',3:'三个',4:'四个'}[p.mature])+'游戏日，可做别的工作，不需现实等待。';if(s.minute<360||s.minute+(r.step?15:60)>1080)blocker+='田间作业需6—18时。';if(s.energy<(r.step?1:12))blocker+='精力不足。';}
  else if(d.kind==='smith'){const eq=['wood_staff','iron_sword','steel_blade'][d.t],item=EQUIPMENT[eq];next='打造'+item.name+'，完好且卸下后交给许铁匠。';blocker=s.equipment.owned[eq]!==item.durability?'尚缺指定完好装备；查看作坊打造材料与门槛。':Object.values(s.equipment.equipped).includes(eq)?'请先卸下交付装备。':contactBlock(s,'smith');if(s.npcWorld.individuals.smith.coins<[7,30,110][d.t]+(s.equipment.quality[eq]===2?[3,8,20][d.t]:0))blocker+='付款人现有余额不足。';}
  else if(d.kind==='clinic'){next=r.step===2?'向医者验收药包，等待实际付款。':'医者指导下配药，随后交付。';blocker=contactBlock(s,'doctor',r.step===2?15:60+30*d.t);if(s.npcWorld.clinic.holder!=='doctor')blocker+='沈医者不主持诊所，暂停此项。';if(!r.step){blocker+=materialBlock(s,{herb:2+d.t,wood:1});if(s.coins<d.t+1)blocker+='缺耗材费'+(d.t+1)+'文。';if(s.energy<12+4*d.t)blocker+='精力不足。';}else if(s.npcWorld.individuals.doctor.coins<[15,23,32][d.t])blocker+='医者现有资金不足，药包保留。';}
  else {place='liuxi';next=r.step?'按当前收购价结算；缺钱付款时保留货物，也可撤回自行出售。':'到柳溪查验一次货物，再结算。';goods+=' 当前收购单价'+marketPrice(s,'liuxi','sell','herb')+'文。';}
