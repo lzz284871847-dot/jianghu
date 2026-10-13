@@ -1,4 +1,4 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.20.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.21.0';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
  wood_staff:{name:'木棍',slot:'weapon',kind:'棍法',tier:1,attack:2,defense:0,durability:35,materials:{wood:2},fee:2},
@@ -11,16 +11,16 @@ export const EQUIPMENT=Object.freeze({
  master_blade:{name:'名匠断水刀',slot:'weapon',kind:'刀法',tier:4,attack:17,defense:0,durability:90,materials:{iron:18,wood:4},fee:95},
  heirloom_sword:{name:'镇岳古剑',slot:'weapon',kind:'剑法',tier:5,attack:22,defense:0,durability:100,materials:{iron:32,wood:8},fee:180},
  dragon_staff:{name:'玄铁重棍',slot:'weapon',kind:'棍法',tier:5,attack:20,defense:0,durability:110,materials:{iron:35,wood:5},fee:170},
- coarse_cloth:{name:'粗布衣',slot:'armor',kind:'',tier:1,attack:0,defense:1,durability:30,materials:{wood:1},fee:2},
- padded_coat:{name:'厚棉袄',slot:'armor',kind:'',tier:1,attack:0,defense:2,durability:35,materials:{wood:2},fee:3},
- leather_vest:{name:'皮背心',slot:'armor',kind:'',tier:2,attack:0,defense:4,durability:45,materials:{wood:3},fee:9},
+ coarse_cloth:{name:'粗布衣',slot:'armor',kind:'',tier:1,attack:0,defense:1,durability:30,materials:{cloth:1},fee:2},
+ padded_coat:{name:'厚棉袄',slot:'armor',kind:'',tier:1,attack:0,defense:2,durability:35,materials:{cloth:2},fee:3},
+ leather_vest:{name:'皮背心',slot:'armor',kind:'',tier:2,attack:0,defense:4,durability:45,materials:{leather:2,cloth:1},fee:9},
  iron_vest:{name:'铁片护胸',slot:'armor',kind:'',tier:2,attack:0,defense:5,durability:55,materials:{iron:4},fee:12},
  guard_armor:{name:'镖局轻甲',slot:'armor',kind:'',tier:3,attack:0,defense:8,durability:65,materials:{iron:7,wood:2},fee:27},
  scale_armor:{name:'鱼鳞甲',slot:'armor',kind:'',tier:3,attack:0,defense:9,durability:70,materials:{iron:10},fee:35},
  steel_armor:{name:'精钢护甲',slot:'armor',kind:'',tier:4,attack:0,defense:12,durability:85,materials:{iron:20},fee:90},
- guard_robe:{name:'名匠护身衣',slot:'armor',kind:'',tier:4,attack:0,defense:13,durability:85,materials:{iron:16,wood:6},fee:85},
+ guard_robe:{name:'名匠护身衣',slot:'armor',kind:'',tier:4,attack:0,defense:13,durability:85,materials:{iron:16,cloth:4,fine_cloth:2,leather:2},fee:85},
  iron_scale:{name:'玄铁鳞甲',slot:'armor',kind:'',tier:5,attack:0,defense:18,durability:105,materials:{iron:34},fee:185},
- hero_robe:{name:'百工护身袍',slot:'armor',kind:'',tier:5,attack:0,defense:16,durability:100,materials:{iron:25,wood:10},fee:165}
+ hero_robe:{name:'百工护身袍',slot:'armor',kind:'',tier:5,attack:0,defense:16,durability:100,materials:{iron:25,cloth:4,fine_cloth:4,leather:4},fee:165}
 });
 
 const RARE_MATERIAL=Object.freeze({3:{fine_ore:2},4:{cold_ore:2},5:{meteor_ore:2}});
