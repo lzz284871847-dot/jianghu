@@ -1,7 +1,7 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.32.1';
-import {people} from './content.js?v=5.32.1';
-import {travelBusy} from './npc-journeys.js?v=5.32.1';
-import {companionBusy} from './companions.js?v=5.32.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.33.0';
+import {people} from './content.js?v=5.33.0';
+import {travelBusy} from './npc-journeys.js?v=5.33.0';
+import {companionBusy} from './companions.js?v=5.33.0';
 // Two named, bounded exercises. Instructor arts are the existing teaching roles,
 // never a new NPC lineage or an inferred martial history for ordinary residents.
 export const ASSESSMENTS={
@@ -51,5 +51,5 @@ export function finishAssessment(s,c,log){const id=c.assessment,d=ASSESSMENTS[id
  else if(c.ended==='escaped'){r.withdrawals++;log.push('主动认输，立即收手；原耗费保留，改日可再约。');}else{r.losses++;log.push('本次未获认可，伤势、精力与耐久保留，恢复后改日可再约。');}
  const p=s.npcWorld.individuals[id];p.history=['第'+s.day+'日与'+s.name+'约定考较，'+(r.wins?'认可其应对。':'平安收手，暂未认可。'),...p.history].slice(0,8);
 }
-export function assessmentOptions(s){return Object.entries(ASSESSMENTS).filter(([,d])=>s.place===d.place).flatMap(([id,d])=>{const r=s.assessments.records[id],action=r.wins?'lesson':'start';if(r.lessonArt)return [];return [{id:'assessment:'+id+':'+action,label:d.name+' · '+(action==='start'?'约定交手':'一次专题授艺'),preview:action==='start'?d.advice+' 关系'+d.trust+'、熟练'+d.required+'、实际出招经验6；准备30分钟/精力4/'+d.fee+'文，每回合1分钟，最多20回合；主动认输立即收手，可受伤，改日再约。':'选用适合且已学武艺，90分钟/精力16/'+d.lessonFee+'文；熟练最多+48、领悟最多+24，老师精力-16；仅一次，不补实战经验。',blocker:assessmentBlocker(s,id,action)}];});}
+export function assessmentOptions(s){return Object.entries(ASSESSMENTS).filter(([,d])=>s.place===d.place).flatMap(([id,d])=>{const r=s.assessments.records[id],action=r.wins?'lesson':'start';if(r.lessonArt)return [];return [{id:'assessment:'+id+':'+action,label:d.name+' · '+(action==='start'?'约定交手':'一次专题授艺'),preview:action==='start'?d.advice+' 建议气血与精力备足至100；开始门槛不代表足以获胜，失败可认输并改日再约。关系'+d.trust+'、熟练'+d.required+'、实际出招经验6；准备30分钟/精力4/'+d.fee+'文，每回合1分钟，最多20回合；主动认输立即收手，可受伤，改日再约。':'选用适合且已学武艺，90分钟/精力16/'+d.lessonFee+'文；熟练最多+48、领悟最多+24，老师精力-16；仅一次，不补实战经验。',blocker:assessmentBlocker(s,id,action)}];});}
 export function assessmentSummary(s){return Object.entries(ASSESSMENTS).map(([id,d])=>{const r=s.assessments.records[id];return d.name+'：'+(s.assessments.active===id?'正在考较':r.lessonArt?'已完成专题 · '+MARTIAL_ARTS[r.lessonArt].name:r.wins?'已获认可，专题尚未用':'尚未获认可')+'；尝试'+r.attempts+'、未获认可'+r.losses+'、认输'+r.withdrawals+'。';});}

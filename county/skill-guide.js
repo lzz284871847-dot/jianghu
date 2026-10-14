@@ -1,9 +1,9 @@
-import {artisanSkillGoal} from './artisan-orders.js?v=5.32.1';
-import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.32.1';
-import {progress,MAX} from './progression.js?v=5.32.1';
-import {nextRoad} from './task-handbook.js?v=5.32.1';
-import {initialMarket,marketPrice} from './commerce.js?v=5.32.1';
-import {CRAFTS} from './crafts.js?v=5.32.1';
+import {artisanSkillGoal} from './artisan-orders.js?v=5.33.0';
+import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.33.0';
+import {progress,MAX} from './progression.js?v=5.33.0';
+import {nextRoad} from './task-handbook.js?v=5.33.0';
+import {initialMarket,marketPrice} from './commerce.js?v=5.33.0';
+import {CRAFTS} from './crafts.js?v=5.33.0';
 export const SKILL_GROUPS=[
  {id:'living',name:'生活与采集',keys:['carry','forage','herb','fish','mining','hunt','farming','cook']},
  {id:'crafting',name:'手艺与生产',keys:['smelt','medicine','tailor','leatherwork','woodwork']},
@@ -42,5 +42,5 @@ const SOURCES={
 export function skillOverview(s){const row=key=>{const source=SOURCES[key],p=source.teacher?s.npcWorld.individuals[source.teacher]:null,v=progress(s.skills[key]);const closed=p&&(p.life.deathDay||p.retirement.active||p.life.sickDays||p.life.restDay===s.day||p.injuryDays);return {goal:artisanSkillGoal(s,key),key,name:skills[key],total:s.skills[key],level:v.level,xp:v.xp,cap:v.cap,complete:s.skills[key]===MAX,source:{...source,groups:[...(source.groups||[])],label:(source.teacher?people[source.teacher].name+' · ':'')+places[source.place].name,notice:closed?'老师当前休工、休养或无法接洽，已学技能保留。':source.teacher?'老师营业'+people[source.teacher].open/60+'—'+people[source.teacher].close/60+'时，需留足行动时长。':'',road:nextRoad(s,source.place)}};};return {trained:Object.keys(skills).filter(k=>s.skills[k]>0).map(row),untrained:SKILL_GROUPS.map(g=>({id:g.id,name:g.name,rows:g.keys.filter(k=>s.skills[k]===0).map(row)})).filter(g=>g.rows.length)};}
 export function plannedRestock(s,place,key){if(!Object.hasOwn(markets[place]?.buy||{},key)||!(initialMarket()[place]?.[key]>0))return null;let day=s.day+1;if(day%2===0)day++;if(place==='liuxi'&&day%11===7)day+=2;return day;}
 export function stockHint(s,place,key){const n=s.commerce.stock[place]?.[key];if(n===undefined||!Object.hasOwn(markets[place]?.buy||{},key))return '';const day=plannedRestock(s,place,key);return n===0?'已售空'+(day?'，下一批计划第'+day+'日补货':'')+'；仍受实际补货与营业影响。':'实际存货'+n+'份；购买仍需钱款、容量和营业时间。';}
-export const MATERIAL_KEYS=['paper','ink','bamboo_flute','grain','wood','cloth','hide','leather','cord','iron','rod','pick','trap'];
-export function materialSources(s,key){const out=[];for(const [place,m] of Object.entries(markets))if(Object.hasOwn(m.buy,key))out.push(places[place].name+'：单份原价'+marketPrice(s,place,'buy',key)+'文，'+stockHint(s,place,key));for(const d of Object.values(resources))if(Object.hasOwn(d.output,key))out.push(d.places.map(p=>places[p].name).join('、')+'：'+d.name+'，尝试有限，可能失败。');for(const d of Object.values(recipes))if(Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，自己的'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'，耗时间精力。');for(const d of Object.values(CRAFTS))if(d.output&&Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，需'+skills[d.skill]+d.required+'、'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'、台位费'+d.fee+'文，可能做坏。');return out;}
+export const MATERIAL_KEYS=['paper','ink','bamboo_flute','grain','wood','cloth','fine_cloth','hide','leather','hardwood','cord','iron','rod','pick','trap'];
+export function materialSources(s,key){const out=[];for(const [place,m] of Object.entries(markets))if(Object.hasOwn(m.buy,key))out.push(places[place].name+'：单份原价'+marketPrice(s,place,'buy',key)+'文，'+stockHint(s,place,key));for(const d of Object.values(resources))if(Object.hasOwn(d.output,key))out.push(d.places.map(p=>places[p].name).join('、')+'：'+d.name+(key==='hardwood'?'，需实际采集经验30':'')+'，尝试有限，可能失败。');for(const d of Object.values(recipes))if(Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，自己的'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'，耗时间精力。');for(const d of Object.values(CRAFTS))if(d.output&&Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，需'+skills[d.skill]+d.required+'、'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'、台位费'+d.fee+'文，可能做坏。');return out;}
