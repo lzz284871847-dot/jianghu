@@ -1,11 +1,12 @@
-import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.28.0';
-import {items} from './content.js?v=5.28.0';
-import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.28.0';
-import {gain} from './progression.js?v=5.28.0';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.29.0';
+import {items} from './content.js?v=5.29.0';
+import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.29.0';
+import {gain} from './progression.js?v=5.29.0';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
-export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord'];
+export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord','trap_probe'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});
 export const CRAFTS={
+ trap_probe:{name:'组装机关探具（3枚）',skill:'woodwork',required:12,input:{wood:2,iron:1,cord:1},output:{trap_probe:3},fee:3,chance:.8,minutes:75,energy:10,fortRecipe:true},
  bamboo_flute:{name:'制作竹箫',skill:'woodwork',required:6,input:{wood:2,cord:1},output:{bamboo_flute:1},fee:1,chance:.85,minutes:60,energy:8},
  cord:{name:'裁布搓绳线',skill:'tailor',required:0,input:{cloth:1},output:{cord:2},fee:1,chance:.90,minutes:45,energy:6},
  tanning:{name:'鞣制熟皮',skill:'leatherwork',required:0,input:{hide:1,wood:1},output:{leather:1},fee:1,chance:.85,minutes:90,energy:12},
@@ -31,6 +32,7 @@ export function craftPlan(s,key,kind='make'){
 }
 export function craftBlocker(s,key,kind='make'){
  const d=craftPlan(s,key,kind);if(!d)return '没有这项手艺作业。';
+ if(d.fortRecipe&&!s.fort?.known)return '需从旧堡工艺室实际带出机关探具图页；市场不能购买配方。';
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit)return '先处理眼前选择或交手；死亡后不能作业。';
  if(s.place!=='workshop'||s.minute<420||s.minute+d.minutes>1080)return '作坊07:00–18:00，需留足'+d.minutes+'分钟。';
  if(s.hp<25||s.energy<d.energy)return '需气血25、精力'+d.energy+'，先休息或疗伤。';

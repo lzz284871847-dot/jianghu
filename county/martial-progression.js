@@ -1,15 +1,16 @@
-import {settleRaidCombat} from './raid.js?v=5.28.0';
-import {gainBodyUse} from './mobility.js?v=5.28.0';
-import {settleSpoils} from './spoils.js?v=5.28.0';
-import {settleOutingCombat} from './outings.js?v=5.28.0';
-import {finishMentorPractice} from './player-mentor.js?v=5.28.0';
-import {finishTrial} from './trials.js?v=5.28.0';
-import {settleExplorationCombat} from './exploration.js?v=5.28.0';
-import {finishFeedbackBout} from './world-feedback.js?v=5.28.0';
-import {recordAdventureVictory} from './adventures.js?v=5.28.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.28.0';
-import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.28.0';
-import {useMove,usableMoves} from './martial-moves.js?v=5.28.0';
+import {settleFortCombat} from './fort.js?v=5.29.0';
+import {settleRaidCombat} from './raid.js?v=5.29.0';
+import {gainBodyUse} from './mobility.js?v=5.29.0';
+import {settleSpoils} from './spoils.js?v=5.29.0';
+import {settleOutingCombat} from './outings.js?v=5.29.0';
+import {finishMentorPractice} from './player-mentor.js?v=5.29.0';
+import {finishTrial} from './trials.js?v=5.29.0';
+import {settleExplorationCombat} from './exploration.js?v=5.29.0';
+import {finishFeedbackBout} from './world-feedback.js?v=5.29.0';
+import {recordAdventureVictory} from './adventures.js?v=5.29.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.29.0';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.29.0';
+import {useMove,usableMoves} from './martial-moves.js?v=5.29.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
@@ -22,7 +23,7 @@ export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s
 // Victory grants limited insight, not free equipment or money. Flight and death grant no victory reward.
 function stopPractice(s,c,log){if(c.practice&&!c.ended&&(s.hp<=40||c.enemyHp<=40||c.round>=12||s.energy<3)){c.ended='practice';log.push('达到收手线或本轮练习上限，陪练停止。');}}
 function finalizeCombat(s,c,log){
- settleRaidCombat(s,c,log);settleSpoils(s,c,log);settleOutingCombat(s,c,log);recordAdventureVictory(s,c);finishTrial(s,c,log);settleExplorationCombat(s,c,log);finishFeedbackBout(s,c,log);finishMentorPractice(s,c,log);
+ settleFortCombat(s,c,log);settleRaidCombat(s,c,log);settleSpoils(s,c,log);settleOutingCombat(s,c,log);recordAdventureVictory(s,c);finishTrial(s,c,log);settleExplorationCombat(s,c,log);finishFeedbackBout(s,c,log);finishMentorPractice(s,c,log);
  if(c.practice&&c.round>=3&&s.npcWorld?.school.holder==='master'&&s.talkDays&&s.talkDays.master!==s.day){s.relations.master=Math.min(100,s.relations.master+1);s.talkDays.master=s.day;log.push('完成至少三回合实际陪练，与周师傅熟悉1点；与今日交谈共用一次熟悉机会。');}
  if(c.practice){log.push('陪练结束，保留实际耗费和招式积累，不发实战胜利领悟、钱物或装备。');return;}
  if(c.ended==='victory'){
