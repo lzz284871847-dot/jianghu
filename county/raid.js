@@ -1,7 +1,7 @@
-import {gain} from './progression.js?v=5.29.0';
-import {addInjury} from './injury.js?v=5.29.0';
-import {bodyStats,gainBodyUse} from './mobility.js?v=5.29.0';
-import {guideAvailable,guideReturnMinutes,expeditionClock,dungeonGuideLocation} from './dungeon.js?v=5.29.0';
+import {gain} from './progression.js?v=5.29.1';
+import {addInjury} from './injury.js?v=5.29.1';
+import {bodyStats,gainBodyUse} from './mobility.js?v=5.29.1';
+import {guideAvailable,guideReturnMinutes,expeditionClock,dungeonGuideLocation} from './dungeon.js?v=5.29.1';
 
 // One finite job and four scenes. Combat is the existing tactical engine.
 export const makeRaid=()=>({status:'new',stage:0,day:0,alert:0,observed:false,scouted:false,route:null,entry:null,attempts:[],gate:'new',fight:null,battles:0,person:'sealed',cargo:'sealed',reserve:0,loot:'new',exitTried:false,bribe:0,paid:0,guide:'none',until:0,returnAt:0});

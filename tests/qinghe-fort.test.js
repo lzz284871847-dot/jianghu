@@ -39,3 +39,5 @@ test('real battle death reconciles held core and save while preventing resurrect
 test('normal extraction guards real capacity and emergency extraction cannot overflow or forge recipe rewards',()=>{const s=room3();run(s,'craft');s.bag.iron=1000000;block(s,'exit');run(s,'withdraw',()=>.99);assert.equal(s.bag.iron,1000000);assert.equal(s.fort.core,'lost');assert.equal(s.fort.known,false);assert.equal(s.fort.taken,false);round(s);});
 
 test('optional actual pursuit victory secures chosen core without rewarding extra fight cash',()=>{const s=fighter(),coins=s.coins;run(s,'tools');run(s,'disarm');run(s,'craft');run(s,'pursuitFight');win(s);assert.equal(s.fort.status,'done');assert.equal(s.fort.core,'secured');assert.equal(s.coins,coins);round(s);});
+
+test('fort battle choices show Chinese action names instead of internal keys',()=>{const s=fighter();assert.equal(fortOptions(s).find(o=>o.id==='fort:gateFight').label,'迎战外院守卫');run(s,'tools');run(s,'disarm');run(s,'craft');assert.equal(fortOptions(s).find(o=>o.id==='fort:pursuitFight').label,'迎战撤路追兵');});
