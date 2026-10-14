@@ -1,8 +1,8 @@
-import {gain} from './progression.js?v=5.29.0';
-import {addInjury} from './injury.js?v=5.29.0';
-import {bodyStats,gainBodyUse} from './mobility.js?v=5.29.0';
-import {equipmentBonuses} from './equipment.js?v=5.29.0';
-import {FIELD_ACTIONS} from './field-skills.js?v=5.29.0';
+import {gain} from './progression.js?v=5.29.1';
+import {addInjury} from './injury.js?v=5.29.1';
+import {bodyStats,gainBodyUse} from './mobility.js?v=5.29.1';
+import {equipmentBonuses} from './equipment.js?v=5.29.1';
+import {FIELD_ACTIONS} from './field-skills.js?v=5.29.1';
 export const FORT_ROOMS=['','外院入口','地窖机关','三条奖励支路','撤回旧道'];
 export const FORT_FOES={gate:'escort',pursuit:'teacher'};
 export const makeFort=()=>({status:'new',stage:0,day:0,route:null,trap:null,attempts:[],fight:null,battles:0,branch:null,cache:null,taken:false,known:false,core:'none',vest:0,probe:null});
@@ -36,7 +36,7 @@ export function fortAction(s,id,{settle,rng,startFight}){const [,key,...extra]=S
   if(!s.dead&&p.skill)xp(s,p.skill,success?2:1);if(s.dead)finish(s,'died');
  });}
 export function settleFortCombat(s,c,log){const r=s.fort;if(!r||!active(s)||!r.fight||c.practice||c.opponent!==FORT_FOES[r.fight])return;const kind=r.fight;r.fight=null;if(c.ended==='victory'){if(kind==='gate'){r.route='force';r.stage=2;}else finish(s,'done');log.push('强敌败退，没有额外钱物；原气血、精力、伤势和耐久保留。');}else if(c.ended==='escaped'){finish(s,'left');log.push('已脱离旧堡交手，带出的有限成果保留，不重开。');}else if(c.ended==='death'){s.dead=true;finish(s,'died');log.push('旧堡战败身亡，不能复活或自动读档。');}}
-const labels={tools:'加固外院机关',climb:'用身法越过外院',disarm:'木工拆解地窖机关',herbal:'辨药处理药烟',force:'承担伤害强闯地窖',craft:'工艺室 · 取得独有图页',armory:'兵械库 · 搬走旧护具',medicine:'药室 · 取得有限成药',exit:'沿已处理的通道返回',withdraw:'零精力紧急撤回'};
+const labels={gateFight:'迎战外院守卫',pursuitFight:'迎战撤路追兵',tools:'加固外院机关',climb:'用身法越过外院',disarm:'木工拆解地窖机关',herbal:'辨药处理药烟',force:'承担伤害强闯地窖',craft:'工艺室 · 取得独有图页',armory:'兵械库 · 搬走旧护具',medicine:'药室 · 取得有限成药',exit:'沿已处理的通道返回',withdraw:'零精力紧急撤回'};
 export function fortOptions(s){const r=s.fort,out=[],add=(key,label,preview)=>out.push({id:'fort:'+key,label,preview,blocker:fortBlocker(s,key)});if(s.dead)return out;if(s.bag.trap_probe&&FIELD_ACTIONS.awareness.places.includes(s.place)&&!active(s))add('prepare','使用机关探具 · 野外察看','15分钟/精力3，消耗探具1；取得现有当天当地察看线索，不替换今日失败或用过的线索；危险采集仍有风险。');if(r.status==='new'&&s.place==='oldroad')add('enter','进入副本 · 荒山旧堡','高级机关探索四场景；气血60、精力50，木工/察看12或实际武艺熟练120；独行。外院加固需木料2绳线1，地窖拆机关需木料1绳线1。固定独有工艺图页；其他支路为旧护具或成药，附加收获首次生成保存，只选一条，无钱币主奖。');
  if(active(s)&&!s.combat){const keys=r.stage===1?['tools','climb','gateFight']:r.stage===2?['disarm','herbal','force']:r.stage===3?['craft','armory','medicine']:['exit','pursuitFight'];for(const key of [...keys,'withdraw']){const p=fortPlan(s,key);let text;if(!p)text='15分钟准备；原战术强敌，气血25、精力20、已学武艺。最多两场，可能永久死亡；不追加掉落，也可选择已处理的通道离开。';else text=p.minutes+'分钟/精力'+p.energy+'；'+(['craft','armory','medicine'].includes(key)?'进入该支路后确定取得所列收获，没有核心掉落抽奖；只能选一条。':key==='withdraw'?'当前'+(r.trap&&r.trap!=='force'?15:40)+'%受伤24气血并遗落尚未带出的收获，可能死亡。':'成功率'+Math.round(p.chance*100)+'%；'+(key==='force'?'必受28气血机关伤害并割伤，可能死亡；护具可减轻。':p.damage?'失败受'+p.damage+'气血机关伤害并割伤，可能死亡；护具可减轻。':'本步骤无机关伤害。'))+(Object.keys(p.input).length?'自己的'+Object.entries(p.input).map(([k,n])=>({wood:'木料',cord:'绳线',herb:'常见药材',trap_probe:'机关探具'}[k])+'×'+n).join('、')+'。':'')+(key==='craft'?'固定机关探具图页＋已保存铁料'+r.cache.iron+'份，带出解锁制作，市场不出售图页或探具。':key==='armory'?'普通旧铁片护胸耐久'+r.cache.vest+'/55＋熟皮'+r.cache.leather+'份，不覆盖、不自动穿戴，原修理规则保留。':key==='medicine'?'舒筋膏'+r.cache.salve+'＋调息汤'+r.cache.decoction+'份，数量已保存，不读档重抽。':'');add(key,labels[key]||key,text);}}return out;}
 export function fortSummary(s){const r=s.fort;if(r.status==='new')return null;return '荒山旧堡 · '+(active(s)?'第'+r.stage+'/4段 · '+FORT_ROOMS[r.stage]:({done:'已返回',left:'已撤回',died:'身亡'}[r.status]))+'；支路'+({craft:'工艺室',armory:'兵械库',medicine:'药室'}[r.branch]||'未选')+'；图页'+({none:'未取得',held:'尚需带出',secured:'已带出，解锁机关探具制作',lost:'遗落'}[r.core])+'；随机附加收获已保存，另两支路不重开。';}
