@@ -1,6 +1,9 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.30.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.31.0';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
+ forest_staff:{name:'探林杖',slot:'weapon',kind:'棍法',tier:2,attack:2,defense:0,durability:40,materials:{hardwood:2,wood:2,cord:2},fee:8,recipeOrder:'carpenter_frame',use:'山林辨路与旧址搜寻成功率+8个百分点，每次尝试耐久-1；占用兵器栏。'},
+ rain_cloak:{name:'油布行衣',slot:'armor',kind:'',tier:2,attack:0,defense:2,durability:40,materials:{fine_cloth:2,cloth:2,cord:2},fee:10,recipeOrder:'tailor_outfit',use:'雨天户外赶路延误由15减至5分钟，每段耐久-1；占用护具栏。'},
+ hunting_vest:{name:'猎行皮衣',slot:'armor',kind:'',tier:2,attack:0,defense:3,durability:45,materials:{leather:3,cloth:1,cord:2},fee:9,recipeOrder:'tanner_pack',use:'狩猎成功率+8个百分点，每次尝试耐久-1；占用护具栏，仍需猎具。'},
  wood_staff:{name:'木棍',slot:'weapon',kind:'棍法',tier:1,attack:2,defense:0,durability:35,materials:{wood:2},fee:2},
  farm_knife:{name:'柴刀',slot:'weapon',kind:'刀法',tier:1,attack:3,defense:0,durability:40,materials:{wood:1,iron:1},fee:3},
  iron_sword:{name:'铁剑',slot:'weapon',kind:'剑法',tier:2,attack:6,defense:0,durability:55,materials:{iron:3,wood:1},fee:10},
@@ -37,6 +40,7 @@ export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'
 }
 export function equipmentBonuses(s,martialId=s.martial?.equipped){const e=ensureEquipment(s);let attack=0,defense=0;const martialKind=martialId&&MARTIAL_ARTS[martialId]?.category;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){if(item.slot==='weapon'&&item.kind===martialKind)attack+=item.attack+(e.quality[id]===2?1:0);if(item.slot==='armor')defense+=item.defense+(e.quality[id]===2?1:0);}}return {attack,defense};}
 export function equipmentAction(s,kind,id,rng=()=>.5){const e=ensureEquipment(s),item=EQUIPMENT[id];if(!item){s.result=['没有这种装备。'];return false;}
+ if(item.recipeOrder&&['craft','repair'].includes(kind)){s.result=['独有成品需使用亲手制作或自行修理入口，铁匠打造不能代替配方与手艺。'];return false;}
  if(kind==='equip'){if(!Object.hasOwn(e.owned,id)||e.owned[id]===0){s.result=['装备不存在或已损坏。'];return false;}e.equipped[item.slot]=id;s.result=['已装备'+item.name];if(item.slot==='weapon'&&item.kind!==MARTIAL_ARTS[s.martial?.equipped]?.category)s.result.push('当前武学与兵器不适配，无法获得武器攻击加成。');return true;}
  if(kind==='unequip'){if(e.equipped[item.slot]!==id){s.result=['目前没有穿戴此物。'];return false;}e.equipped[item.slot]=null;s.result=['已卸下'+item.name];return true;}
  if(!['craft','repair'].includes(kind)){s.result=['未知装备行动。'];return false;}
@@ -63,3 +67,9 @@ export function equipmentAction(s,kind,id,rng=()=>.5){const e=ensureEquipment(s)
  e.owned[id]=item.durability;s.result=['修复'+item.name+'成功。','花费'+fee+'文，材料已扣除；原有品质保留。'];return true;
 }
 export function wearEquipment(s,slot,amount=1){const e=ensureEquipment(s),id=e.equipped[slot];if(!id||e.owned[id]<=0)return null;e.owned[id]=Math.max(0,e.owned[id]-amount);return e.owned[id]===0?EQUIPMENT[id].name+'耐久耗尽，已失效。':null;}
+
+export const artisanRecipeKnown=(s,id)=>!!EQUIPMENT[id]?.recipeOrder&&s.professionals?.advanced?.[EQUIPMENT[id].recipeOrder]?.status==='done';
+export const wornUtility=(s,id)=>s.equipment?.equipped?.[EQUIPMENT[id]?.slot]===id&&s.equipment.owned[id]>0;
+export function useUtility(s,id){if(!wornUtility(s,id))return;const line=wearEquipment(s,EQUIPMENT[id].slot);s.result.push(EQUIPMENT[id].name+'实际使用，耐久-1。');if(line)s.result.push(line);}
+export const forestBonus=s=>['foot','bamboo','hill','oldroad'].includes(s.place)&&wornUtility(s,'forest_staff')?.08:0;
+export const rainDelay=(s,outdoor)=>s.weather==='雨'&&outdoor?(wornUtility(s,'rain_cloak')?5:15):0;

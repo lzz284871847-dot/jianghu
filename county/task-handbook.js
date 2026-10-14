@@ -1,21 +1,22 @@
-import {fortSummary} from './fort.js?v=5.30.0';
-import {raidSummary} from './raid.js?v=5.30.0';
-import {dungeonSummary} from './dungeon.js?v=5.30.0';
-import {cultureTasks} from './culture.js?v=5.30.0';
-import {professionalTasks} from './professionals.js?v=5.30.0';
-import {countyLifeTasks} from './county-life.js?v=5.30.0';
-import {SPOILS} from './spoils.js?v=5.30.0';
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.30.0';
-import {places,people,markets,items} from './content.js?v=5.30.0';
-import {QUESTS} from './adventure-data.js?v=5.30.0';
-import {BUSINESSES,businessFarmProfile} from './business.js?v=5.30.0';
-import {EQUIPMENT} from './equipment.js?v=5.30.0';
-import {marketPrice} from './commerce.js?v=5.30.0';
-import {districtStatus} from './society.js?v=5.30.0';
-import {OUTINGS} from './outings.js?v=5.30.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.30.0';
-import {POLICE_JOBS} from './law.js?v=5.30.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.30.0';
+import {fortSummary} from './fort.js?v=5.31.0';
+import {raidSummary} from './raid.js?v=5.31.0';
+import {dungeonSummary} from './dungeon.js?v=5.31.0';
+import {cultureTasks} from './culture.js?v=5.31.0';
+import {professionalTasks} from './professionals.js?v=5.31.0';
+import {countyLifeTasks} from './county-life.js?v=5.31.0';
+import {SPOILS} from './spoils.js?v=5.31.0';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.31.0';
+import {places,people,markets,items} from './content.js?v=5.31.0';
+import {QUESTS} from './adventure-data.js?v=5.31.0';
+import {BUSINESSES,businessFarmProfile} from './business.js?v=5.31.0';
+import {CRAFTS,craftBlocker,craftPlan} from './crafts.js?v=5.31.0';
+import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.31.0';
+import {marketPrice} from './commerce.js?v=5.31.0';
+import {districtStatus} from './society.js?v=5.31.0';
+import {OUTINGS} from './outings.js?v=5.31.0';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.31.0';
+import {POLICE_JOBS} from './law.js?v=5.31.0';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.31.0';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
@@ -24,6 +25,7 @@ export function handbook(s){const a=s.adventures,cards=[];const add=(title,place
  if(s.fort.status==='active')add('荒山旧堡','oldroad','处理机关、选择一条奖励支路并带出；可承担风险撤回。',0,fortSummary(s),'','fort');
  if(['ready','active','claim'].includes(s.raid.status))add('山中匪寨',s.raid.status==='claim'?'market':'oldroad',s.raid.status==='ready'?'到山间旧道进入副本，可先在竹林邀猎户。':s.raid.status==='active'?'继续当前场景或承担风险撤回；交手中先决定战术。':'向柳掌柜交代实际带出的成果，钱款或容量不足保留。',0,raidSummary(s),'','raid');
  if(s.dungeon.status==='active')add('废弃矿道','mine','继续当前场景，或零精力紧急撤回洞口。',0,dungeonSummary(s),'','dungeon');
+ for(const [id,d] of Object.entries(CRAFTS)){if(!d.recipeOrder||!artisanRecipeKnown(s,id))continue;const own=Object.hasOwn(s.equipment.owned,id),damaged=own&&s.equipment.owned[id]<EQUIPMENT[id].durability;if(own&&!damaged)continue;const kind=damaged?'repair':'make',p=craftPlan(s,id,kind);add('独有配方 · '+p.name,'workshop',damaged?'备好材料，在作坊自行修理。':'备好材料，在作坊亲手制作；完成后需主动穿戴。',0,EQUIPMENT[id].use+' '+Object.entries(p.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；台位费'+p.fee+'文。',craftBlocker(s,id,kind)||'','craft');}
  for(const c of cultureTasks(s))add(c.title,c.place,c.next,c.due,c.goods,c.blocker,'culture');
  for(const c of professionalTasks(s))add(c.title,c.place,c.next,c.due,c.goods,c.blocker,c.group||'professionals');
  if(s.dead)add('人生已结束',s.place,'永久死亡；可导出记录或另建普通人。没有继续行动或自动读档。',0,'','','');
