@@ -1,16 +1,17 @@
-import {settleFortCombat} from './fort.js?v=5.31.0';
-import {settleRaidCombat} from './raid.js?v=5.31.0';
-import {gainBodyUse} from './mobility.js?v=5.31.0';
-import {settleSpoils} from './spoils.js?v=5.31.0';
-import {settleOutingCombat} from './outings.js?v=5.31.0';
-import {finishMentorPractice} from './player-mentor.js?v=5.31.0';
-import {finishTrial} from './trials.js?v=5.31.0';
-import {settleExplorationCombat} from './exploration.js?v=5.31.0';
-import {finishFeedbackBout} from './world-feedback.js?v=5.31.0';
-import {recordAdventureVictory} from './adventures.js?v=5.31.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.31.0';
-import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.31.0';
-import {useMove,usableMoves} from './martial-moves.js?v=5.31.0';
+import {stopAssessment,finishAssessment} from './assessments.js?v=5.32.0';
+import {settleFortCombat} from './fort.js?v=5.32.0';
+import {settleRaidCombat} from './raid.js?v=5.32.0';
+import {gainBodyUse} from './mobility.js?v=5.32.0';
+import {settleSpoils} from './spoils.js?v=5.32.0';
+import {settleOutingCombat} from './outings.js?v=5.32.0';
+import {finishMentorPractice} from './player-mentor.js?v=5.32.0';
+import {finishTrial} from './trials.js?v=5.32.0';
+import {settleExplorationCombat} from './exploration.js?v=5.32.0';
+import {finishFeedbackBout} from './world-feedback.js?v=5.32.0';
+import {recordAdventureVictory} from './adventures.js?v=5.32.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.32.0';
+import {newCombat,resolve,enemyResponse,intent} from './combat-core.js?v=5.32.0';
+import {useMove,usableMoves} from './martial-moves.js?v=5.32.0';
 const MAX=2400;
 export const makeMartial=()=>({known:{},equipped:'qinghe_fist',practice:{},insight:{},experience:{},mastery:{},rewardDays:{}});
 export function ensureMartial(s){if(!s.martial)s.martial=makeMartial();return s.martial;}
@@ -23,6 +24,7 @@ export function beginMartialCombat(s,opponent='brawler'){const m=ensureMartial(s
 // Victory grants limited insight, not free equipment or money. Flight and death grant no victory reward.
 function stopPractice(s,c,log){if(c.practice&&!c.ended&&(s.hp<=40||c.enemyHp<=40||c.round>=12||s.energy<3)){c.ended='practice';log.push('达到收手线或本轮练习上限，陪练停止。');}}
 function finalizeCombat(s,c,log){
+ if(c.assessment){finishAssessment(s,c,log);return;}
  settleFortCombat(s,c,log);settleRaidCombat(s,c,log);settleSpoils(s,c,log);settleOutingCombat(s,c,log);recordAdventureVictory(s,c);finishTrial(s,c,log);settleExplorationCombat(s,c,log);finishFeedbackBout(s,c,log);finishMentorPractice(s,c,log);
  if(c.practice&&c.round>=3&&s.npcWorld?.school.holder==='master'&&s.talkDays&&s.talkDays.master!==s.day){s.relations.master=Math.min(100,s.relations.master+1);s.talkDays.master=s.day;log.push('完成至少三回合实际陪练，与周师傅熟悉1点；与今日交谈共用一次熟悉机会。');}
  if(c.practice){log.push('陪练结束，保留实际耗费和招式积累，不发实战胜利领悟、钱物或装备。');return;}
@@ -41,7 +43,7 @@ function finalizeCombat(s,c,log){
  }else if(c.ended==='escaped'){log.push('成功脱身，未获得胜利奖励；气血和伤势保留。');if(s.hp<60||Object.keys(s.injuries||{}).length)log.push('败逃后身体仍未恢复；再次挑战前宜先疗伤、歇息，否则可能伤重身亡。');else log.push('撤退虽然保住了身体，但此次交手未得到胜利领悟；可以调整武学与战术再战。');}
  else if(c.ended==='death')log.push('战败身亡，这段人生结束。');
 }
-export function martialTurn(s,action,rng,useBody=false){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng,useBody);if(useBody){const oldResult=s.result;s.result=result.log;gainBodyUse(s,true);s.result=oldResult;}const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}stopPractice(s,s.combat,result.log);result.ended=s.combat.ended||null;if(result.ended){finalizeCombat(s,s.combat,result.log);s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
+export function martialTurn(s,action,rng,useBody=false){if(!s.combat)throw Error('当前没有战斗');const result=resolve(s.combat,s,action,rng,useBody);if(useBody){const oldResult=s.result;s.result=result.log;gainBodyUse(s,true);s.result=oldResult;}const m=ensureMartial(s),id=s.combat.martial;if(action==='strike'||action==='heavy'||action==='feint'){m.experience[id]=Math.min(MAX,(m.experience[id]||0)+2);if(result.enemyHpDelta<0)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);}stopPractice(s,s.combat,result.log);stopAssessment(s,s.combat,result.log);result.ended=s.combat.ended||null;if(result.ended){finalizeCombat(s,s.combat,result.log);s.combat=null;}s.result=[...result.log, '距离 '+result.distanceAfter+'；对手意图 '+result.enemyIntent];return result;}
 
 // Move turns resolve the chosen technique and an actual enemy response in one transaction.
 export function martialMoveTurn(s,moveId,rng=()=>.5){
@@ -52,11 +54,11 @@ export function martialMoveTurn(s,moveId,rng=()=>.5){
  if(c.enemyHp<enemyHpBefore)m.mastery[id]=Math.min(MAX,(m.mastery[id]||0)+1);
  c.round++;
  const enemy=c.ended?null:intent(c);
- const response=c.ended?[]:enemyResponse(c,s,enemy,rng,move.move&&MARTIAL_ARTS[id].category==='身法'?'sidestep':'move');
+ const response=c.ended?[]:enemyResponse(c,s,enemy,rng,move.move&&MARTIAL_ARTS[id].category==='身法'?'sidestep':c.assessment==='master'&&usableMoves(s).find(m=>m.id===moveId)?.rank===3?'heavy':'move');
  const log=[...move.log,...response];
  c.history.push({round:c.round,move:moveId,enemyIntent:enemy,log});
  if(c.history.length>30)c.history.shift();
- stopPractice(s,c,log);
+ stopPractice(s,c,log);stopAssessment(s,c,log);
  if(c.ended)finalizeCombat(s,c,log);
  s.result=log;
  if(c.ended)s.combat=null;
