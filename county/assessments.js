@@ -1,7 +1,7 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.32.0';
-import {people} from './content.js?v=5.32.0';
-import {travelBusy} from './npc-journeys.js?v=5.32.0';
-import {companionBusy} from './companions.js?v=5.32.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.32.1';
+import {people} from './content.js?v=5.32.1';
+import {travelBusy} from './npc-journeys.js?v=5.32.1';
+import {companionBusy} from './companions.js?v=5.32.1';
 // Two named, bounded exercises. Instructor arts are the existing teaching roles,
 // never a new NPC lineage or an inferred martial history for ordinary residents.
 export const ASSESSMENTS={
@@ -36,7 +36,7 @@ export function assessmentBlocker(s,id,action){const d=ASSESSMENTS[id],r=s.asses
 export function assessmentAction(s,id,action,{settle,begin}){const why=assessmentBlocker(s,id,action);if(why){s.result=[why];return false;}const d=ASSESSMENTS[id],r=s.assessments.records[id],p=s.npcWorld.individuals[id],lesson=action==='lesson',fee=lesson?d.lessonFee:d.fee;
  return settle(s,d.name+' · '+(lesson?'专题授艺':'约定考较'),lesson?90:30,lesson?16:4,()=>{s.coins-=fee;p.coins+=fee;p.energy-=lesson?16:6;
   if(lesson){const art=s.martial.equipped,m=s.martial,oldP=m.practice[art],oldI=m.insight[art];m.practice[art]=Math.min(2400,oldP+48);m.insight[art]=Math.min(2400,oldI+24);r.lessonArt=art;s.result.push('专题复盘与对练：'+MARTIAL_ARTS[art].name+'熟练+'+(m.practice[art]-oldP)+'、领悟+'+(m.insight[art]-oldI)+'；不补造实战经验、不新授整门武学。机会已用，不重领。');p.history=['第'+s.day+'日为'+s.name+'完成一次专题授艺，实收'+fee+'文。',...p.history].slice(0,8);}
-  else{begin(s,d.foe);s.combat.assessment=id;s.combat.distance=id==='farmer'?3:2;s.combat.enemyEnergy=p.energy;s.assessments.active=id;r.attempts++;r.lastDay=s.day;s.result.push(d.advice,'约定收手：任一方气血到40、满20回合或精力不足即停止；可随时认输，不遭追击。气血、擦伤、精力与耐久耗费保留，不发野外钱物。');}
+  else{begin(s,d.foe);s.result=[people[id].name+'同意约定考较，认输即可立即收手，不会追击。'];s.combat.assessment=id;s.combat.distance=id==='farmer'?3:2;s.combat.enemyEnergy=p.energy;s.assessments.active=id;r.attempts++;r.lastDay=s.day;s.result.push(d.advice,'约定收手：任一方气血到40、满20回合或精力不足即停止；可随时认输，不遭追击。气血、擦伤、精力与耐久耗费保留，不发野外钱物。');}
   s.result.push(fee+'文实际付给'+people[id].name+'，对方精力消耗'+(lesson?16:6)+'。');
  });
 }
