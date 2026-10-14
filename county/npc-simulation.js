@@ -1,20 +1,20 @@
-import {PROFESSIONAL_IDS} from './professional-data.js?v=5.34.0';
-import {companionLocation} from './companions.js?v=5.34.0';
-import {makeVillageSchool,villageSchoolValid} from './npc-village-school.js?v=5.34.0';
-import {saveResident} from './npc-residents.js?v=5.34.0';
-import {makeJourneys,journeysValid,journeySteps,journeyDepartures,travelBusy} from './npc-journeys.js?v=5.34.0';
-import {makeClinic,clinicValid,clinicDoctor} from './npc-clinic.js?v=5.34.0';
-import {makeSchool,schoolValid} from './npc-school.js?v=5.34.0';
-import {npcSparringDay} from './npc-sparring.js?v=5.34.0';
-import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=5.34.0';
-import {npcHealthDay} from './npc-health.js?v=5.34.0';
-import {makeLife,lifeValid,alive,recoveryFor} from './npc-mortality.js?v=5.34.0';
-import {makeLineage,lineageValid} from './npc-lineage.js?v=5.34.0';
-import {makeContracts,contractsValid} from './npc-contracts.js?v=5.34.0';
-import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=5.34.0';
-import {makeHouseholds,householdsValid} from './npc-households.js?v=5.34.0';
-import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid} from './npc-economy.js?v=5.34.0';
-import {people,places} from './content.js?v=5.34.0';
+import {PROFESSIONAL_IDS} from './professional-data.js?v=5.35.0';
+import {companionLocation} from './companions.js?v=5.35.0';
+import {makeVillageSchool,villageSchoolValid} from './npc-village-school.js?v=5.35.0';
+import {saveResident} from './npc-residents.js?v=5.35.0';
+import {makeJourneys,journeysValid,journeySteps,journeyDepartures,travelBusy} from './npc-journeys.js?v=5.35.0';
+import {makeClinic,clinicValid,clinicDoctor} from './npc-clinic.js?v=5.35.0';
+import {makeSchool,schoolValid} from './npc-school.js?v=5.35.0';
+import {npcSparringDay} from './npc-sparring.js?v=5.35.0';
+import {makeStudy,studyValid,npcStudyDay} from './npc-martial.js?v=5.35.0';
+import {npcHealthDay} from './npc-health.js?v=5.35.0';
+import {makeLife,lifeValid,alive,recoveryFor} from './npc-mortality.js?v=5.35.0';
+import {makeLineage,lineageValid} from './npc-lineage.js?v=5.35.0';
+import {makeContracts,contractsValid} from './npc-contracts.js?v=5.35.0';
+import {makeSocial,socialValid,socialDay,makeOutlook,outlookValid,ambitionDay} from './npc-social.js?v=5.35.0';
+import {makeHouseholds,householdsValid} from './npc-households.js?v=5.35.0';
+import {npcWork,npcBuyFood,npcProduce,npcSellProduce,npcTransport,npcCareerDay,npcApplyShop,makeRetirement,retirementValid} from './npc-economy.js?v=5.35.0';
+import {people,places} from './content.js?v=5.35.0';
 // Individual NPCs persist. Background residents remain aggregates until promoted.
 const ordinary=[
  ['farmhand01','陈二','fields','农户',19],['farmhand02','田嫂','fields','农户',34],
