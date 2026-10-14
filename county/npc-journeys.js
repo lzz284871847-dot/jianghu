@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=5.28.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=5.28.0';
-import {places} from './content.js?v=5.28.0';
-import {train} from './martial-progression.js?v=5.28.0';
+import {alive} from './npc-mortality.js?v=5.29.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=5.29.0';
+import {places} from './content.js?v=5.29.0';
+import {train} from './martial-progression.js?v=5.29.0';
 export const makeJourneys=(day=1)=>({lastDay:day,records:{}});
 export const travelling=(s,id)=>{const v=s.npcWorld.journeys?.records[id];return !!v&&v.departedDay>v.returnedDay;};
 export const travelBusy=(s,id)=>travelling(s,id)||s.npcWorld.journeys?.records[id]?.returnedDay===s.day;

@@ -1,23 +1,24 @@
-import {reconcileRaid} from './raid.js?v=5.28.0';
-import {reconcileDungeon,dungeonMovementBlocker} from './dungeon.js?v=5.28.0';
-import {fieldChance,useFieldClue} from './field-skills.js?v=5.28.0';
-import {makeCountyLife,countyLifeValid,expireCountyLife,countyLifeAction} from './county-life.js?v=5.28.0';
-import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.28.0';
-import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.28.0';
-import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.28.0';
-import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.28.0';
-import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.28.0';
-import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.28.0';
-import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.28.0';
-import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.28.0';
-import {makeTrials,trialsValid} from './trials.js?v=5.28.0';
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.28.0';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.28.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.28.0';
-import {people,items} from './content.js?v=5.28.0';
-import {gain} from './progression.js?v=5.28.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.28.0';
-import {EQUIPMENT} from './equipment.js?v=5.28.0';
+import {reconcileFort} from './fort.js?v=5.29.0';
+import {reconcileRaid} from './raid.js?v=5.29.0';
+import {reconcileDungeon,dungeonMovementBlocker} from './dungeon.js?v=5.29.0';
+import {fieldChance,useFieldClue} from './field-skills.js?v=5.29.0';
+import {makeCountyLife,countyLifeValid,expireCountyLife,countyLifeAction} from './county-life.js?v=5.29.0';
+import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.29.0';
+import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.29.0';
+import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.29.0';
+import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.29.0';
+import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.29.0';
+import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.29.0';
+import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.29.0';
+import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.29.0';
+import {makeTrials,trialsValid} from './trials.js?v=5.29.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.29.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.29.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.29.0';
+import {people,items} from './content.js?v=5.29.0';
+import {gain} from './progression.js?v=5.29.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.29.0';
+import {EQUIPMENT} from './equipment.js?v=5.29.0';
 export const makeAdventures=(day=1)=>({life:makeCountyLife(day),spoils:makeSpoils(),companions:makeCompanions(),threads:makeThreads(),business:makeBusiness(),outings:makeOutings(),law:makeLaw(),factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
@@ -39,7 +40,7 @@ const paid=(s,id,n)=>{const p=s.npcWorld.individuals[id];return p.coins>=n&&s.co
 function reward(s,id,n){s.npcWorld.individuals[id].coins-=n;s.coins+=n;}
 function fee(s,id,n){const p=s.npcWorld.individuals[id];if(s.coins<n||p.coins>1000000-n)return false;s.coins-=n;p.coins+=n;return true;}
 function finish(s,success){const a=s.adventures,q=a.quest;(success?a.done:a.failed).push(q.id);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
-export function expireAdventures(s){reconcileDungeon(s);reconcileRaid(s);expireCountyLife(s);expireCompanions(s);expireThreads(s);expireBusiness(s);reconcileExploration(s);noticeOutings(s);expireLaw(s);expireFactions(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
+export function expireAdventures(s){reconcileDungeon(s);reconcileRaid(s);reconcileFort(s);expireCountyLife(s);expireCompanions(s);expireThreads(s);expireBusiness(s);reconcileExploration(s);noticeOutings(s);expireLaw(s);expireFactions(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
 export function recordAdventureVictory(s,c){if(c.ended==='victory'&&!c.practice&&s.adventures&&!s.adventures.victories.includes(c.opponent))s.adventures.victories.push(c.opponent);}
 export const practiceFee=s=>!factionHostile(s,'school')&&(s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3||factionFriendly(s,'school'))?3:4;
 const trained=(s,tier)=>Object.keys(s.martial.known).filter(id=>MARTIAL_ARTS[id].tier===tier&&s.martial.practice[id]>=120).length;

@@ -1,7 +1,7 @@
-import {gain} from './progression.js?v=5.28.0';
-import {addInjury} from './injury.js?v=5.28.0';
-import {bodyStats,gainBodyUse} from './mobility.js?v=5.28.0';
-import {guideAvailable,guideReturnMinutes,expeditionClock,dungeonGuideLocation} from './dungeon.js?v=5.28.0';
+import {gain} from './progression.js?v=5.29.0';
+import {addInjury} from './injury.js?v=5.29.0';
+import {bodyStats,gainBodyUse} from './mobility.js?v=5.29.0';
+import {guideAvailable,guideReturnMinutes,expeditionClock,dungeonGuideLocation} from './dungeon.js?v=5.29.0';
 
 // One finite job and four scenes. Combat is the existing tactical engine.
 export const makeRaid=()=>({status:'new',stage:0,day:0,alert:0,observed:false,scouted:false,route:null,entry:null,attempts:[],gate:'new',fight:null,battles:0,person:'sealed',cargo:'sealed',reserve:0,loot:'new',exitTried:false,bribe:0,paid:0,guide:'none',until:0,returnAt:0});
@@ -26,7 +26,7 @@ export function raidPlan(s,key){const r=s.raid;const minutes={observe:30,bypass:
  if(['exit','quickExit'].includes(key))Object.assign(p,{stage:4,energy:(key==='exit'?8:12)+b*2,chance:Math.max(.2,Math.min(.95,(key==='exit'?.8:.65)+(r.scouted?.1:0)-r.alert*.15-b*.05+bonus)),damage:key==='exit'?12:18,skill:'navigation'});
  if(key==='withdraw')Object.assign(p,{stage:r.stage,risk:Math.max(.05,Math.min(.65,.15+r.alert*.15+b*.05-(help?.1:0))),damage:20});return p;
 }
-export function raidBlocker(s,key,present=()=>true){const r=s.raid,p=s.npcWorld.individuals.hunter;
+export function raidBlocker(s,key,present=()=>true){const r=s.raid,p=s.npcWorld.individuals.hunter;if(s.fort?.status==='active')return '先结束荒山旧堡。';
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit)return '先处理眼前交手或选择；永久死亡后不能继续。';
  if(s.dungeon.status==='active')return '先结束废弃矿道，不能同时进入另一处副本。';
  if(key==='accept')return r.status!=='new'||s.place!=='market'||!present(s,'merchant',15)||s.commerce.stock.market.cloth<2?'到街市柳掌柜营业在场时接洽，商铺须实际存有粗布2份；一次委托，不预付报酬。':null;
