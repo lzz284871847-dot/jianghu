@@ -1,11 +1,14 @@
-import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.30.0';
-import {items} from './content.js?v=5.30.0';
-import {EQUIPMENT,equipmentWorkCost} from './equipment.js?v=5.30.0';
-import {gain} from './progression.js?v=5.30.0';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.31.0';
+import {items} from './content.js?v=5.31.0';
+import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.31.0';
+import {gain} from './progression.js?v=5.31.0';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
 export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord','trap_probe'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});
 export const CRAFTS={
+ forest_staff:gear('woodwork',300,EQUIPMENT.forest_staff.materials,8,.75,{recipeOrder:'carpenter_frame'}),
+ rain_cloak:gear('tailor',300,EQUIPMENT.rain_cloak.materials,10,.75,{recipeOrder:'tailor_outfit'}),
+ hunting_vest:gear('leatherwork',300,EQUIPMENT.hunting_vest.materials,9,.75,{recipeOrder:'tanner_pack'}),
  trap_probe:{name:'组装机关探具（3枚）',skill:'woodwork',required:12,input:{wood:2,iron:1,cord:1},output:{trap_probe:3},fee:3,chance:.8,minutes:75,energy:10,fortRecipe:true},
  bamboo_flute:{name:'制作竹箫',skill:'woodwork',required:6,input:{wood:2,cord:1},output:{bamboo_flute:1},fee:1,chance:.85,minutes:60,energy:8},
  cord:{name:'裁布搓绳线',skill:'tailor',required:0,input:{cloth:1},output:{cord:2},fee:1,chance:.90,minutes:45,energy:6},
@@ -32,6 +35,7 @@ export function craftPlan(s,key,kind='make'){
 }
 export function craftBlocker(s,key,kind='make'){
  const d=craftPlan(s,key,kind);if(!d)return '没有这项手艺作业。';
+ if(d.recipeOrder&&!artisanRecipeKnown(s,key))return '需完成并交付Lv3高级订单解锁'+d.name+'独有配方；市场与铁匠不能代替。';
  if(d.fortRecipe&&!s.fort?.known)return '需从旧堡工艺室实际带出机关探具图页；市场不能购买配方。';
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit)return '先处理眼前选择或交手；死亡后不能作业。';
  if(s.place!=='workshop'||s.minute<420||s.minute+d.minutes>1080)return '作坊07:00–18:00，需留足'+d.minutes+'分钟。';
@@ -56,4 +60,4 @@ export function craftAction(s,id,{settle,rng}){
   s.result.push('台位与工具费'+d.fee+'文实际支付给许铁匠。');
  },{[d.skill]:repair?1:success?3:1});
 }
-export function craftOptions(s){if(s.place!=='workshop')return [];return Object.entries(CRAFTS).flatMap(([key,d])=>['make',...(d.gear&&Object.hasOwn(s.equipment.owned,key)?['repair']:[])].map(kind=>{const p=craftPlan(s,key,kind);return {id:'craft:'+kind+':'+key,label:(kind==='repair'?'自行修理 · ':'亲手制作 · ')+p.name,preview:'需'+({tailor:'裁缝',leatherwork:'制革',woodwork:'木工'}[p.skill])+p.required+(p.extraSkill?' / '+({smelt:'冶炼',leatherwork:'制革'}[p.extraSkill])+p.extraRequired:'')+'；'+Object.entries(p.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；台位费'+p.fee+'文，'+p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%，制作失败损失全部投入。',blocker:craftBlocker(s,key,kind)};}));}
+export function craftOptions(s){if(s.place!=='workshop')return [];return Object.entries(CRAFTS).flatMap(([key,d])=>['make',...(d.gear&&Object.hasOwn(s.equipment.owned,key)?['repair']:[])].map(kind=>{const p=craftPlan(s,key,kind);return {id:'craft:'+kind+':'+key,label:(kind==='repair'?'自行修理 · ':'亲手制作 · ')+p.name,preview:(d.recipeOrder?'独有配方'+(artisanRecipeKnown(s,key)?'已解锁':'未解锁')+'；'+EQUIPMENT[key].use+' ':'')+'需'+({tailor:'裁缝',leatherwork:'制革',woodwork:'木工'}[p.skill])+p.required+(p.extraSkill?' / '+({smelt:'冶炼',leatherwork:'制革'}[p.extraSkill])+p.extraRequired:'')+'；'+Object.entries(p.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；台位费'+p.fee+'文，'+p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%，制作失败损失全部投入。',blocker:craftBlocker(s,key,kind)};}));}
