@@ -1,7 +1,7 @@
-import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.34.0';
-import {items} from './content.js?v=5.34.0';
-import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.34.0';
-import {gain} from './progression.js?v=5.34.0';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.35.0';
+import {items} from './content.js?v=5.35.0';
+import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.35.0';
+import {gain} from './progression.js?v=5.35.0';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
 export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord','trap_probe'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});

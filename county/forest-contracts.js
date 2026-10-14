@@ -1,7 +1,7 @@
-import {places,people} from './content.js?v=5.34.0';
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.34.0';
-import {forestBonus,rainDelay,wornUtility,useUtility} from './equipment.js?v=5.34.0';
-import {addInjury} from './injury.js?v=5.34.0';
+import {places,people} from './content.js?v=5.35.0';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.35.0';
+import {forestBonus,rainDelay,wornUtility,useUtility} from './equipment.js?v=5.35.0';
+import {addInjury} from './injury.js?v=5.35.0';
 
 // Three finite jobs. Held medicine and game never enter saleable inventory twice.
 export const FOREST_CONTRACTS={
@@ -104,7 +104,7 @@ export function forestAction(s,id,{settle,rng,present}){
 const labels={safe:'沿主径辨路',quick:'冒险抄近路',rescue:'用药救助',belongings:'继续寻找财物',escort:'带人回村',pack:'自备材料打包',detour:'绕开涉水小径',ford:'冒险涉水赶路',deliver:'向船工交药',track:'追查伤兽足迹',patient:'稳妥设猎',drive:'冒险驱赶',accept:'领取',decline:'拒绝',withdraw:'撤回',claim:'交代'};
 const stateNames={new:'未接，可忽略',active:'进行中',claim:'完成，待实际付款',done:'已结清',failed:'失败或逾期，其他人接手',left:'已拒绝或撤回',died:'人生结束，未结算'};
 export function forestOptions(s,present){const out=[];for(const [id,d] of Object.entries(FOREST_CONTRACTS)){const r=s.forestContracts.records[id];let actions=r.status==='new'&&s.place===d.home?['accept','decline']:r.status==='claim'&&s.place===d.home?['claim']:r.status==='active'?[...actionsFor(id,r).filter(a=>forestPlan(s,id,a)?.place===s.place),'withdraw']:[];
- for(const action of actions){const p=forestPlan(s,id,action),preview=p?p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%；'+Object.entries(p.input).map(([k,n])=>({herb:'药材',cord:'绳线'}[k])+n+'份').join('、')+'；'+(p.risk?'受伤概率'+Math.round(p.risk*100)+'%，气血-'+p.damage+'并受伤。':'本步无直接受伤风险。')+(id==='hunt'&&['patient','drive'].includes(action)?'需自备猎具；':'')+'失败花耗保留，可能逾期；装备须实际穿戴且未损坏。':action==='withdraw'||action==='decline'?'零精力结束，仅一次；已投入不退，没有报酬。':d.info;
+ for(const action of actions){const p=forestPlan(s,id,action),preview=p?p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%；'+(Object.entries(p.input).map(([k,n])=>({herb:'药材',cord:'绳线'}[k])+n+'份').join('、')||'不耗额外材料')+'；'+(p.risk?'受伤概率'+Math.round(p.risk*100)+'%，气血-'+p.damage+'并受伤。':'本步无直接受伤风险。')+(id==='hunt'&&['patient','drive'].includes(action)?'需自备猎具；':'')+'失败花耗保留，可能逾期；装备须实际穿戴且未损坏。':action==='withdraw'||action==='decline'?'零精力结束，仅一次；已投入不退，没有报酬。':d.info;
  out.push({id:'forest:'+id+':'+action,label:labels[action]+' · '+d.name,preview,blocker:forestBlocker(s,id,action,present)});
  }}return out;}
 export const forestSummary=s=>Object.entries(FOREST_CONTRACTS).map(([id,d])=>{const r=s.forestContracts.records[id];return d.name+' · '+stateNames[r.status]+'；步骤'+r.step+'/'+d.maxStep+(r.route?'，'+labels[r.route]:'')+(r.extra?'；财物'+(r.extra==='found'?'找到':'未找到'):'')+(r.cargo?'；留存药材'+r.cargo+'份':'')+'。';});

@@ -1,10 +1,10 @@
-import {forestBonus,useUtility} from './equipment.js?v=5.34.0';
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.34.0';
-import {openSiteSpoils} from './spoils.js?v=5.34.0';
-import {SITES} from './adventure-data.js?v=5.34.0';
-import {items} from './content.js?v=5.34.0';
-import {gain} from './progression.js?v=5.34.0';
-import {addInjury} from './injury.js?v=5.34.0';
+import {forestBonus,useUtility} from './equipment.js?v=5.35.0';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.35.0';
+import {openSiteSpoils} from './spoils.js?v=5.35.0';
+import {SITES} from './adventure-data.js?v=5.35.0';
+import {items} from './content.js?v=5.35.0';
+import {gain} from './progression.js?v=5.35.0';
+import {addInjury} from './injury.js?v=5.35.0';
 export const makeExploration=()=>({routes:{},encounters:{}});
 export const ENCOUNTERS={bamboo:{name:'废棚旁受困行人',description:'受困行人需要帮助。可用自己药材1份处理（30分钟/精力8），或搬开压枝（1小时/精力18，25%擦伤8气血）。无钱物奖励；也可离开。'},ferry:{name:'药篓旁的争执',description:'两名行人争执一只另有药材2份的破篓。可公平分取其中1份（30分钟/精力6），或劝对方让出1份（45分钟/精力8，60%成功；互助会成员或柳掌柜关系3可直接谈妥）。未谈妥不强迫战斗。'},mine:{name:'矿堆旁的守路棍手',description:'棍手守着另有铁矿1份的碎矿堆。可绕行1小时/精力8，不拿物资；或交自己口粮1份商量（30分钟/精力6，60%放行，无物资奖励）；也可主动实战，可能受伤、撤退失败或永久死亡，胜利后才可收取矿料。'}};
 const outcomes={bamboo:['helped','strained','left'],ferry:['shared','agreed','refused','left'],mine:['bypassed','agreed','refused','left','fighting','won','taken','escaped','died']};

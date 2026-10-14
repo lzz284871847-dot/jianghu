@@ -1,4 +1,4 @@
-import {INJURIES} from './martial-data.js?v=5.34.0';
+import {INJURIES} from './martial-data.js?v=5.35.0';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const INJURY_DAYS=Object.freeze({bruise:2,cut:4,strain:5,fracture:16,internal:12,critical:24});
 export function injuriesOf(s){if(!s.injuries)s.injuries={};return s.injuries;}
