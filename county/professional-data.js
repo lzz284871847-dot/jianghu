@@ -1,3 +1,4 @@
+export const ARTISAN_LESSON_XP={success:12,failure:4};
 export const CIVIC_TEACHERS={literacy:'scribe',accounting:'bookkeeper'};
 export const ARTISANS={
  carpenter:{skill:'woodwork',input:{wood:1},lesson:'量料与榫接练习',item:'rod',quantity:1,reward:9,order:'梁木匠的钓竿小单'},

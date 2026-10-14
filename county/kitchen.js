@@ -1,4 +1,4 @@
-import {items} from './content.js?v=5.32.1';
+import {items} from './content.js?v=5.33.0';
 export const MEALS={
  vegetable_congee:{name:'菜粥',required:0,input:{vegetable:1,grain:1,wood:1},quantity:1,minutes:45,energy:8,chance:.85,restoreEnergy:22,hp:6},
  fish_rice:{name:'鱼饭',required:6,input:{fish:1,grain:1,wood:1},quantity:1,minutes:60,energy:10,chance:.80,restoreEnergy:32,hp:10},
