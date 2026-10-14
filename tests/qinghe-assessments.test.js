@@ -37,3 +37,5 @@ test('full health real exchanges can win using unlocked moves with actual guardb
 test('ordinary dangerous combat keeps failed flight and permanent death without assessment floor',()=>{const s=ready();s.place='oldroad';assert.ok(martialAction(s,'challenge','chief'));s.hp=1;s.combat.distance=0;assert.ok(martialAction(s,'turn','strike',()=>0));assert.equal(s.dead,true);assert.equal(s.hp,0);round(s);});
 
 test('changed legacy teaching offices cannot silently appoint original teachers back for new assessments',()=>{for(const id of ['master','farmer']){const s=ready(id);s.npcWorld[id==='master'?'school':'villageSchool'].holder='';block(s,()=>act(s,'assessment:'+id+':start'));round(s);}});
+
+test('assessment start names real person and never carries generic lethal fight or flight warnings',()=>{for(const id of ['master','farmer']){const s=ready(id);start(s,id);assert.ok(s.result.some(t=>t.includes(id==='master'?'周师傅':'陈农户')));assert.match(s.result.join(';'),/认输即可立即收手/);assert.doesNotMatch(s.result.join(';'),/撤退并不保证成功|与拳师交手|与熟练棍手交手/);}});

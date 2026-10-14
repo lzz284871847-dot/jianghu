@@ -1,7 +1,7 @@
-import {ARTISAN_ORDERS,makeArtisanOrders,artisanOrdersValid,artisanOrderBlocker,artisanOrderAction,expireArtisanOrders,artisanOrderOptions,artisanOrderTasks} from './artisan-orders.js?v=5.32.0';
-import {ARTISANS} from './professional-data.js?v=5.32.0';
-import {people,skills,items} from './content.js?v=5.32.0';
-import {present} from './adventures.js?v=5.32.0';
+import {ARTISAN_ORDERS,makeArtisanOrders,artisanOrdersValid,artisanOrderBlocker,artisanOrderAction,expireArtisanOrders,artisanOrderOptions,artisanOrderTasks} from './artisan-orders.js?v=5.32.1';
+import {ARTISANS} from './professional-data.js?v=5.32.1';
+import {people,skills,items} from './content.js?v=5.32.1';
+import {present} from './adventures.js?v=5.32.1';
 const empty=()=>({lessonDay:0,guidanceDay:0,guidanceSuccess:false,guidanceUsed:false,status:'none',accepted:0,due:0,stock:0});
 export const makeProfessionals=()=>({records:Object.fromEntries(Object.keys(ARTISANS).map(k=>[k,empty()])),advanced:makeArtisanOrders()});
 const exact=(v,keys)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));
