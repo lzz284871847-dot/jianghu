@@ -1,7 +1,7 @@
-import {places,people} from './content.js?v=5.35.0';
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.35.0';
-import {forestBonus,rainDelay,wornUtility,useUtility} from './equipment.js?v=5.35.0';
-import {addInjury} from './injury.js?v=5.35.0';
+import {places,people} from './content.js?v=5.36.0';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.36.0';
+import {forestBonus,rainDelay,wornUtility,useUtility} from './equipment.js?v=5.36.0';
+import {addInjury} from './injury.js?v=5.36.0';
 
 // Three finite jobs. Held medicine and game never enter saleable inventory twice.
 export const FOREST_CONTRACTS={
