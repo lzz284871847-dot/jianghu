@@ -1,6 +1,6 @@
-import {rememberExperience} from './county-life.js?v=5.36.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.36.0';
-import {TRIALS} from './trials.js?v=5.36.0';
+import {rememberExperience} from './county-life.js?v=5.37.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.37.0';
+import {TRIALS} from './trials.js?v=5.37.0';
 export const MENTOR_TASKS={delivery:{name:'送木料到作坊',description:'3日内交自己木料2份给许铁匠，再回武馆结算8文；交付后材料用于作业，撤回不退。'},inquiry:{name:'查访竹林小径',description:'3日内查明竹林小径。可稳妥查访45分钟/精力8；冒险快查15分钟/精力8、60%查明、失败擦伤6气血；师徒信任4可在街市凭身份向掌柜查问30分钟/精力1。回馆结算6文。'},spar:{name:'实际切磋考察',description:'3日内在武馆付正常陪练费，至少实际交手3回合并收手，再向师傅交代；不足3回合记未完成。保留气血、精力与耐久耗费，可随时收手，无钱物奖励。'}};
 export const makePlayerMentor=()=>({member:false,joinedDay:0,trust:0,tasks:{delivery:'none',inquiry:'none',spar:'none'},active:null,dueDay:0,stage:0,sparring:false,lessonDay:0,lastDrill:null,parcelHint:false});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
