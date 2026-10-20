@@ -25,7 +25,7 @@ export function artisanWorkPlan(key,action='work'){
  const d=ALL_ARTISAN_ORDERS[key];if(!d)return null;
  if(action==='work')return {...d,methodName:d.methodName||'定制作业'};
  const method=d.methods?.[action.replace(/^work_/, '')];
- return action.startsWith('work_')&&method?{...d,...method,methodName:method.name}:null;
+ return action.startsWith('work_')&&method?{...d,...method,name:d.name,methodName:method.name}:null;
 }
 export function artisanOrderChance(s,key,action='work'){
  const d=artisanWorkPlan(key,action);if(!d)return 0;
