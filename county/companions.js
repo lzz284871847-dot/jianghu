@@ -1,8 +1,8 @@
-import {dungeonGuideLocation} from './dungeon.js?v=5.43.0';
-import {rememberExperience} from './county-life.js?v=5.43.0';
-import {people,places,items} from './content.js?v=5.43.0';
-import {gain} from './progression.js?v=5.43.0';
-import {travelBusy} from './npc-journeys.js?v=5.43.0';
+import {dungeonGuideLocation} from './dungeon.js?v=5.44.0';
+import {rememberExperience} from './county-life.js?v=5.44.0';
+import {people,places,items} from './content.js?v=5.44.0';
+import {gain} from './progression.js?v=5.44.0';
+import {travelBusy} from './npc-journeys.js?v=5.44.0';
 export const COOPERATIONS={
  boat:{name:'船工同行修架',actor:'boatman',from:'dock',site:'ferry',corridor:['dock','ferry'],fee:3,payer:'merchant',claim:'market',total:12,share:4,skill:'carry',input:{wood:1},dispute:'route',info:'贺船工同行到旧渡口修货架。工钱3文，关系3可免；需自己木料1份。分歧是稳妥处理或说服冒险。雨天更难，实际工钱共12文由柳掌柜支付，协作时船工分4文。'},
  hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
@@ -44,7 +44,7 @@ export function companionAction(s,id,{transact,advance,rng}){const [,key,choice]
   if(r.status!=='ready'||s.place!==d.claim||s.minute<480||s.minute+15>1080)return fail('需实际合作成果，白天到说明中的付款处交代。');
   if(d.payer!=='public'&&(!fit(s,{actor:d.payer},15)||companionBusy(s,d.payer)))return fail('付款人今日无法接洽，保留成果。');
   if(payer[field]<d.total||s.coins>10000000-your||p.coins>1000000-r.share)return fail('付款方实际余额或分帐容量不足，整笔未结算，成果保留。');
-  return transact(s,'结算 · '+d.name,15,0,()=>{payer[field]-=d.total;s.coins+=your;p.coins+=r.share;r.paid=your;r.status='done';shift(s,key,1);rememberExperience(s,d.actor,'cooperation',true);record(s,d,'合作完成，实际分帐'+r.share+'文');s.result.push('实际总工钱'+d.total+'文：你'+your+'文，同伴'+r.share+'文；没有重复材料或自动掉落。');},advance);
+  return transact(s,'结算 · '+d.name,15,0,()=>{payer[field]-=d.total;s.coins+=your;p.coins+=r.share;r.paid=your;r.status='done';shift(s,key,1);if(r.assisted)rememberExperience(s,d.actor,'cooperation',true);record(s,d,'合作完成，实际分帐'+r.share+'文');s.result.push('实际总工钱'+d.total+'文：你'+your+'文，同伴'+r.share+'文；没有重复材料或自动掉落。');},advance);
  }
  if(choice==='withdraw'){
   if(!['open','ready'].includes(r.status))return fail('没有可撤回的这项合作。');return transact(s,'撤回 · '+d.name,0,0,()=>{detach(s,key,'合作撤回，同伴离队');r.status='withdrawn';if(!r.assisted)r.share=0;s.result.push('实际投入不退，未结算工钱不发；记录保留。');},advance);
