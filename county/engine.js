@@ -1,53 +1,54 @@
-import {makeForestContracts,forestContractsValid,forestAction} from './forest-contracts.js?v=5.37.1';
-import {makeAssessments,assessmentsValid,assessmentAction} from './assessments.js?v=5.37.1';
-import {makeArtisanOrders} from './artisan-orders.js?v=5.37.1';
-import {makeFort,fortValid,fortAction} from './fort.js?v=5.37.1';
-import {makeRaid,raidValid,raidAction} from './raid.js?v=5.37.1';
-import {makeDungeon,dungeonValid,dungeonAction,dungeonMovementBlocker} from './dungeon.js?v=5.37.1';
-import {CULTURE_SKILLS,CULTURE_ITEMS,makeCulture,cultureValid,cultureAction,cultureChoose,chessPendingValid} from './culture.js?v=5.37.1';
-import {PROFESSIONAL_IDS} from './professional-data.js?v=5.37.1';
-import {makeProfessionals,professionalsValid,professionalAction} from './professionals.js?v=5.37.1';
-import {CIVIC_SKILLS,makeCivic,civicValid,civicAction,tradePrice,consumeBargain} from './civic.js?v=5.37.1';
-import {MEAL_ITEMS,makeKitchen,kitchenValid,kitchenAction} from './kitchen.js?v=5.37.1';
-import {FIELD_SKILLS,makeFieldSkills,fieldSkillsValid,fieldAction,fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.37.1';
-import {CRAFT_SKILLS,CRAFT_ITEMS,craftAction} from './crafts.js?v=5.37.1';
-import {makeMobility,mobilityValid,bodyStats,BODY_ARTS,mobilityBlocker,mobilityPlan,mobilityPreview,gainBodyUse} from './mobility.js?v=5.37.1';
-import {makeMedicine,medicineValid,medicineAction,MEDICINE_ITEMS} from './medicine.js?v=5.37.1';
-import {makeCountyLife,countyEventDelay} from './county-life.js?v=5.37.1';
-import {makeSpoils,engageSpoils,settleSpoils} from './spoils.js?v=5.37.1';
-import {makeCompanions,beforeCompanionMove,expireCompanions} from './companions.js?v=5.37.1';
-import {makeThreads} from './threads.js?v=5.37.1';
-import {makeBusiness,businessCraftCost} from './business.js?v=5.37.1';
-import {makeOutings,outingDelay,outingMovementBlocker,outingFightBlocker,noticeOutings} from './outings.js?v=5.37.1';
-import {makeLaw,lawArrival} from './law.js?v=5.37.1';
-import {makeFactions} from './factions.js?v=5.37.1';
-import {makePlayerMentor,canStartMentorPractice} from './player-mentor.js?v=5.37.1';
-import {TRIALS,makeTrials,trialBlocker,trialPreview} from './trials.js?v=5.37.1';
-import {makeExploration} from './exploration.js?v=5.37.1';
-import {makeFeedback,eventOpen,ferryDelay} from './world-feedback.js?v=5.37.1';
-import {makeAdventures,adventuresValid,present,adventureAction as performAdventure,practiceFee,adventureDialogue} from './adventures.js?v=5.37.1';
-import {makeVillageSchool,villageTeacher,villageCanTeach} from './npc-village-school.js?v=5.37.1';
-import {makeJourneys,travelBusy} from './npc-journeys.js?v=5.37.1';
-import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=5.37.1';
-import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=5.37.1';
-import {makeRetirement} from './npc-economy.js?v=5.37.1';
-import {makeStudy,makeMentor} from './npc-martial.js?v=5.37.1';
-import {makeLife} from './npc-mortality.js?v=5.37.1';
-import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=5.37.1';
-import {makeContracts} from './npc-contracts.js?v=5.37.1';
-import {makeSocial,makeOutlook} from './npc-social.js?v=5.37.1';
-import {makeHouseholds} from './npc-households.js?v=5.37.1';
-import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=5.37.1';
-import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=5.37.1';
-import {gain,progress,MAX} from './progression.js?v=5.37.1';
-import {advance,random,npcPlace} from './world.js?v=5.37.1';
-import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=5.37.1';
-import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=5.37.1';
-import {injuryValid,treatInjury} from './injury.js?v=5.37.1';
-import {EQUIPMENT,equipmentWorkCost,wornUtility,useUtility,rainDelay,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=5.37.1';
-import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=5.37.1';
-import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=5.37.1';
-import {makeSociety,societyValid,districtStatus} from './society.js?v=5.37.1';
+import {PRACTICE_XP,resourceGrowth,practiceAward} from './practice-growth.js?v=5.38.0';
+import {makeForestContracts,forestContractsValid,forestAction} from './forest-contracts.js?v=5.38.0';
+import {makeAssessments,assessmentsValid,assessmentAction} from './assessments.js?v=5.38.0';
+import {makeArtisanOrders} from './artisan-orders.js?v=5.38.0';
+import {makeFort,fortValid,fortAction} from './fort.js?v=5.38.0';
+import {makeRaid,raidValid,raidAction} from './raid.js?v=5.38.0';
+import {makeDungeon,dungeonValid,dungeonAction,dungeonMovementBlocker} from './dungeon.js?v=5.38.0';
+import {CULTURE_SKILLS,CULTURE_ITEMS,makeCulture,cultureValid,cultureAction,cultureChoose,chessPendingValid} from './culture.js?v=5.38.0';
+import {PROFESSIONAL_IDS} from './professional-data.js?v=5.38.0';
+import {makeProfessionals,professionalsValid,professionalAction} from './professionals.js?v=5.38.0';
+import {CIVIC_SKILLS,makeCivic,civicValid,civicAction,tradePrice,consumeBargain} from './civic.js?v=5.38.0';
+import {MEAL_ITEMS,makeKitchen,kitchenValid,kitchenAction} from './kitchen.js?v=5.38.0';
+import {FIELD_SKILLS,makeFieldSkills,fieldSkillsValid,fieldAction,fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.38.0';
+import {CRAFT_SKILLS,CRAFT_ITEMS,craftAction} from './crafts.js?v=5.38.0';
+import {makeMobility,mobilityValid,bodyStats,BODY_ARTS,mobilityBlocker,mobilityPlan,mobilityPreview,gainBodyUse} from './mobility.js?v=5.38.0';
+import {makeMedicine,medicineValid,medicineAction,MEDICINE_ITEMS} from './medicine.js?v=5.38.0';
+import {makeCountyLife,countyEventDelay} from './county-life.js?v=5.38.0';
+import {makeSpoils,engageSpoils,settleSpoils} from './spoils.js?v=5.38.0';
+import {makeCompanions,beforeCompanionMove,expireCompanions} from './companions.js?v=5.38.0';
+import {makeThreads} from './threads.js?v=5.38.0';
+import {makeBusiness,businessCraftCost} from './business.js?v=5.38.0';
+import {makeOutings,outingDelay,outingMovementBlocker,outingFightBlocker,noticeOutings} from './outings.js?v=5.38.0';
+import {makeLaw,lawArrival} from './law.js?v=5.38.0';
+import {makeFactions} from './factions.js?v=5.38.0';
+import {makePlayerMentor,canStartMentorPractice} from './player-mentor.js?v=5.38.0';
+import {TRIALS,makeTrials,trialBlocker,trialPreview} from './trials.js?v=5.38.0';
+import {makeExploration} from './exploration.js?v=5.38.0';
+import {makeFeedback,eventOpen,ferryDelay} from './world-feedback.js?v=5.38.0';
+import {makeAdventures,adventuresValid,present,adventureAction as performAdventure,practiceFee,adventureDialogue} from './adventures.js?v=5.38.0';
+import {makeVillageSchool,villageTeacher,villageCanTeach} from './npc-village-school.js?v=5.38.0';
+import {makeJourneys,travelBusy} from './npc-journeys.js?v=5.38.0';
+import {makeClinic,clinicDoctor,clinicQuote,payClinic} from './npc-clinic.js?v=5.38.0';
+import {makeSchool,schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=5.38.0';
+import {makeRetirement} from './npc-economy.js?v=5.38.0';
+import {makeStudy,makeMentor} from './npc-martial.js?v=5.38.0';
+import {makeLife} from './npc-mortality.js?v=5.38.0';
+import {makeLineage,makeChildLivelihood} from './npc-lineage.js?v=5.38.0';
+import {makeContracts} from './npc-contracts.js?v=5.38.0';
+import {makeSocial,makeOutlook} from './npc-social.js?v=5.38.0';
+import {makeHouseholds} from './npc-households.js?v=5.38.0';
+import {makeNPCWorld,npcWorldValid} from './npc-simulation.js?v=5.38.0';
+import {places,items,skills,resources,nodeDefs,recipes,markets,people,talents} from './content.js?v=5.38.0';
+import {gain,progress,MAX} from './progression.js?v=5.38.0';
+import {advance,random,npcPlace} from './world.js?v=5.38.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES,DISTANCES,STANCES} from './martial-data.js?v=5.38.0';
+import {makeMartial,learn as learnArt,equip as equipArt,train as trainArt,beginMartialCombat,martialTurn,martialMoveTurn,usableMoves} from './martial-progression.js?v=5.38.0';
+import {injuryValid,treatInjury} from './injury.js?v=5.38.0';
+import {EQUIPMENT,equipmentWorkCost,wornUtility,useUtility,rainDelay,makeEquipment,equipmentValid,equipmentAction as equipmentManage} from './equipment.js?v=5.38.0';
+import {makeLivelihood,livelihoodValid,jobAvailability,jobOutcome} from './livelihood.js?v=5.38.0';
+import {makeCommerce,commerceValid,transactionStock,recordTrade,marketPrice,INITIAL_BUDGET} from './commerce.js?v=5.38.0';
+import {makeSociety,societyValid,districtStatus} from './society.js?v=5.38.0';
 export const KEY='jianghu-qinghe-county-v1';
 const startSoloCombat=(s,id)=>{beginMartialCombat(s,id);engageSpoils(s,id,s.result);expireCompanions(s);};
 export function fresh(p={}){return {version:'county-1',name:String(p.name||'无名客').trim().slice(0,12)||'无名客',age:Math.max(16,Math.min(60,Math.floor(Number(p.age)||18))),gender:p.gender==='女'?'女':'男',background:['农家','学徒','小贩'].includes(p.background)?p.background:'农家',personality:['谨慎','随和','勤奋'].includes(p.personality)?p.personality:'谨慎',talent:Object.hasOwn(talents,p.talent)?p.talent:'ordinary',day:1,minute:480,place:'county',weather:'晴',coins:30,hp:100,energy:100,dead:false,forestContracts:makeForestContracts(),assessments:makeAssessments(),martial:makeMartial(),dungeon:makeDungeon(),raid:makeRaid(),fort:makeFort(),culture:makeCulture(),professionals:makeProfessionals(),civic:makeCivic(),kitchen:makeKitchen(),fieldSkills:makeFieldSkills(),mobility:makeMobility(),medicine:makeMedicine(),equipment:makeEquipment(),livelihood:makeLivelihood(),commerce:makeCommerce(),society:makeSociety(),npcWorld:makeNPCWorld(),adventures:makeAdventures(),injuries:{},injuryRecovery:{},seed:823471,bag:Object.fromEntries(Object.keys(items).map(k=>[k,k==='food'?2:0])),skills:Object.fromEntries(Object.keys(skills).map(k=>[k,0])),relations:Object.fromEntries(Object.keys(people).map(k=>[k,0])),talkDays:{},socialActions:{},nodes:Object.fromEntries(Object.entries(nodeDefs).map(([k,n])=>[k,{left:n.capacity,refreshDay:3}])),encounterDay:0,pending:null,combat:null,news:[],journal:[],result:['你是初到青河县的普通人。可以找活、认识当地人，也可以自行出门。']};}
@@ -59,7 +60,7 @@ function settle(s,title,minutes,energy,run,xp={}){if(s.energy<energy)return fail
 export function move(s,to,rng=()=>random(s),mode='walk'){if(!available(s))return false;const blocked=outingMovementBlocker(s);if(blocked)return fail(s,blocked);if(!places[s.place].routes.includes(to))return fail(s,'这里没有直达的路，请按地图分段走。');if(!['walk','light','confirmed'].includes(mode))return fail(s,'没有这种赶路方式。');if(mode!=='walk'){const why=mobilityBlocker(s,to);if(why)return fail(s,why);if(mode==='light'){s.pending={type:'mobility',to};s.result=[mobilityPreview(s,to),'确认后才消耗精力与时间，可取消。'];return true;}}noticeOutings(s);const outdoor=places[to].area!=='县城与近郊'||to==='road',minutes=places[to].minutes+rainDelay(s,outdoor)+ferryDelay(s,to)+outingDelay(s,to)+countyEventDelay(s,to);const plan=mode==='confirmed'?mobilityPlan(s,to):null,success=!plan||rng()<plan.chance;return settle(s,(plan?'轻功 · ':'前往')+places[to].name,minutes+(plan?(success?-plan.saving:15):0),plan?plan.energy:0,()=>{if(s.weather==='雨'&&outdoor)useUtility(s,'rain_cloak');if(plan){useFieldClue(s,'navigation');gainBodyUse(s,plan.kind==='climb');if(!success){s.hp=Math.max(0,s.hp-plan.damage);if(plan.kind==='climb')s.injuries.strain=Math.min(5,(s.injuries.strain||0)+1);if(!s.hp){s.dead=true;s.pending=null;s.combat=null;}s.result.push('身法失误，留在'+places[s.place].name+'；气血损失'+plan.damage+(plan.kind==='climb'?'，拉伤加重一级。':'。'));return;}s.result.push('成功运身通过；只节省原道路时间，天气和事件延误仍保留。');}beforeCompanionMove(s,to);s.place=to;lawArrival(s,rng);if(to==='oldroad'&&s.encounterDay!==s.day){s.encounterDay=s.day;if(rng()<.25){s.pending={type:'bandit'};s.result.push('拦路人出现：可以绕行半小时或交手，实战可能致命。');}else s.result.push('旧道暂时安静，今天没有遇到拦路人。');}});}
 export function chance(s,d){const base=Math.min(.95,d.chance+(progress(s.skills[d.skill]).level-1)*.02+(s.talent==='observant'?.03:0)-(s.weather==='雨'?.1:0))*(s.energy-cost(s,d.energy)<20?.75:1);return d.skill==='hunt'?fieldChance(s,'tracking',base+(wornUtility(s,'hunting_vest')?.08:0)):base;}
 export function resourceBlocker(s,key){const d=resources[key],node=s.nodes[s.place+':'+key];if(!d||!node)return '这里没有这项资源。';if(s.hp<25)return '伤势太重，先治疗再采集。';if(key==='vegetables'&&(s.minute<360||s.minute+d.minutes>1080))return '余菜分拣需在农户06:00–18:00内完成。';if(node.left<=0)return '本处已经暂时采尽，第'+node.refreshDay+'日恢复。';if(key==='fine_ore'&&s.skills.mining<30||key==='cold_ore'&&s.skills.mining<60||key==='meteor_ore'&&s.skills.mining<100)return '矿层太深，需先提高采矿经验（精铁30、寒铁60、陨铁100）。';if(key==='aromatic_herb'&&s.skills.herb<10||key==='mountain_root'&&s.skills.herb<30||key==='cliff_bloom'&&s.skills.herb<60)return '需采药经验：芳草10、山参根30、崖生药花60。';if(Object.entries(d.output).some(([k,n])=>s.bag[k]>1000000-n))return '背包资源库存已满，不消耗采集次数。';if(key==='hardwood'&&s.skills.forage<30)return '硬木辨选需采集经验30。';if(d.tool&&!s.bag[d.tool])return '需要'+items[d.tool]+'，工具可重复使用。';if(s.energy<cost(s,d.energy))return '精力不足，先休息。';return null;}
-function gather(s,key,rng){const d=resources[key],why=resourceBlocker(s,key);if(why)return fail(s,why);const success=rng()<chance(s,d),risk=fieldRisk(s,d.risk);return settle(s,d.name,d.minutes,cost(s,d.energy),()=>{s.nodes[s.place+':'+key].left--;s.pending=null;if(success){for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push('本次收获：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、'));}else s.result.push('这次没有找到合用资源，时间与精力已付出。');if(risk&&rng()<risk){s.hp=Math.max(0,s.hp-d.damage);s.result.push('矿山或野外受伤，气血损失'+d.damage+'点。');if(s.hp===0){s.dead=true;s.pending=null;s.result.push('伤重身亡，这段人生结束。');}}if(key==='hunt'){useFieldClue(s,'tracking');useUtility(s,'hunting_vest');}if(d.risk)useFieldClue(s,'awareness');s.result.push('本资源点每两日恢复，离开再进入不会刷新。');},{[d.skill]:success?2:1});}
+function gather(s,key,rng){const d=resources[key],why=resourceBlocker(s,key);if(why)return fail(s,why);const success=rng()<chance(s,d),risk=fieldRisk(s,d.risk);return settle(s,d.name,d.minutes,cost(s,d.energy),()=>{s.nodes[s.place+':'+key].left--;s.pending=null;if(success){for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push('本次收获：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、'));}else s.result.push('这次没有找到合用资源，时间与精力已付出。');if(risk&&rng()<risk){s.hp=Math.max(0,s.hp-d.damage);s.result.push('矿山或野外受伤，气血损失'+d.damage+'点。');if(s.hp===0){s.dead=true;s.pending=null;s.result.push('伤重身亡，这段人生结束。');}}if(key==='hunt'){useFieldClue(s,'tracking');useUtility(s,'hunting_vest');}if(d.risk)useFieldClue(s,'awareness');s.result.push('本资源点每两日恢复，离开再进入不会刷新。');},{[d.skill]:success?resourceGrowth(d).success:resourceGrowth(d).failure});}
 export function trade(s,type,key,n=1){if(!available(s))return false;const m=markets[s.place];if(m&&districtStatus(s,s.place).closed)return fail(s,'商铺暂时歇业，可去另一处集市或改日再来。');if(!m||s.minute<m.open||s.minute+15>m.close)return fail(s,'此处商铺未营业或已来不及成交。');if(!['buy','sell'].includes(type)||!Number.isInteger(n)||n<1||n>20)return fail(s,'交易数量需为1–20的整数。');const price=tradePrice(s,s.place,type,key,n);if(price===null)return fail(s,'这里不经营这件物品。');if(type==='buy'&&(s.coins<price*n||s.bag[key]>1000000-n)||type==='sell'&&(s.bag[key]<n||s.coins>10000000-price*n))return fail(s,'钱或库存不足，整笔未成交。');const stockError=transactionStock(s,type,key,n,price);if(stockError)return fail(s,stockError);return settle(s,(type==='buy'?'购买':'出售')+items[key]+'×'+n,15,1,()=>{s.coins+=(type==='buy'?-1:1)*price*n;s.bag[key]+=(type==='buy'?1:-1)*n;recordTrade(s,type,key,n,price);consumeBargain(s,type,key,n);s.result.push('单价'+price+'文，总价'+price*n+'文。');},type==='sell'?{trade:1}:{});}
 export function socialChoice(s,key,choice){
  if(!available(s))return false;
@@ -100,7 +101,7 @@ export function act(s,id,rng=()=>random(s)){
  if(String(id).startsWith('mobility:')){const parts=String(id).split(':');if(id==='mobility:guide'){s.result=['人物页学基础步法、选用身法并练习；30点可赶路，120点可初步越障。道路分类显示实际风险；不强迫战斗。'];return true;}if(parts.length===3&&parts[1]==='select'&&(parts[2]==='none'||BODY_ARTS.includes(parts[2])&&s.martial.known[parts[2]])){s.mobility.art=parts[2]==='none'?null:parts[2];s.result=['辅助身法已'+(s.mobility.art?'选用'+MARTIAL_ARTS[s.mobility.art].name:'停用')+'，主武学未变。'];return true;}return fail(s,'先学会这门身法，才能独立选用。');}
  if(String(id).startsWith('medicine:'))return medicineAction(s,id,{settle:(...args)=>settle(...args),rng});
  if(Object.hasOwn(resources,id)){const why=resourceBlocker(s,id);if(why)return fail(s,why);const d=resources[id];if(d.risk){s.pending={type:'resource',key:id};s.result=['确认危险采集：'+d.name,`有${Math.round(fieldRisk(s,d.risk)*100)}%擦伤${d.damage}点气血的风险，可以不参与；尚未扣精力或时间。`];return true;}return gather(s,id,rng);}
- if(id==='work'){if(!places[s.place].work)return fail(s,'这里没有普通短工。');const blocked=jobAvailability(s);if(blocked)return fail(s,blocked);if(s.hp<25)return fail(s,'先养伤，再做重活。');const open=s.place==='fields'||s.place==='dock'?360:420,close=1080;if(s.minute<open||s.minute+180>close)return fail(s,'短工需在白天营业时段内做完3小时。');return settle(s,'完成一份短工',180,cost(s,24),()=>jobOutcome(s,rng),{[s.place==='fields'?'farming':'carry']:2});}
+ if(id==='work'){if(!places[s.place].work)return fail(s,'这里没有普通短工。');const blocked=jobAvailability(s);if(blocked)return fail(s,blocked);if(s.hp<25)return fail(s,'先养伤，再做重活。');const open=s.place==='fields'||s.place==='dock'?360:420,close=1080;if(s.minute<open||s.minute+180>close)return fail(s,'短工需在白天营业时段内做完3小时。');return settle(s,'完成一份短工',180,cost(s,24),()=>jobOutcome(s,rng),{[s.place==='fields'?'farming':'carry']:PRACTICE_XP.work});}
  if(id==='rest')return settle(s,'歇息',120,0,()=>{s.energy=Math.min(100,s.energy+30);s.hp=Math.min(100,s.hp+10);});
  if(id==='waitMorning'){if(s.minute>=480&&s.minute<1080)return fail(s,'现在是白天，可继续行动；夜间可等待至08:00。');const minutes=s.minute<480?480-s.minute:1440-s.minute+480;return settle(s,'等待至08:00',minutes,0,()=>{s.result.push('实际等待'+minutes+'分钟，不恢复气血或精力、不收费；跨日照常处理伤势、期限与世界变化。');});}
  if(id==='wait')return settle(s,'等候半小时',30,0,()=>{s.result.push('等候不恢复精力或气血。');});
@@ -108,7 +109,7 @@ export function act(s,id,rng=()=>random(s)){
  if(id==='eat'||id==='heal'){const key=id==='eat'?'food':'herb';if(!s.bag[key])return fail(s,'没有'+items[key]+'。');if(s.hp===100&&(id==='heal'&&!Object.keys(s.injuries||{}).some(k=>['bruise','cut','strain'].includes(k))||id==='eat'&&s.energy===100))return fail(s,'现在不需要恢复，不消耗物品。');return settle(s,id==='eat'?'吃干粮':'用常见药材处理伤口',15,0,()=>{s.bag[key]--;s.hp=Math.min(100,s.hp+(id==='eat'?5:20));if(id==='eat')s.energy=Math.min(100,s.energy+12);else {for(const injury of ['cut','strain','bruise'])if(s.injuries?.[injury]){s.result.push(treatInjury(s,injury,'herb'));break;}}});}
  if(id==='doctor'){const doctor=clinicDoctor(s);if(!doctor||doctor.life.deathDay)return fail(s,'医者已故或岗位空缺，不能提供诊治。');if(doctor.retirement.active)return fail(s,'医者已退养，等待合格居民接任。');if(doctor.life.sickDays||doctor.life.restDay===s.day||doctor.injuryDays)return fail(s,'医者正在休养，今日不能提供诊治。');if(s.place!=='village'||s.minute<480||s.minute+60>1080)return fail(s,'请在河湾村08:00–18:00内完成诊治，共1小时。');if(s.hp===100&&!Object.keys(s.injuries||{}).length)return fail(s,'无需治疗。');if(s.coins<8)return fail(s,'诊金8文，不足则不治疗。');if(doctor.coins>999992)return fail(s,'医者暂时无法收款。');const successor=doctor.id!=='doctor';if(successor&&clinicQuote(s,s,doctor)===null)return fail(s,'现任医者身体、精力或实际药材不足，暂不能诊治。');return settle(s,'医者治疗',60,0,()=>{if(successor)payClinic(s,s,doctor);else {s.coins-=8;doctor.coins+=8;}s.hp=Math.min(100,s.hp+50);for(const injury of Object.keys(s.injuries||{}))s.result.push(treatInjury(s,injury,'doctor'));});}
  if(id==='train'){if(s.place!=='school'||s.minute<480||s.minute+120>1080)return fail(s,'请在武馆08:00–18:00内完成基础练习，共2小时。');if(s.hp<25)return fail(s,'先养伤。');return settle(s,'练习入门拳脚',120,18,()=>{s.result.push('基础拳脚经验已积累；已学武艺可在人物页选择一小时练习。');},{fist:2});}
- if(Object.hasOwn(recipes,id)){const d=recipes[id];if(s.place!=='workshop'||s.minute<420||s.minute+d.minutes>1080)return fail(s,'请在作坊07:00–18:00内完成加工。');for(const [k,n] of Object.entries(d.input))if(s.bag[k]<n)return fail(s,items[k]+'不足，未消耗材料。');return settle(s,d.name,d.minutes,d.energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push('本次生产：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、'),'材料消耗：'+Object.entries(d.input).map(([k,n])=>items[k]+' -'+n).join('、'),'当前库存：'+Object.keys(d.input).map(k=>items[k]+' '+s.bag[k]).join('、'));},{[d.skill]:2});}
+ if(Object.hasOwn(recipes,id)){const d=recipes[id];if(s.place!=='workshop'||s.minute<420||s.minute+d.minutes>1080)return fail(s,'请在作坊07:00–18:00内完成加工。');for(const [k,n] of Object.entries(d.input))if(s.bag[k]<n)return fail(s,items[k]+'不足，未消耗材料。');return settle(s,d.name,d.minutes,d.energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push('本次生产：'+Object.entries(d.output).map(([k,n])=>items[k]+'×'+n).join('、'),'材料消耗：'+Object.entries(d.input).map(([k,n])=>items[k]+' -'+n).join('、'),'当前库存：'+Object.keys(d.input).map(k=>items[k]+' '+s.bag[k]).join('、'));},{[d.skill]:d.minutes>=120?12:8});}
  return fail(s,'这项行动尚未实装。');
 }
 export function choose(s,id,rng=()=>random(s)){if(s.dead||!s.pending)return fail(s,'没有待决定的事情。');if(s.pending.type==='chess')return cultureChoose(s,id,{settle:(...args)=>settle(...args),rng});if(s.pending.type==='mobility'){if(id==='leave'){s.pending=null;s.result=['取消轻功赶路，没有消耗时间、精力或钱物。'];return true;}if(id!=='traverse')return fail(s,'请选择确认通过或取消。');const to=s.pending.to,why=mobilityBlocker(s,to,true);if(why)return fail(s,why);const blocked=outingMovementBlocker(s);if(blocked)return fail(s,blocked);s.pending=null;return move(s,to,rng,'confirmed');}if(s.pending.type==='resource'){if(id==='leave'){s.pending=null;s.result=['你没有进行危险采集，时间、精力和库存未变。'];return true;}if(id==='gather')return gather(s,s.pending.key,rng);return fail(s,'请选择采集或离开。');}if(!['avoid','fight'].includes(id))return fail(s,'请选择绕开或交手。');return settle(s,id==='avoid'?'绕开拦路人':'迎战拦路人',id==='avoid'?30:1,0,()=>{s.pending=null;if(id==='fight'){if(s.martial?.known?.[s.martial.equipped]){startSoloCombat(s,'brawler');s.result.push('旧道遭遇转入战术交手，逃离并不保证成功。');}else{s.combat={hp:28};engageSpoils(s,'brawler',s.result);s.result.push('尚未习武，以普通拳脚应对；可选择撤离。');}}});}
@@ -150,7 +151,7 @@ export function equipmentAction(s,kind,id,rng=()=>random(s)){
  if(result&&['craft','repair'].includes(kind)&&EQUIPMENT[id]){
   const work=equipmentWorkCost(EQUIPMENT[id],kind);
   s.energy-=work.energy;
-  if(kind==='craft'){const line=gain(s,'smelt',2);if(line)s.result.push(line);}
+  if(kind==='craft'){const line=gain(s,'smelt',practiceAward(s,0,Object.hasOwn(s.equipment.owned,id)?(EQUIPMENT[id].tier>=3?20:12):4));if(line)s.result.push(line);}
   advance(s,work.minutes);
   s.result.push('作业耗时'+work.minutes+'分钟，精力 -'+work.energy+'。');
  }
