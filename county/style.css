@@ -22,3 +22,5 @@ input,select,textarea{font-size:16px}textarea{display:block;width:100%;min-width
 .local-contact>.heading{position:sticky;top:0;z-index:1;background:var(--surface);padding:8px 0;border-bottom:1px solid var(--line)}
 .local-contact h3:focus{outline:none}.local-contact .contact-services{padding-top:8px}.contact-services>.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.contact-services>button{min-height:46px}.scene-actions-fold>summary{font-size:12px;color:var(--muted)}
 @media(max-height:480px){.local-contact{max-height:52dvh;bottom:calc(62px + env(safe-area-inset-bottom))}}
+
+.route-situation{font-size:12px;line-height:1.65;border-left:3px solid #8a7853;background:#eeeadb;padding:7px 9px;margin:8px 0;color:#665536}

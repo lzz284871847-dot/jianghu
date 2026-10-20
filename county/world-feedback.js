@@ -1,6 +1,6 @@
 // Finite local responses and events; no repeating daily or lifetime simulation.
 export const EVENTS={
- ferry:{name:'旧渡口修栈道',place:'dock',holder:'boatman',offset:1,days:2,description:'栈道受阻期间进出旧渡口多走15分钟；到青石码头找船家接洽。可交木料2份修补（45分钟/精力10）；熟手搬运可改用90分钟/精力20实际劳作。支付8文来自船家余额。'},
+ ferry:{name:'旧渡口修栈道',place:'dock',holder:'boatman',offset:1,days:2,description:'栈道受阻期间进出旧渡口多走15分钟，柳溪原定补货暂缓、脚夫名额缩减；到青石码头找船家接洽。可交木料2份修补（45分钟/精力10）；熟手搬运可改用90分钟/精力20实际劳作。支付8文来自船家余额。'},
  market:{name:'赶集备货',place:'workshop',holder:'smith',offset:3,days:2,description:'交铁料2份、作业1小时/精力10，支付18文来自铁匠余额；作坊熟手可用铁料1份并花90分钟/精力16精加工。'},
  bout:{name:'武馆公开切磋',place:'school',holder:'master',offset:5,days:2,description:'使用已学拳掌实际陪练，准备30分钟，正常收费与收手线；至少交手3回合记为参与。武馆成员取得1点贡献；提前停止也留记录，无实战胜利或钱物奖励。'}
 };
@@ -10,6 +10,14 @@ const statuses=['joined','ignored','withdrew','entered'];
 export function feedbackValid(s){const f=s.adventures.feedback,obj=x=>x&&typeof x==='object'&&!Array.isArray(x);return obj(f)&&Object.keys(f).length===3&&Number.isSafeInteger(f.startDay)&&f.startDay>=1&&f.startDay<=s.day&&obj(f.followups)&&Object.entries(f.followups).every(([k,v])=>followups[k]&&['helped','explained','declined'].includes(v)&&(s.adventures.done.includes(followups[k].quest)||s.adventures.failed.includes(followups[k].quest))&&(v!=='helped'||s.adventures.done.includes(followups[k].quest)))&&obj(f.events)&&Object.entries(f.events).every(([k,v])=>EVENTS[k]&&statuses.includes(v)&&(v!=='withdrew'||k==='bout')&&(v!=='entered'||k==='bout'&&s.combat?.practice===true)&&(s.day>=f.startDay+EVENTS[k].offset)&&(v!=='ignored'||s.day>f.startDay+EVENTS[k].offset+EVENTS[k].days));}
 export const eventOpen=(s,id)=>{const d=EVENTS[id],f=s.adventures.feedback;return d&&!f.events[id]&&s.day>=f.startDay+d.offset&&s.day<=f.startDay+d.offset+d.days;};
 export function expireFeedback(s){const f=s.adventures?.feedback;if(!f)return;for(const [id,d] of Object.entries(EVENTS))if(!f.events[id]&&s.day>f.startDay+d.offset+d.days){f.events[id]='ignored';s.news.unshift(d.name+'已结束：乡邻自行收尾，你未参与，无罚款。');s.news.length=Math.min(20,s.news.length);}}
+// The existing finite repair window also governs the actual delivery corridor.
+export function tradeRouteBlocked(s,day=s.day){const f=s.adventures?.feedback,d=EVENTS.ferry;return !!f&&!f.events.ferry&&day>=f.startDay+d.offset&&day<=f.startDay+d.offset+d.days;}
+export function tradeRouteNotice(s,place=s.place){
+ if(!['county','market','dock','ferry','liuxi'].includes(place))return '';
+ if(tradeRouteBlocked(s))return place==='liuxi'?'渡口栈道受阻：货队暂缓补货，缺货粮药木料提高收购价，脚夫名额缩减；可自行带货来卖。':place==='market'?'柳溪货队被阻在旧渡口；柳掌柜可接洽一次供粮合作，需自备干粮，并不代表整座集市补货。':'旧渡口栈道受阻，柳溪货队暂缓通行；可到码头找贺船工修补，也可等待乡邻自行收尾。';
+ const f=s.adventures?.feedback;if(f&&s.day>=f.startDay+1&&s.day<=f.startDay+5&&(f.events.ferry==='joined'||s.day>f.startDay+3))return '渡口已恢复通行，柳溪货队按原定单日补货；现有货架不会立即补满。';
+ return '';
+}
 export const ferryDelay=(s,to)=>eventOpen(s,'ferry')&&(to==='ferry'||s.place==='ferry')?15:0;
 export function finishFeedbackBout(s,c,log){const f=s.adventures?.feedback;if(!c.practice||f?.events.bout!=='entered')return;f.events.bout=c.round>=3?'joined':'withdrew';if(c.round>=3&&s.adventures.org.id==='school'){s.adventures.org.rep.school=Math.min(100,s.adventures.org.rep.school+1);log.push('作为武馆成员完成公开切磋，贡献 +1。');}log.push(c.round>=3?'公开切磋留下了实际参与记录。':'提前收手，公开切磋记录为退出，不发贡献。');}
 export function feedbackAction(s,id,{present,transact,advance}){
@@ -40,4 +48,4 @@ export function feedbackOptions(s){const f=s.adventures.feedback,out=[],add=(id,
  return out;
 }
 export function feedbackSummary(s){const f=s.adventures.feedback;return Object.entries(EVENTS).map(([id,d])=>{const begin=f.startDay+d.offset,end=begin+d.days,status=f.events[id];return d.name+' · 第'+begin+'—'+end+'日 · '+(status==='joined'?'已参与':status==='ignored'?'未参与，乡邻自行收尾':status==='withdrew'?'提前退出':status==='entered'?'正在交手':s.day<begin?'预告':s.day<=end?'开放中':'已结束')+' · '+d.description;});}
-export function feedbackDialogue(s,id){const v=s.adventures.feedback.followups[id];return v==='helped'?'后续合作已结清，对方记得你的实际帮助。':v==='explained'?'你已说清经过，这件事有了交代。':v==='declined'?'你婉拒了后续，对方不会继续催办。':null;}
+export function feedbackDialogue(s,id){const v=s.adventures.feedback.followups[id],base=v==='helped'?'后续合作已结清，对方记得你的实际帮助。':v==='explained'?'你已说清经过，这件事有了交代。':v==='declined'?'你婉拒了后续，对方不会继续催办。':null,route=['merchant','boatman','stallholder'].includes(id)?tradeRouteNotice(s,id==='merchant'?'market':id==='boatman'?'dock':'liuxi'):'';return [base,route].filter(Boolean).join(' ')||null;}

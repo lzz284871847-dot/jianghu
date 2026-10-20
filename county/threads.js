@@ -1,4 +1,5 @@
-import {gain} from './progression.js?v=5.40.1';
+import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.41.0';
+import {gain} from './progression.js?v=5.41.0';
 // Finite follow-up opportunities; eligibility is earned from existing playable outcomes.
 export const GOALS={settle:{name:'谋生安顿',hint:'先做短工或一项委托，攒够12文可选择客栈短租；无需习武。'},artisan:{name:'手艺立足',hint:'通过采集、炼铁、种植或交易积累手艺，再选择一项经营；别把全部钱投入。'},martial:{name:'习武闯荡',hint:'武馆学一门入门武学，真实交手积累经验；陪练可收手，野外实战可能永久死亡。'},explore:{name:'县境游历',hint:'先准备口粮药材，搜寻两处旧址并处理一次县境冒险；可绕行或非战斗解决。'}};
 export const THREADS={
@@ -6,13 +7,13 @@ export const THREADS={
  forge:{name:'装备交付后的复核',place:'workshop',holder:'smith',payer:'smith',reward:8,relation:'smith',skill:'smelt',routes:['inspect','repair'],description:'交过装备后，铁匠请你复核一批接头。检查30分钟/精力4，熟手更有把握；或用自己铁料1份，60分钟/精力10重新补牢。完成后由铁匠支付8文；失败不退材料。'},
  herbs:{name:'药篓见闻与供药',place:'village',holder:'doctor',payer:'doctor',reward:6,relation:'doctor',skill:'herb',routes:['sort','supply'],description:'旧渡口搜寻的见闻带来医者合作。用自己的药材1份辨拣，45分钟/精力6，熟手更稳；或供药材2份，由医者复核30分钟/精力4。验收后支付6文，不凭空回血。'},
  rescue:{name:'救工之后的修具',place:'workshop',holder:'smith',payer:'smith',reward:10,relation:'smith',skill:'smelt',routes:['rebuild','tool'],description:'矿洞救工交代后，许铁匠找你修整支架。用铁料1、木料1，60分钟/精力12；或带自己的矿镐辅助拆整，90分钟/精力16，工具不消耗。仍可能失手，完成支付10文。'},
- escort:{name:'势力接洽后的供粮',place:'market',holder:'merchant',payer:'stallholder',reward:12,relation:'merchant',skill:'carry',routes:['accept','safe','quick'],description:'处理护送规矩后，柳掌柜介绍一项柳溪供粮。投入自己的干粮1份，3日内经旧渡口选择稳妥或近路，再去柳溪交给魏婶，实际支付12文。货物独立留存，近路可能擦伤并永久死亡。'},
+ escort:{name:'柳溪供粮接洽',place:'market',holder:'merchant',payer:'stallholder',reward:12,relation:'merchant',skill:'carry',routes:['accept','safe','quick'],description:'商路受阻或处理护送规矩后，可找柳掌柜接洽一次柳溪供粮。只向魏婶送一份干粮，不会凭空补满集市货架。投入自己的干粮1份，3日内经旧渡口选择稳妥或近路，再去柳溪交给魏婶，实际支付12文。货物独立留存，近路可能擦伤并永久死亡。'},
  testimony:{name:'亲历之后的查访',place:'county',holder:null,payer:'public',reward:6,relation:null,skill:'forage',routes:['tell','accept','check'],description:'实际胜利或完成查访证人后，捕快请你核对道路见闻。可陈述30分钟/精力4；或接下3日查访，到官道核对45分钟/精力8，再回县城交代。查访也可能失败，完成由县衙现有资金支付6文，不抹去案件。'}
 };
 const blank=()=>({status:'new',route:null,openedDay:0,dueDay:0,step:0,cargo:0,paid:0});
 export const makeThreads=()=>({goal:'none',records:Object.fromEntries(Object.keys(THREADS).map(id=>[id,blank()]))});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
-export function threadEligible(s,id){const a=s.adventures;switch(id){case 'cargo':return Object.entries(a.business.records).some(([k,r])=>k.startsWith('merchant')&&r.status==='active'&&r.step===1&&r.cargo>0);case 'forge':return Object.entries(a.business.records).some(([k,r])=>k.startsWith('smith')&&r.status==='done');case 'herbs':return a.sites.ferry==='found'||['shared','agreed'].includes(a.exploration.encounters.ferry);case 'rescue':return a.outings.records.mine.outcome==='done';case 'escort':return ['mediated','school','caravan'].includes(a.factions.cases.escort.outcome);case 'testimony':return a.victories.some(k=>['chief','staffhand'].includes(k))||a.law.jobs.witness.status==='done';default:return false;}}
+export function threadEligible(s,id){const a=s.adventures;switch(id){case 'cargo':return Object.entries(a.business.records).some(([k,r])=>k.startsWith('merchant')&&r.status==='active'&&r.step===1&&r.cargo>0);case 'forge':return Object.entries(a.business.records).some(([k,r])=>k.startsWith('smith')&&r.status==='done');case 'herbs':return a.sites.ferry==='found'||['shared','agreed'].includes(a.exploration.encounters.ferry);case 'rescue':return a.outings.records.mine.outcome==='done';case 'escort':return tradeRouteBlocked(s)||['mediated','school','caravan'].includes(a.factions.cases.escort.outcome);case 'testimony':return a.victories.some(k=>['chief','staffhand'].includes(k))||a.law.jobs.witness.status==='done';default:return false;}}
 export function threadsValid(s){const t=s.adventures.threads;if(!obj(t)||Object.keys(t).length!==2||!['none',...Object.keys(GOALS)].includes(t.goal)||!obj(t.records)||Object.keys(t.records).length!==6)return false;
  return Object.entries(THREADS).every(([id,d])=>{const r=t.records[id];if(!obj(r)||Object.keys(r).length!==7||!['new','active','claim','done','failed','left','died'].includes(r.status)||r.route!==null&&!d.routes.includes(r.route)||!int(r.openedDay,s.day)||!int(r.dueDay,s.day+3)||!int(r.step,1)||!int(r.cargo,1)||![0,d.reward].includes(r.paid))return false;
  if(r.status==='new')return Object.entries(blank()).every(([k,v])=>r[k]===v);
@@ -24,7 +25,7 @@ export function threadsValid(s){const t=s.adventures.threads;if(!obj(t)||Object.
  if(id==='escort'&&['claim','done'].includes(r.status)&&!['safe','quick'].includes(r.route))return false;
  if(id==='testimony'&&r.status==='active'&&(r.route!=='accept'||r.step!==0))return false;
  if(id==='testimony'&&['claim','done'].includes(r.status)&&!['tell','check'].includes(r.route))return false;
- const history=id==='cargo'?Object.entries(s.adventures.business.records).some(([k,b])=>k.startsWith('merchant')&&b.step>=1&&b.cost>0):threadEligible(s,id);if(!history)return false;
+ const history=id==='cargo'?Object.entries(s.adventures.business.records).some(([k,b])=>k.startsWith('merchant')&&b.step>=1&&b.cost>0):threadEligible(s,id)||id==='escort'&&r.openedDay>=s.adventures.feedback.startDay+EVENTS.ferry.offset&&r.openedDay<=s.adventures.feedback.startDay+EVENTS.ferry.offset+EVENTS.ferry.days;if(!history)return false;
  if(id==='escort'&&(['active','claim'].includes(r.status)?r.cargo!==1:['done','left'].includes(r.status)&&r.cargo!==0))return false;
  return true;
  });}

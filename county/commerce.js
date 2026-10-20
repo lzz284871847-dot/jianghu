@@ -1,7 +1,8 @@
-import {countyEventSurcharge} from './county-life.js?v=5.40.1';
-import {societyDay} from './society.js?v=5.40.1';
-import {farmDelivery} from './agriculture.js?v=5.40.1';
-import {markets} from './content.js?v=5.40.1';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.41.0';
+import {countyEventSurcharge} from './county-life.js?v=5.41.0';
+import {societyDay} from './society.js?v=5.41.0';
+import {farmDelivery} from './agriculture.js?v=5.41.0';
+import {markets} from './content.js?v=5.41.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
@@ -27,6 +28,7 @@ export function marketPrice(s,place,type,key){
   if(quantity>=24)return Math.max(1,Math.floor(base*.85))+surcharge;
   return base+surcharge;
  }
+ if(place==='liuxi'&&tradeRouteBlocked(s)&&quantity<=3&&['grain','herb','wood'].includes(key))return (quantity<=2?Math.ceil(base*1.15):base)+1;
  if(quantity>=24)return Math.max(1,Math.floor(base*.7));
  if(quantity<=2)return Math.max(1,Math.ceil(base*1.15));
  return base;
@@ -42,6 +44,7 @@ export function recordTrade(s,type,key,n,price=0){const c=ensureCommerce(s),shel
 export function dailyCommerce(s){
  const commerce=ensureCommerce(s),messages=[];
  for(let day=commerce.lastDay+1;day<=s.day;day++){
+  const arrived=[],delayed=[];
   for(const [place,m] of Object.entries(markets)){
    const shelf=commerce.stock[place],initial=initialMarket()[place];
    // Households purchase staples; caravans replenish basic shop goods every other day.
@@ -56,16 +59,17 @@ export function dailyCommerce(s){
    // Only acquired stock above the baseline is cleared, so new shelf goods do not grant extra opening cash.
    for(const key of ['cloth','hide','leather','fine_cloth','hardwood','cord','paper','ink','bamboo_flute','calligraphy_sheet']){if(!Object.hasOwn(shelf,key))continue;const sold=Math.min(1,Math.max(0,(shelf[key]||0)-(initial[key]||0)));shelf[key]-=sold;commerce.budget[place]=Math.min(1000000,commerce.budget[place]+sold*(m.sell[key]||1));}
    if(day%2===1){
-    const delayed=place==='liuxi'&&day%11===7;
-    if(delayed){messages.push('柳溪商路遇雨后泥泞，原定补货延迟；商铺只能靠现有存货交易。');continue;}
+    if(place==='liuxi'&&tradeRouteBlocked(s,day)){delayed.push(place);continue;}
     for(const [key,quantity] of Object.entries(initial))shelf[key]=Math.min(MARKET_LIMIT,shelf[key]+Math.max(1,Math.ceil(quantity/2)));
+    arrived.push(place);
     // Independent itinerant peddlers exchange goods and cash, not infinite merchant money.
     commerce.budget[place]=Math.min(1000000,commerce.budget[place]+(place==='market'?24:18));
    }
   }
-  const deliveryNews=farmDelivery(s,day,s.weather,MARKET_LIMIT);if(deliveryNews.length)messages.push(deliveryNews.join(' '));
+  const deliveryNews=farmDelivery(s,day,s.weather,MARKET_LIMIT);
+  if(day%2===1)deliveryNews.push([arrived.length?arrived.map(p=>p==='liuxi'?'柳溪':'县城').join('和')+'商贩补充了一批实际到货；居民照常购买粮药。':'',delayed.length?'旧渡口栈道受阻，柳溪原定补货延迟；县城货队不受此路段影响，未参与时乡邻也会自行收尾。':''].filter(Boolean).join(' '));
+  if(deliveryNews.length)messages.push(deliveryNews.join(' '));
   messages.push(...societyDay(s,day));
-  if(day%2===1)messages.push('县城和柳溪的商贩补充了一批日常货物；居民也会自行购买粮药。');
  }
  commerce.lastDay=s.day;
  return messages.slice(-2);

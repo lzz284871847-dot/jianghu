@@ -1,4 +1,5 @@
-import {stockAt,budgetAt} from './commerce.js?v=5.40.1';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.41.0';
+import {stockAt,budgetAt} from './commerce.js?v=5.41.0';
 // 青河县生计：每日短工名额、雇主履约和天气影响，不由玩家操作自动保底收益。
 export const JOBS=Object.freeze({
  county:{name:'县城杂役',slots:2,base:12,success:.83},
@@ -17,7 +18,8 @@ export function livelihoodPressure(s,place=s.place){
  const shortage=grain<=3;
  const merchant=place==='liuxi'?'liuxi':'market';
  const lowFunds=['liuxi','workshop'].includes(place)&&budgetAt(s,merchant)<25;
- return {shortage,lowFunds,slots:Math.max(1,JOBS[place]?.slots-(shortage&&['fields','county'].includes(place)?1:0)-(lowFunds?1:0))};
+ const routeBlocked=place==='liuxi'&&tradeRouteBlocked(s);
+ return {shortage,lowFunds,routeBlocked,slots:Math.max(1,JOBS[place]?.slots-(shortage&&['fields','county'].includes(place)?1:0)-(lowFunds?1:0)-(routeBlocked?1:0))};
 }
 export function jobAvailability(s){const job=JOBS[s.place];if(!job)return '这里没有招工。';const record=ensureLivelihood(s).workDays[s.place];const pressure=livelihoodPressure(s);if(record?.day===s.day&&record.count>=pressure.slots)return '今天此处短工名额已用完，明天可再来。';return null;}
 export function jobOutcome(s,rng){const job=JOBS[s.place],record=ensureLivelihood(s).workDays[s.place];const count=record?.day===s.day?record.count:0;
@@ -30,6 +32,6 @@ export function jobOutcome(s,rng){const job=JOBS[s.place],record=ensureLivelihoo
  s.result.push(roll<chance?'雇主验收合格，结清'+paid+'文。':'活计受天气、工序或验收影响，只结算'+paid+'文；并非每次都有满额收入。');
  if(count>0&&['dock','liuxi'].includes(s.place))s.result.push('同一雇主今日已有前一班短工，后续活计竞争更激烈，满额验收机会下降。');
  if(['dock','workshop'].includes(s.place)&&roll>=.97){const injury=4;s.hp=Math.max(1,s.hp-injury);s.result.push('短工意外：搬运时擦伤，气血 -'+injury+'；工时与验收结果照常结算，伤势不会自动恢复。');}
- s.result.push('今日本处已完成'+(count+1)+'/'+pressure.slots+'次短工。');if(pressure.shortage&&['fields','county'].includes(s.place))s.result.push('粮食紧缺，雇主缩减用工并提高验收要求。');if(pressure.lowFunds)s.result.push('商户周转资金紧张，雇主缩减用工。');
+ s.result.push('今日本处已完成'+(count+1)+'/'+pressure.slots+'次短工。');if(pressure.shortage&&['fields','county'].includes(s.place))s.result.push('粮食紧缺，雇主缩减用工并提高验收要求。');if(pressure.routeBlocked)s.result.push('栈道受阻，到货减少，柳溪雇主缩减脚夫名额。');if(pressure.lowFunds)s.result.push('商户周转资金紧张，雇主缩减用工。');
  return paid;
 }

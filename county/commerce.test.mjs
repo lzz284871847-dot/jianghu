@@ -110,12 +110,12 @@ test('failing a scarce purchase never charges more than displayed quote',async()
 });
 
 test('liuxi caravan delays leave real stock unchanged on disrupted delivery day',()=>{
- const s=fresh();s.day=6;s.commerce.lastDay=6;
+ const s=fresh();s.day=2;s.commerce.lastDay=2;
  s.commerce.stock.liuxi.wood=0;
  s.weather='雨';advance(s,1440-s.minute);
- assert.equal(s.day,7);
+ assert.equal(s.day,3);
  assert.equal(stockAt(s,'liuxi','wood'),0);
- assert.match(s.news.join(''),/柳溪商路遇雨后泥泞/);
+ assert.match(s.news.join(''),/旧渡口栈道受阻，柳溪原定补货延迟/);
  assert.ok(commerceValid(s));
  assert.doesNotThrow(()=>restore(JSON.stringify(s)));
 });
