@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {fresh,restore,adventureAction,move,talk,martialAction} from './engine.js';
+import {fresh,restore,adventureAction,move,talk,martialAction,socialChoice} from './engine.js';
 import {advance,npcPlace} from './world.js';
 import {npcAt} from './npc-simulation.js';
-import {COOPERATIONS,makeCompanions,companionLocation,companionOptions,companionSummary,sameMaster} from './companions.js';
+import {COOPERATIONS,makeCompanions,companionLocation,companionOptions,companionSummary,sameMaster,companionInviteTerms} from './companions.js';
 import {handbook} from './task-handbook.js';
 import {activityGroups} from './activity-layout.js';
+import {rememberExperience} from './county-life.js';
 import {importSave} from './storage.js';
 const run=(s,id,rng=()=>.5)=>adventureAction(s,'companion:'+id,rng);
 const r=(s,id)=>s.adventures.companions.records[id];
@@ -39,3 +40,29 @@ test('ordinary beginner completes actual boat cooperation on roads without learn
 
 test('injured partner refuses further walking and retains the wound when player leaves',()=>{const s=setup('peer');run(s,'peer:invite');move(s,'county',()=>1);move(s,'road',()=>1);run(s,'peer:quick',()=>0);assert.equal(move(s,'county',()=>1),true);assert.equal(r(s,'peer').joined,false);assert.equal(s.npcWorld.individuals.smithapprentice.injuryDays,1);assert.equal(r(s,'peer').conflict,'resolved');assert.doesNotThrow(()=>restore(JSON.stringify(s)));});
 test('same-school familiarity requires both actual mentor records rather than invented lineage',()=>{const s=setup('peer');assert.equal(sameMaster(s),false);s.adventures.mentor.member=true;s.adventures.mentor.joinedDay=1;const p=s.npcWorld.individuals.smithapprentice;p.study.practice=120;p.study.teacherTrust=12;p.study.mentor.joinedDay=1;assert.equal(sameMaster(s),true);assert.equal(run(s,'peer:invite'),true);assert.equal(r(s,'peer').trust,1);assert.doesNotThrow(()=>restore(JSON.stringify(s)));});
+
+const round=s=>assert.deepEqual(restore(JSON.stringify(s)),s);
+const refusal=(s,id)=>{const before=structuredClone(s);assert.equal(run(s,id),false);s.result=before.result;assert.deepEqual(s,before);};
+test('recent quarrel refuses a new invitation before charging; apology permits a real paid invitation',()=>{
+ const s=setup('smith');assert.ok(socialChoice(s,'smith','quarrel'));const before=structuredClone(s);assert.match(companionInviteTerms(s,'smith').blocker,/争执/);assert.match(companionOptions(s).find(o=>o.id==='companion:smith:invite').preview,/暂缓.*争执/);assert.deepEqual(s,before);refusal(s,'smith:invite');assert.ok(socialChoice(s,'smith','apologize'));assert.equal(companionInviteTerms(s,'smith').blocker,null);assert.ok(run(s,'smith:invite'));assert.equal(r(s,'smith').fee,2);round(s);
+});
+test('an unfulfilled signed promise pauses only new invitations for two days and costs nothing to refuse',()=>{
+ const s=setup('smith');s.relations.smith=3;rememberExperience(s,'smith','cooperation',true);assert.ok(adventureAction(s,'bond:smith:promise'));assert.ok(adventureAction(s,'bond:smith:withdraw'));assert.match(companionInviteTerms(s,'smith').blocker,/第3日/);refusal(s,'smith:invite');advance(s,1440-s.minute);s.minute=480;refusal(s,'smith:invite');advance(s,1440);s.minute=480;assert.equal(companionInviteTerms(s,'smith').blocker,null);assert.ok(run(s,'smith:invite'));round(s);
+});
+test('real fulfilled work with remaining trust waives the invitation fee; chat-only trust cannot',()=>{
+ for(const actual of [false,true]){const s=setup('smith');rememberExperience(s,'smith',actual?'cooperation':'meeting',true);const before=structuredClone(s),terms=companionInviteTerms(s,'smith');assert.equal(terms.fee,actual?0:2);assert.equal(terms.trusted,actual);assert.deepEqual(s,before);const cash=total(s);assert.ok(run(s,'smith:invite'));assert.equal(r(s,'smith').trust,actual?1:0);assert.equal(total(s),cash);round(s);}
+});
+test('solo success pays only the player without manufacturing NPC relation, trust or a completed shared history',()=>{
+ const s=setup('smith');run(s,'smith:invite');move(s,'county',()=>1);run(s,'smith:dismiss');run(s,'smith:solo');const relation=s.relations.smith,trust=r(s,'smith').trust,bond=structuredClone(s.adventures.life.bonds.smith),history=[...s.npcWorld.individuals.smith.history];assert.ok(run(s,'smith:work',()=>.5));assert.ok(run(s,'smith:claim'));assert.equal(r(s,'smith').paid,12);assert.equal(r(s,'smith').share,0);assert.equal(s.relations.smith,relation);assert.equal(r(s,'smith').trust,trust);assert.deepEqual(s.adventures.life.bonds.smith,bond);assert.deepEqual(s.npcWorld.individuals.smith.history,history);round(s);
+});
+test('solo failure keeps actual material and time losses without blaming the absent NPC',()=>{
+ const s=setup('boat');run(s,'boat:invite');move(s,'ferry',()=>1);run(s,'boat:dismiss');run(s,'boat:solo');const relation=s.relations.boatman,trust=r(s,'boat').trust,bond=structuredClone(s.adventures.life.bonds.boatman),time=s.minute;assert.ok(run(s,'boat:work',()=>.99));assert.equal(r(s,'boat').status,'failed');assert.equal(s.bag.wood,1);assert.equal(s.minute,time+60);assert.equal(s.relations.boatman,relation);assert.equal(r(s,'boat').trust,trust);assert.deepEqual(s.adventures.life.bonds.boatman,bond);round(s);
+});
+test('actual assisted failure still changes shared trust, and an earned split is paid despite a later quarrel',()=>{
+ const failed=setup('smith');failed.relations.smith=3;prepare(failed,'smith');assert.ok(run(failed,'smith:work',()=>.99));assert.equal(failed.relations.smith,2);assert.equal(r(failed,'smith').trust,0);assert.deepEqual(failed.adventures.life.bonds.smith.history[0],{day:1,kind:'cooperation',success:false});round(failed);
+ const s=setup('smith');prepare(s,'smith');run(s,'smith:work');move(s,'workshop',()=>1);assert.ok(socialChoice(s,'smith','quarrel'));move(s,'county',()=>1);const p=s.npcWorld.individuals.smith,coins=p.coins;assert.ok(run(s,'smith:claim'));assert.equal(p.coins,coins+5);assert.equal(r(s,'smith').paid,7);refusal(s,'smith:claim');round(s);
+});
+test('voluntary dismissal preserves prior relationship and injury while explaining the actual departure cause',()=>{
+ const s=setup('boat');run(s,'boat:invite');const relation=s.relations.boatman;s.npcWorld.individuals.boatman.energy=1;assert.ok(move(s,'ferry',()=>1));assert.equal(r(s,'boat').joined,false);assert.match(s.result.join(' '),/精力不足/);assert.equal(s.relations.boatman,relation);round(s);
+ const x=setup('boat');run(x,'boat:invite');move(x,'county',()=>1);assert.match(x.result.join(' '),/超出约定路线/);round(x);
+});
