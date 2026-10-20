@@ -1,10 +1,10 @@
-import {milestoneHint} from './skill-milestones.js?v=5.39.0';
-import {artisanSkillGoal} from './artisan-orders.js?v=5.39.0';
-import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.39.0';
-import {progress,MAX} from './progression.js?v=5.39.0';
-import {nextRoad} from './task-handbook.js?v=5.39.0';
-import {initialMarket,marketPrice} from './commerce.js?v=5.39.0';
-import {CRAFTS} from './crafts.js?v=5.39.0';
+import {milestoneHint} from './skill-milestones.js?v=5.40.0';
+import {artisanSkillGoal} from './artisan-orders.js?v=5.40.0';
+import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.40.0';
+import {progress,MAX} from './progression.js?v=5.40.0';
+import {nextRoad} from './task-handbook.js?v=5.40.0';
+import {initialMarket,marketPrice} from './commerce.js?v=5.40.0';
+import {CRAFTS} from './crafts.js?v=5.40.0';
 export const SKILL_GROUPS=[
  {id:'living',name:'生活与采集',keys:['carry','forage','herb','fish','mining','hunt','farming','cook']},
  {id:'crafting',name:'手艺与生产',keys:['smelt','medicine','tailor','leatherwork','woodwork']},
@@ -25,7 +25,7 @@ const SOURCES={
  medicine:{place:'village',teacher:'doctor',panel:'events',groups:['medicine'],text:'学方后使用自己的材料制药'},
  tailor:{place:'workshop',teacher:'tailor',panel:'events',groups:['professionals','craft','advancedOrders'],text:'师傅练习课，或自行裁缝制作'},
  leatherwork:{place:'workshop',teacher:'tanner',panel:'events',groups:['professionals','craft','advancedOrders'],text:'师傅练习课，或自行鞣皮制作'},
- woodwork:{place:'workshop',teacher:'carpenter',panel:'events',groups:['professionals','craft','advancedOrders'],text:'师傅练习课，或自行木工制作'},
+ woodwork:{place:'workshop',teacher:'carpenter',panel:'events',groups:['professionals','craft','advancedOrders'],text:'从零经验实作委托或自行制作入手；课程可选'},
  fist:{place:'school',panel:'martial',text:'武馆求学与基础练习，武学成长另列'},
  battle:{place:'school',panel:'martial',text:'实际陪练或交手，实战可能致命'},
  navigation:{place:'foot',panel:'events',groups:['field'],text:'辨认路势，帮助当天当地相关行动'},
