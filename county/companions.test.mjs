@@ -4,10 +4,12 @@ import {readFileSync} from 'node:fs';
 import {fresh,restore,adventureAction,move,talk,martialAction,socialChoice} from './engine.js';
 import {advance,npcPlace} from './world.js';
 import {npcAt} from './npc-simulation.js';
-import {COOPERATIONS,makeCompanions,companionLocation,companionOptions,companionSummary,sameMaster,companionInviteTerms,companionWorkPlan} from './companions.js';
+import {COOPERATIONS,makeCompanions,companionLocation,companionOptions,companionSummary,sameMaster,companionInviteTerms,companionWorkPlan,companionFeedback,companionActorHint} from './companions.js';
 import {handbook} from './task-handbook.js';
 import {activityGroups} from './activity-layout.js';
 import {rememberExperience} from './county-life.js';
+import {localScene,localActionContact} from './local-map.js';
+import {facilitySources} from './local-services.js';
 import {importSave} from './storage.js';
 const run=(s,id,rng=()=>.5)=>adventureAction(s,'companion:'+id,rng);
 const r=(s,id)=>s.adventures.companions.records[id];
@@ -82,4 +84,28 @@ test('quick route and solo previews update to actual risk, fatigue and zero comp
 });
 test('the dangerous peer preparation warns about the actual separate thirty-percent fall and care alternative',()=>{
  const s=setup('peer');run(s,'peer:invite');move(s,'county',()=>1);move(s,'road',()=>1);const o=companionOptions(s).find(o=>o.id==='companion:peer:quick');assert.match(o.preview,/20分钟\/精力8.*同伴精力6.*30%损失30气血.*永久死亡/);assert.match(o.preview,/药材1份、30分钟\/精力2/);let calls=0;run(s,'peer:quick',()=>{calls++;return .3;});assert.equal(calls,1);assert.equal(s.hp,100);assert.equal(r(s,'peer').conflict,'resolved');round(s);
+});
+
+test('unstarted cooperation leaves no fake worksite or outcome; scene views never change saved state',()=>{
+ const s=fresh();for(const d of Object.values(COOPERATIONS)){s.place=d.site;const before=structuredClone(s),scene=localScene(s);assert.deepEqual(scene.situations,[]);assert.ok(!scene.facilities.some(f=>f.id.startsWith('companion-')));assert.deepEqual(s,before);}for(const key of Object.keys(COOPERATIONS))assert.equal(companionFeedback(s,key),null);round(s);
+});
+test('all four dismissed companions really leave while solo work remains directly attached to the actual worksite',()=>{
+ for(const id of Object.keys(COOPERATIONS)){const s=setup(id);prepare(s,id);run(s,id+':dismiss');const before=structuredClone(s),scene=localScene(s),site=scene.facilities.find(f=>f.id==='companion-'+id);assert.ok(site,id);assert.equal(site.hint,'可独行继续');assert.match(site.detail,/返程/);assert.ok(!scene.actors.some(n=>n.id===COOPERATIONS[id].actor));assert.equal(localActionContact(s,{id:'companion:'+id+':work'}),null);assert.deepEqual(s,before);assert.ok(run(s,id+':work',()=>.5));assert.equal(r(s,id).status,'ready');assert.equal(r(s,id).assisted,false);assert.match(companionFeedback(s,id).detail,/成果保留/);round(s);}
+});
+test('worksite projects only self actions, never absent-person negotiation, invitation or an earned payment proxy',()=>{
+ const s=setup('boat');prepare(s,'boat');const rows=()=>activityGroups(s).flatMap(g=>g.options.map(o=>({dataset:{actionId:o.id,group:g.id,npcContact:localActionContact(s,o)||''}}))),roots={activities:{querySelectorAll:()=>rows()}};
+ assert.deepEqual(facilitySources({id:'companion-boat'},roots),[]);run(s,'boat:dismiss');const ids=facilitySources({id:'companion-boat'},roots).map(n=>n.dataset.actionId);assert.deepEqual(ids,['companion:boat:withdraw','companion:boat:work']);assert.ok(!ids.some(id=>/claim|support|invite|care/.test(id)));run(s,'boat:work',()=>.5);s.place='market';assert.equal(localActionContact(s,{id:'companion:boat:claim'}),'merchant');assert.deepEqual(facilitySources({id:'companion-boat'},roots),[]);round(s);
+});
+test('actual assisted failure and wounds appear at the site without reoffering work or inventing NPC presence',()=>{
+ const s=setup('boat');prepare(s,'boat');let calls=0;assert.ok(run(s,'boat:work',()=>++calls===1?.99:0));const before=structuredClone(s),feedback=companionFeedback(s,'boat'),scene=localScene(s);assert.equal(feedback.hint,'作业未成');assert.match(feedback.detail,/共同作业未成.*无报酬/);assert.match(feedback.detail,/目前带伤/);assert.match(feedback.detail,/正在沿原路返程/);assert.equal(companionActorHint(s,'boatman'),'上次合作未成');assert.ok(!scene.actors.some(n=>n.id==='boatman'));assert.ok(!companionOptions(s).some(o=>o.id==='companion:boat:work'));assert.deepEqual(s,before);round(s);
+});
+test('solo failure is described as the player outcome and does not become the absent NPC shared history or hint',()=>{
+ const s=setup('boat');prepare(s,'boat');run(s,'boat:dismiss');const bond=structuredClone(s.adventures.life.bonds.boatman);run(s,'boat:work',()=>.99);assert.match(companionFeedback(s,'boat').detail,/独行作业未成/);assert.equal(companionActorHint(s,'boatman'),null);assert.deepEqual(s.adventures.life.bonds.boatman,bond);round(s);
+});
+test('saved results show the real payer and shortage, then the exact paid split without replay or retroactive rewards',()=>{
+ const s=setup('boat');prepare(s,'boat');run(s,'boat:work',()=>.5);s.npcWorld.individuals.merchant.coins=0;const before=structuredClone(s),feedback=companionFeedback(s,'boat');assert.match(feedback.detail,/县城街市找柳掌柜.*你8文，同伴4文/);assert.match(feedback.detail,/现有余额不足12文/);assert.equal(companionActorHint(s,'merchant'),'有工钱待交代');assert.deepEqual(s,before);assert.equal(JSON.stringify(restore(JSON.stringify(s))),JSON.stringify(s));move(s,'dock',()=>1);move(s,'county',()=>1);move(s,'market',()=>1);refusal(s,'boat:claim');s.npcWorld.individuals.merchant.coins=12;assert.ok(run(s,'boat:claim'));assert.match(companionFeedback(s,'boat').detail,/实际领到8文.*实际分帐4文.*不重复/);assert.equal(companionActorHint(s,'merchant'),null);refusal(s,'boat:claim');round(s);
+});
+
+test('the actual county office exposes its own funded payment, without becoming a private NPC service proxy',()=>{
+ const s=setup('smith');prepare(s,'smith');run(s,'smith:work',()=>.5);const rows=activityGroups(s).flatMap(g=>g.options.map(o=>({dataset:{actionId:o.id,group:g.id,npcContact:localActionContact(s,o)||''}}))),roots={activities:{querySelectorAll:()=>rows}},ids=facilitySources({id:'office'},roots).map(n=>n.dataset.actionId);assert.ok(ids.includes('companion:smith:claim'));assert.ok(!ids.includes('companion:smith:invite'));assert.ok(!ids.includes('companion:peer:invite'));s.commerce.budget.market=0;refusal(s,'smith:claim');assert.equal(r(s,'smith').status,'ready');round(s);
 });
