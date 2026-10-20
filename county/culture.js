@@ -1,5 +1,5 @@
-import {people,skills,items,places} from './content.js?v=5.37.0';
-import {present} from './adventures.js?v=5.37.0';
+import {people,skills,items,places} from './content.js?v=5.37.1';
+import {present} from './adventures.js?v=5.37.1';
 export const CULTURE_SKILLS=['calligraphy','chess','music'];
 export const CULTURE_ITEMS=['paper','ink','bamboo_flute','calligraphy_sheet'];
 export const CULTURE={
