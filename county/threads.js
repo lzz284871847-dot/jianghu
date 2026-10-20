@@ -1,5 +1,6 @@
-import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.41.0';
-import {gain} from './progression.js?v=5.41.0';
+import {cooperationRefusal} from './npc-social.js?v=5.42.0';
+import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.42.0';
+import {gain} from './progression.js?v=5.42.0';
 // Finite follow-up opportunities; eligibility is earned from existing playable outcomes.
 export const GOALS={settle:{name:'谋生安顿',hint:'先做短工或一项委托，攒够12文可选择客栈短租；无需习武。'},artisan:{name:'手艺立足',hint:'通过采集、炼铁、种植或交易积累手艺，再选择一项经营；别把全部钱投入。'},martial:{name:'习武闯荡',hint:'武馆学一门入门武学，真实交手积累经验；陪练可收手，野外实战可能永久死亡。'},explore:{name:'县境游历',hint:'先准备口粮药材，搜寻两处旧址并处理一次县境冒险；可绕行或非战斗解决。'}};
 export const THREADS={
@@ -51,6 +52,7 @@ export function threadAction(s,id,{present,transact,advance,rng}){const onsite=(
  if(r.status==='new'&&!threadEligible(s,key))return fail('需先有相应经营、探索、救援、势力接洽或亲历记录。');
  if(key==='escort'&&choice==='accept'||key==='testimony'&&choice==='accept'){
   if(r.status!=='new'||(d.holder?!onsite(d.holder,15):!office(s,15)))return fail('请在原接洽地点与营业时间领取一次。');
+  if(key==='escort'){const refusal=cooperationRefusal(s,'merchant');if(refusal)return fail(refusal);}
   if(key==='escort'&&s.bag.food<1)return fail('需投入自己的干粮1份，留存到实际交付。');
   return transact(s,'接洽 · '+d.name,15,0,()=>{r.status='active';r.route='accept';r.openedDay=s.day;r.dueDay=s.day+3;if(key==='escort'){s.bag.food--;r.cargo=1;}s.result.push('截止第'+r.dueDay+'日；没有预付报酬。');},advance);
  }
