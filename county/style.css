@@ -24,3 +24,5 @@ input,select,textarea{font-size:16px}textarea{display:block;width:100%;min-width
 @media(max-height:480px){.local-contact{max-height:52dvh;bottom:calc(62px + env(safe-area-inset-bottom))}}
 
 .route-situation{font-size:12px;line-height:1.65;border-left:3px solid #8a7853;background:#eeeadb;padding:7px 9px;margin:8px 0;color:#665536}
+
+.npc-request{border-left:3px solid #758878;background:#eef0e7;padding:8px 10px}.npc-request h4{margin:0 0 6px}.npc-request p{font-size:12px;line-height:1.65}

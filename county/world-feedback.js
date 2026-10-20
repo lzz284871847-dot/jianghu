@@ -1,3 +1,4 @@
+import {cooperationRefusal} from './npc-social.js?v=5.42.0';
 // Finite local responses and events; no repeating daily or lifetime simulation.
 export const EVENTS={
  ferry:{name:'旧渡口修栈道',place:'dock',holder:'boatman',offset:1,days:2,description:'栈道受阻期间进出旧渡口多走15分钟，柳溪原定补货暂缓、脚夫名额缩减；到青石码头找船家接洽。可交木料2份修补（45分钟/精力10）；熟手搬运可改用90分钟/精力20实际劳作。支付8文来自船家余额。'},
@@ -18,6 +19,18 @@ export function tradeRouteNotice(s,place=s.place){
  const f=s.adventures?.feedback;if(f&&s.day>=f.startDay+1&&s.day<=f.startDay+5&&(f.events.ferry==='joined'||s.day>f.startDay+3))return '渡口已恢复通行，柳溪货队按原定单日补货；现有货架不会立即补满。';
  return '';
 }
+// Bounded initiative: project existing difficulties and jobs, without enrolling the player.
+export function npcInitiative(s,id){
+ if(s.dead||!tradeRouteBlocked(s)||!['boatman','merchant'].includes(id))return null;
+ const p=s.npcWorld.individuals[id];if(!p||p.life.deathDay)return null;
+ if(id==='merchant'&&s.adventures.threads.records.escort.status!=='new')return null;
+ const refusal=cooperationRefusal(s,id),recipient=s.npcWorld.individuals.stallholder;
+ const health=p.life.sickDays||p.injuryDays||p.life.restDay===s.day;
+ const funding=id==='boatman'?p.coins<8:recipient.life.deathDay||recipient.coins<12||recipient.food>=100;
+ const blocker=refusal||(health?'身体不适或正在休息，暂缓接洽。':funding?'实际付款资金或收货条件不足，暂缓接洽。':null);
+ return id==='boatman'?{title:'贺船工招呼你修栈道',detail:'“栈道堵着，货队走不动。我出8文，想请人带两份木料来搭把手。”熟手可改用实际劳作；可先备料，也可不参与，乡邻会自行收尾。',blocker,actions:['event:ferry:supply',...(s.adventures.career.porter?['event:ferry:skill']:[])]}:{title:'柳掌柜托人捎口粮',detail:'“柳溪货队被阻，魏婶托我找人捎一份干粮。你若愿意，可自备口粮走一趟。”三日内交付，魏婶实际付12文；不参与无罚款，不会补满市场货架。',blocker,actions:['thread:escort:accept','thread:escort:leave']};
+}
+export function npcInitiativeNews(s){if(s.day!==s.adventures.feedback.startDay+EVENTS.ferry.offset)return [];return ['boatman','merchant'].map(id=>npcInitiative(s,id)).filter(Boolean).map(r=>'【人物消息】'+r.title+'：'+(r.blocker||'因旧渡口受阻正在寻人合作，不必参与；到本人处接洽。'));}
 export const ferryDelay=(s,to)=>eventOpen(s,'ferry')&&(to==='ferry'||s.place==='ferry')?15:0;
 export function finishFeedbackBout(s,c,log){const f=s.adventures?.feedback;if(!c.practice||f?.events.bout!=='entered')return;f.events.bout=c.round>=3?'joined':'withdrew';if(c.round>=3&&s.adventures.org.id==='school'){s.adventures.org.rep.school=Math.min(100,s.adventures.org.rep.school+1);log.push('作为武馆成员完成公开切磋，贡献 +1。');}log.push(c.round>=3?'公开切磋留下了实际参与记录。':'提前收手，公开切磋记录为退出，不发贡献。');}
 export function feedbackAction(s,id,{present,transact,advance}){
@@ -32,6 +45,7 @@ export function feedbackAction(s,id,{present,transact,advance}){
   return transact(s,d.name,minutes,energy,()=>{f.followups[key]=choice==='help'?'helped':choice==='explain'?'explained':'declined';if(choice==='help'){for(const [id,n] of Object.entries(materials))s.bag[id]-=n;p.coins-=reward;s.coins+=reward;s.relations[key]=Math.min(100,s.relations[key]+1);s.result.push('实际完成合作，报酬6文从当事人余额支付。');}else s.result.push(choice==='explain'?(done?'你说清帮忙的经过，对方道谢；无额外奖励。':'你解释上次未完成的原因，对方接受交代；无奖励。'):'婉拒后续，各自继续生活；无罚款。');},advance);
  }
  if(kind==='event'){
+  if(key==='ferry'){const refusal=cooperationRefusal(s,'boatman');if(refusal)return fail(refusal);}
   const d=EVENTS[key];if(!eventOpen(s,key)||s.place!==d.place||!present(s,d.holder,key==='ferry'?45:60))return fail('活动尚未开始、已结束，或当事人暂不能接洽。');
   if(key==='bout')return fail('请通过公开切磋入口开始实际交手。');
   const specialist=key==='ferry'?s.adventures.career.porter:s.adventures.career.smith;

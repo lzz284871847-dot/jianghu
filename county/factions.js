@@ -1,5 +1,5 @@
 // Three finite local disputes. Standing affects optional services, never basic survival.
-import {ORGANIZATIONS} from './adventure-data.js?v=5.41.0';
+import {ORGANIZATIONS} from './adventure-data.js?v=5.42.0';
 export const DISPUTES={
  escort:{name:'护送规矩之争',place:'market',holder:'merchant',offset:0,days:3,school:'武馆要求先花时间探路，宁可晚到也不冒险。',caravan:'互助会愿走官道赶交期，但不愿另付武馆探路费。'},
  yard:{name:'武馆场地借用',place:'school',holder:'master',offset:2,days:3,school:'武馆要保留学徒练功时段，反对货物占满场地。',caravan:'互助会希望借场地避雨，愿意分批搬入而非长期占用。'},

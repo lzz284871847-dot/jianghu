@@ -1,5 +1,5 @@
-import {travelBusy} from './npc-journeys.js?v=5.41.0';
-import {alive} from './npc-mortality.js?v=5.41.0';
+import {travelBusy} from './npc-journeys.js?v=5.42.0';
+import {alive} from './npc-mortality.js?v=5.42.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -120,3 +120,6 @@ export function socialSummary(s){
  const name=id=>s.npcWorld.individuals[id]?.name??'陈家孩子'+(siblings(s).findIndex(c=>c.id===id)+1);
  return Object.entries(BONDS).map(([id,b])=>{const v=s.npcWorld.social.bonds[id];return name(b.a)+'与'+name(b.b)+' · '+labels[b.kind]+' · 信任'+v.trust+'/100 · 隔阂'+v.resentment+'/100'+(v.history.length?' · 最近：'+v.history[0]:' · 尚无新的共同经历');});
 }
+
+// Existing quarrel memory affects new voluntary cooperation, never an earned payment.
+export function cooperationRefusal(s,id){return s.socialActions?.[id]?.quarrel>=s.day-2?'仍记得近期争执，暂不愿与你新订合作；可以认真道歉，或过两日再来。':null;}
