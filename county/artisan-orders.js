@@ -1,10 +1,10 @@
-import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.42.0';
-import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.42.0';
-import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.42.0';
-import {EQUIPMENT} from './equipment.js?v=5.42.0';
-import {people,skills,items} from './content.js?v=5.42.0';
-import {gain} from './progression.js?v=5.42.0';
-import {present} from './adventures.js?v=5.42.0';
+import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.43.0';
+import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.43.0';
+import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.43.0';
+import {EQUIPMENT} from './equipment.js?v=5.43.0';
+import {people,skills,items} from './content.js?v=5.43.0';
+import {gain} from './progression.js?v=5.43.0';
+import {present} from './adventures.js?v=5.43.0';
 export const ARTISAN_ORDERS={
  carpenter_frame:{teacher:'carpenter',skill:'woodwork',required:300,trust:4,name:'护路榫接梁架',product:'榫接梁架',input:{hardwood:2,wood:2,cord:2},reward:40,days:4,minutes:180,energy:22,chance:.8},
  carpenter_case:{teacher:'carpenter',skill:'woodwork',required:700,trust:6,name:'精密药箱机关',product:'机关药箱',input:{hardwood:3,iron:2,cord:2},reward:70,days:5,minutes:240,energy:30,chance:.7},

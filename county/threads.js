@@ -1,6 +1,6 @@
-import {cooperationRefusal} from './npc-social.js?v=5.42.0';
-import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.42.0';
-import {gain} from './progression.js?v=5.42.0';
+import {cooperationRefusal} from './npc-social.js?v=5.43.0';
+import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.43.0';
+import {gain} from './progression.js?v=5.43.0';
 // Finite follow-up opportunities; eligibility is earned from existing playable outcomes.
 export const GOALS={settle:{name:'谋生安顿',hint:'先做短工或一项委托，攒够12文可选择客栈短租；无需习武。'},artisan:{name:'手艺立足',hint:'通过采集、炼铁、种植或交易积累手艺，再选择一项经营；别把全部钱投入。'},martial:{name:'习武闯荡',hint:'武馆学一门入门武学，真实交手积累经验；陪练可收手，野外实战可能永久死亡。'},explore:{name:'县境游历',hint:'先准备口粮药材，搜寻两处旧址并处理一次县境冒险；可绕行或非战斗解决。'}};
 export const THREADS={
@@ -26,7 +26,7 @@ export function threadsValid(s){const t=s.adventures.threads;if(!obj(t)||Object.
  if(id==='escort'&&['claim','done'].includes(r.status)&&!['safe','quick'].includes(r.route))return false;
  if(id==='testimony'&&r.status==='active'&&(r.route!=='accept'||r.step!==0))return false;
  if(id==='testimony'&&['claim','done'].includes(r.status)&&!['tell','check'].includes(r.route))return false;
- const history=id==='cargo'?Object.entries(s.adventures.business.records).some(([k,b])=>k.startsWith('merchant')&&b.step>=1&&b.cost>0):threadEligible(s,id)||id==='escort'&&r.openedDay>=s.adventures.feedback.startDay+EVENTS.ferry.offset&&r.openedDay<=s.adventures.feedback.startDay+EVENTS.ferry.offset+EVENTS.ferry.days;if(!history)return false;
+ const history=id==='cargo'?Object.entries(s.adventures.business.records).some(([k,b])=>k.startsWith('merchant')&&b.step>=1&&b.cost>0):threadEligible(s,id)||id==='escort'&&r.openedDay>=s.adventures.feedback.startDay+EVENTS.ferry.offset&&r.openedDay<=s.adventures.feedback.startDay+EVENTS.ferry.offset+EVENTS.ferry.days||id==='escort'&&s.adventures.outings.floodDay>0&&r.openedDay>=s.adventures.outings.floodDay&&r.openedDay<s.adventures.outings.floodDay+3;if(!history)return false;
  if(id==='escort'&&(['active','claim'].includes(r.status)?r.cargo!==1:['done','left'].includes(r.status)&&r.cargo!==0))return false;
  return true;
  });}
