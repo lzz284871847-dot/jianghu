@@ -1,18 +1,18 @@
-import {bondInitiative} from './county-life.js?v=5.46.0';
-import {EVENTS,npcInitiative} from './world-feedback.js?v=5.46.0';
-import {SCENE_ART} from './scene-art.js?v=5.46.0';
-import {places,people,resources} from './content.js?v=5.46.0';
-import {npcPlace} from './world.js?v=5.46.0';
-import {npcAt} from './npc-simulation.js?v=5.46.0';
-import {healthSummary} from './npc-health.js?v=5.46.0';
-import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.46.0';
-import {CULTURE} from './culture.js?v=5.46.0';
-import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.46.0';
-import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.46.0';
-import {OUTINGS} from './outings.js?v=5.46.0';
-import {BUSINESSES} from './business.js?v=5.46.0';
-import {THREADS} from './threads.js?v=5.46.0';
-import {COOPERATIONS} from './companions.js?v=5.46.0';
+import {bondInitiative} from './county-life.js?v=5.47.0';
+import {EVENTS,npcInitiative} from './world-feedback.js?v=5.47.0';
+import {SCENE_ART} from './scene-art.js?v=5.47.0';
+import {places,people,resources} from './content.js?v=5.47.0';
+import {npcPlace} from './world.js?v=5.47.0';
+import {npcAt} from './npc-simulation.js?v=5.47.0';
+import {healthSummary} from './npc-health.js?v=5.47.0';
+import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.47.0';
+import {CULTURE} from './culture.js?v=5.47.0';
+import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.47.0';
+import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.47.0';
+import {OUTINGS} from './outings.js?v=5.47.0';
+import {BUSINESSES} from './business.js?v=5.47.0';
+import {THREADS} from './threads.js?v=5.47.0';
+import {COOPERATIONS,companionFeedback,companionActorHint} from './companions.js?v=5.47.0';
 
 // Read-only local scene: the coordinates are a diagram, not new movement or NPC simulation.
 const f=(id,name,panel,group='')=>({id,name,panel,group});
@@ -37,10 +37,12 @@ export const LOCAL_SCENES={
 const hints={merchant:'买卖 · 委托',doctor:'诊治 · 学方',smith:'打造 · 合作',master:'学武 · 考较',farmer:'农活 · 考较',boatman:'装船 · 护送',carpenter:'木工 · 订单',tailor:'裁缝 · 订单',tanner:'制革 · 订单',scribe:'识字 · 书法',bookkeeper:'账算 · 教学',chessfriend:'棋艺 · 对弈',musician:'音律 · 小聚',hunter:'狩猎 · 同行',stallholder:'买卖 · 交接',smithapprentice:'近况 · 同行'};
 export function localScene(s){
  const scene=LOCAL_SCENES[s.place],actors=[];
- for(const [id,d] of Object.entries(people))if(npcPlace(s,id)===s.place){const n=s.npcWorld.individuals[id],initiative=npcInitiative(s,id)??bondInitiative(s,id);actors.push({id,name:d.name,role:d.role,hint:initiative?(initiative.hint||(initiative.blocker?'暂缓合作':'主动求助')):s.place!==d.place?'交谈 · 非工作地点':hints[id]||'交谈 · 近况',status:healthSummary(n,s.day),interactive:true});}
- for(const n of npcAt(s,s.place))if(!Object.hasOwn(people,n.id))actors.push({id:n.id,name:n.name,role:n.role,hint:hints[n.id]||'查看近况',status:healthSummary(n,s.day),interactive:false});
+ for(const [id,d] of Object.entries(people))if(npcPlace(s,id)===s.place){const n=s.npcWorld.individuals[id],initiative=npcInitiative(s,id)??bondInitiative(s,id);actors.push({id,name:d.name,role:d.role,hint:companionActorHint(s,id)??(initiative?(initiative.hint||(initiative.blocker?'暂缓合作':'主动求助')):s.place!==d.place?'交谈 · 非工作地点':hints[id]||'交谈 · 近况'),status:healthSummary(n,s.day),interactive:true});}
+ for(const n of npcAt(s,s.place))if(!Object.hasOwn(people,n.id))actors.push({id:n.id,name:n.name,role:n.role,hint:companionActorHint(s,n.id)??hints[n.id]??'查看近况',status:healthSummary(n,s.day),interactive:false});
  if(s.place==='county'&&s.minute>=480&&s.minute<1080)actors.unshift({id:'constable',name:'赵捕快',role:'县衙接洽',hint:'报案 · 治安委托',status:'在岗',interactive:true});
- return {...scene,art:SCENE_ART[scene.terrain],name:places[s.place].name,actors,facilities:scene.facilities,exits:places[s.place].routes.map(id=>({id,name:places[id].name})),resources:Object.entries(resources).filter(([,r])=>r.places.includes(s.place)).map(([id,r])=>({id,name:r.name}))};
+ const situations=Object.entries(COOPERATIONS).filter(([key,d])=>s.place===d.site&&s.adventures.companions.records[key].status!=='new').map(([key])=>companionFeedback(s,key));
+ const workSites=situations.filter(row=>!s.adventures.companions.records[row.id].joined).map(row=>({...f('companion-'+row.id,'作业现场','events','companions'),hint:row.hint,detail:row.detail}));
+ return {...scene,situations,art:SCENE_ART[scene.terrain],name:places[s.place].name,actors,facilities:[...scene.facilities,...workSites],exits:places[s.place].routes.map(id=>({id,name:places[id].name})),resources:Object.entries(resources).filter(([,r])=>r.places.includes(s.place)).map(([id,r])=>({id,name:r.name}))};
 }
 // Associate only an already-exposed action with its real contact. Self-work stays on facilities.
 export function localActionContact(s,option){
@@ -57,7 +59,7 @@ export function localActionContact(s,option){
  if(kind==='business')return ['accept','mix','deliver'].includes(step)?BUSINESSES[key]?.giver??null:null;
  if(kind==='outing')return key==='flood'?'boatman':['claim','inquire','talk'].includes(step)?OUTINGS[key]?.holder:null;
  if(kind==='thread')return key==='escort'&&step==='claim'?'stallholder':THREADS[key]?.holder??null;
- if(kind==='companion')return step==='claim'?COOPERATIONS[key]?.payer:COOPERATIONS[key]?.actor;
+ if(kind==='companion'){if(step==='claim')return COOPERATIONS[key]?.payer;return ['solo','work','withdraw'].includes(step)&&!s.adventures.companions.records[key]?.joined?null:COOPERATIONS[key]?.actor;}
  if(kind==='event')return EVENTS[key]?.holder??null;
  if(kind==='followup')return Object.hasOwn(people,key)?key:null;
  if(kind==='bond')return key;
