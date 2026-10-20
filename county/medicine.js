@@ -1,8 +1,9 @@
-import {items} from './content.js?v=5.37.1';
-import {clinicDoctor} from './npc-clinic.js?v=5.37.1';
-import {travelBusy} from './npc-journeys.js?v=5.37.1';
-import {npcPlace} from './world.js?v=5.37.1';
-import {treatInjury} from './injury.js?v=5.37.1';
+import {makingGrowth,growthPreview} from './practice-growth.js?v=5.38.0';
+import {items} from './content.js?v=5.38.0';
+import {clinicDoctor} from './npc-clinic.js?v=5.38.0';
+import {travelBusy} from './npc-journeys.js?v=5.38.0';
+import {npcPlace} from './world.js?v=5.38.0';
+import {treatInjury} from './injury.js?v=5.38.0';
 export const MEDICINES=Object.freeze({
  stop_powder:{name:'止血散',tier:1,herb:0,practice:0,fee:4,minutes:45,energy:8,chance:.85,input:{herb:2,wood:1},hp:12,injuries:['cut'],reduce:2,description:'气血最多+12，切伤减轻2级；不能处理危重出血。'},
  wound_salve:{name:'舒筋膏',tier:1,herb:10,practice:6,fee:6,minutes:60,energy:10,chance:.80,input:{herb:2,aromatic_herb:1,wood:1},hp:25,injuries:['strain','bruise'],reduce:1,description:'气血最多+25，拉伤或挫伤中现存的一种减轻1级。'},
@@ -50,8 +51,8 @@ export function medicineAction(s,id,{settle,rng}){
  if(kind==='learn')return settle(s,'学方 · '+d.name,60,0,()=>{s.coins-=d.fee;clinicDoctor(s).coins+=d.fee;s.medicine.known.push(key);s.result.push('学费'+d.fee+'文实际交给沈医者；已学药方可独立制作。');});
  if(kind==='craft'){
   const chance=medicineChance(s,key),success=rng()<chance;
-  return settle(s,'制作 · '+d.name,d.minutes,d.energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;if(success){s.bag[key]++;s.result.push('配药成功，获得'+d.name+'1份。');}else s.result.push('火候或配伍失误，药材报废；本次没有成药，时间与材料已付出。');},{medicine:success?3:1});
+  return settle(s,'制作 · '+d.name,d.minutes,d.energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;if(success){s.bag[key]++;s.result.push('配药成功，获得'+d.name+'1份。');}else s.result.push('火候或配伍失误，药材报废；本次没有成药，时间与材料已付出。');},{medicine:success?makingGrowth(d).success:makingGrowth(d).failure});
  }
  return settle(s,'使用 · '+d.name,15,0,()=>{s.bag[key]--;s.hp=Math.min(100,s.hp+d.hp);const injury=d.injuries.find(k=>s.injuries[k]);if(injury)for(let n=0;n<d.reduce&&s.injuries[injury];n++)s.result.push(treatInjury(s,injury,'prepared'));s.medicine.nextUse=now(s)+60;s.result.push(d.description,'成药一小时内不能再次使用；危重剩余出血仍需及时就医。');});
 }
-export function medicineOptions(s){if(s.place!=='village')return [];return Object.entries(MEDICINES).flatMap(([key,d])=>[{id:'medicine:learn:'+key,label:'学方 · '+d.name,preview:'第'+d.tier+'阶；采药'+d.herb+' / 制药'+d.practice+'，学费'+d.fee+'文，1小时。'+d.description,blocker:medicineBlocker(s,'learn',key)},...(s.medicine.known.includes(key)?[{id:'medicine:craft:'+key,label:'制作 · '+d.name,preview:Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；'+d.minutes+'分钟 / 精力'+d.energy+'；当前成功率'+Math.round(medicineChance(s,key)*100)+'%，失败损失全部材料。',blocker:medicineBlocker(s,'craft',key)}]:[])]);}
+export function medicineOptions(s){if(s.place!=='village')return [];return Object.entries(MEDICINES).flatMap(([key,d])=>[{id:'medicine:learn:'+key,label:'学方 · '+d.name,preview:'第'+d.tier+'阶；采药'+d.herb+' / 制药'+d.practice+'，学费'+d.fee+'文，1小时。'+d.description,blocker:medicineBlocker(s,'learn',key)},...(s.medicine.known.includes(key)?[{id:'medicine:craft:'+key,label:'制作 · '+d.name,preview:Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；'+d.minutes+'分钟 / 精力'+d.energy+'；当前成功率'+Math.round(medicineChance(s,key)*100)+'%，失败损失全部材料。'+growthPreview(s,'medicine',d.energy,makingGrowth(d).success,makingGrowth(d).failure),blocker:medicineBlocker(s,'craft',key)}]:[])]);}

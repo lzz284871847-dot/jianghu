@@ -1,7 +1,8 @@
-import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.37.1';
-import {items} from './content.js?v=5.37.1';
-import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.37.1';
-import {gain} from './progression.js?v=5.37.1';
+import {PRACTICE_XP,makingGrowth,growthPreview} from './practice-growth.js?v=5.38.0';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.38.0';
+import {items} from './content.js?v=5.38.0';
+import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.38.0';
+import {gain} from './progression.js?v=5.38.0';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
 export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord','trap_probe'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});
@@ -58,6 +59,6 @@ export function craftAction(s,id,{settle,rng}){
   if(!repair)useCraftGuidance(s,d.skill);if(success){if(d.gear){s.equipment.owned[key]=EQUIPMENT[key].durability;if(!repair)s.equipment.quality[key]=roll<.05?2:1;}else for(const [k,n] of Object.entries(d.output))s.bag[k]+=n;s.result.push(repair?'修理完成，原品质与穿戴状态保留。':'制作成功，不自动穿戴或使用。');}
   else s.result.push('手艺或材料处理失误，本次失败，投入材料与台位费不退，没有成品。');
   s.result.push('台位与工具费'+d.fee+'文实际支付给许铁匠。');
- },{[d.skill]:repair?1:success?3:1});
+ },{[d.skill]:repair?PRACTICE_XP.repair:success?makingGrowth(d).success:makingGrowth(d).failure});
 }
-export function craftOptions(s){if(s.place!=='workshop')return [];return Object.entries(CRAFTS).flatMap(([key,d])=>['make',...(d.gear&&Object.hasOwn(s.equipment.owned,key)?['repair']:[])].map(kind=>{const p=craftPlan(s,key,kind);return {id:'craft:'+kind+':'+key,label:(kind==='repair'?'自行修理 · ':'亲手制作 · ')+p.name,preview:(d.recipeOrder?'独有配方'+(artisanRecipeKnown(s,key)?'已解锁':'未解锁')+'；'+EQUIPMENT[key].use+' ':'')+'需'+({tailor:'裁缝',leatherwork:'制革',woodwork:'木工'}[p.skill])+p.required+(p.extraSkill?' / '+({smelt:'冶炼',leatherwork:'制革'}[p.extraSkill])+p.extraRequired:'')+'；'+Object.entries(p.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；台位费'+p.fee+'文，'+p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%，制作失败损失全部投入。',blocker:craftBlocker(s,key,kind)};}));}
+export function craftOptions(s){if(s.place!=='workshop')return [];return Object.entries(CRAFTS).flatMap(([key,d])=>['make',...(d.gear&&Object.hasOwn(s.equipment.owned,key)?['repair']:[])].map(kind=>{const p=craftPlan(s,key,kind);return {id:'craft:'+kind+':'+key,label:(kind==='repair'?'自行修理 · ':'亲手制作 · ')+p.name,preview:(d.recipeOrder?'独有配方'+(artisanRecipeKnown(s,key)?'已解锁':'未解锁')+'；'+EQUIPMENT[key].use+' ':'')+'需'+({tailor:'裁缝',leatherwork:'制革',woodwork:'木工'}[p.skill])+p.required+(p.extraSkill?' / '+({smelt:'冶炼',leatherwork:'制革'}[p.extraSkill])+p.extraRequired:'')+'；'+Object.entries(p.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；台位费'+p.fee+'文，'+p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%，制作失败损失全部投入。'+growthPreview(s,p.skill,p.energy,kind==='repair'?PRACTICE_XP.repair:makingGrowth(p).success,kind==='repair'?undefined:makingGrowth(p).failure),blocker:craftBlocker(s,key,kind)};}));}
