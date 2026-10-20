@@ -32,6 +32,8 @@ export function artisanOrderChance(s,key,action='work'){
  return Math.min(.95,d.chance+Math.min(.1,Math.max(0,s.skills[d.skill]-d.required)/2000))*(s.energy-d.energy<20?.75:1);
 }
 const goods=d=>Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、');
+export function artisanPayer(s,key){const d=ALL_ARTISAN_ORDERS[key];return s.npcWorld.individuals[d.payer||d.teacher];}
+const payerName=d=>people[d.payer||d.teacher].name;
 export function artisanOrderBlocker(s,key,action){
  const base=ALL_ARTISAN_ORDERS[key],work=action==='work'||action.startsWith('work_'),d=work?artisanWorkPlan(key,action):base;
  if(!d||!work&&!['accept','deliver','withdraw'].includes(action))return '没有这项订单行动。';
@@ -46,7 +48,7 @@ export function artisanOrderBlocker(s,key,action){
  if(s.socialActions?.[d.teacher]?.quarrel>=s.day-2)return '师傅还记得近期争执，先赔礼再接洽。';
  if(s.hp<25||s.energy<energy)return '需气血25、精力'+energy+'；仍可撤回。';
  if(work){if(s.day>r.due)return '未制作的订单已逾期。';if(Object.entries(d.input).some(([k,n])=>s.bag[k]<n))return '需自己的'+goods(d)+'；材料不足，不开始。';}
- if(['accept','deliver'].includes(action)&&(p.coins<d.reward||s.coins>10000000-d.reward))return '师傅现钱不足或自己的钱袋已满；待付款成品保留，不凭空发钱。';
+ if(['accept','deliver'].includes(action)){const payer=artisanPayer(s,key);if(payer.life.deathDay||payer.coins<d.reward||s.coins>10000000-d.reward)return (d.practical?payerName(d)+'现钱不足或无法付款':'师傅现钱不足')+'或自己的钱袋已满；待付款成品保留，不凭空发钱。';}
  return null;
 }
 export function artisanOrderAction(s,key,action,{settle,rng}){
@@ -63,9 +65,9 @@ export function artisanOrderAction(s,key,action,{settle,rng}){
    else{r.status='failed';s.relations[d.teacher]=Math.max(0,s.relations[d.teacher]-1);s.result.push('定制失手，材料已全部消耗，没有成品或收入；关系最多降低1，失败结果保存，本单不重试。');}
    const line=gain(s,d.skill,practiceAward(s,d.energy,success?PRACTICE_XP.order:PRACTICE_XP.orderFailure));if(line)s.result.push(line);
   }else if(action==='deliver'){
-   r.held=0;r.stock=1;r.status='done';r.paid=d.reward;p.coins-=d.reward;s.coins+=d.reward;s.relations[d.teacher]=Math.min(100,s.relations[d.teacher]+2);
+   r.held=0;r.stock=1;r.status='done';r.paid=d.reward;artisanPayer(s,key).coins-=d.reward;s.coins+=d.reward;s.relations[d.teacher]=Math.min(100,s.relations[d.teacher]+2);
    const recipe=Object.values(EQUIPMENT).find(e=>e.recipeOrder===key);if(recipe)s.result.push('已解锁'+recipe.name+'独有配方，可在作坊亲手制作；需材料、手艺与台位费，成品需穿戴才生效。');
-   s.result.push(d.product+'一件实际交入师傅留存，实付'+d.reward+'文来自'+people[d.teacher].name+'钱袋；不是净利润，材料和学习成本另计，本单不重复。');
+   s.result.push(d.product+'一件实际交入师傅留存，实付'+d.reward+'文来自'+payerName(d)+'钱袋；不是净利润，材料和学习成本另计，本单不重复。');
   }else{r.status='left';s.result.push('已撤回，不付钱、不退投入；'+(r.held?'未交定制件留作本单记录，不能再兑现。':'自己的未投入材料保留。')+'本单不重开。');}
  });
 }
@@ -80,8 +82,8 @@ export function artisanOrderOptions(s){
   const workActions=['work',...Object.keys(d.methods||{}).map(k=>'work_'+k)];
   const actions=r.status==='none'?['accept']:r.status==='active'?[...workActions,'withdraw']:r.status==='claim'?['deliver','withdraw']:[];
   return actions.map(action=>{
-   const work=workActions.includes(action),preview=action==='deliver'?'15分钟/精力1；定制成品1件已完成，交付实领'+d.reward+'文，实际扣'+people[d.teacher].name+'钱袋（现有'+s.npcWorld.individuals[d.teacher].coins+'文）；缺钱时保留成品，不再受制作期限限制。':action==='withdraw'?'15分钟/精力0；不退投入、不发报酬，未交定制件只留记录，不重开。':work?workPreview(s,key,action):(d.context?d.context+' ':'')+'需'+skills[d.skill]+'累计'+d.required+(d.practical?'':'（Lv'+(d.required===300?3:4)+'）')+'、关系'+d.trust+'；接单15分钟/精力1；'+d.days+'游戏日内亲自制作，不接受买来的成品，没有预付款。'+workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join(' 或 ');
-   return {id:'professional:'+key+':'+action,advancedOrder:!d.practical,details:d.practical&&action==='accept'?workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join('\n'):undefined,detailsLabel:'做法、材料与风险',label:people[d.teacher].name+' · '+(work?artisanWorkPlan(key,action).methodName:({accept:'接单',deliver:'交付领取',withdraw:'撤回'})[action])+' · '+d.name,preview:(d.practical&&action==='accept'?(d.context+' 需累计'+d.required+'经验、关系'+d.trust+'；接单15分钟/精力1，'+d.days+'游戏日内亲自作业，不接受购买成品，无预付款。'):preview)+' 实付'+d.reward+'文，师傅现有'+s.npcWorld.individuals[d.teacher].coins+'文；材料成本另计。',blocker:artisanOrderBlocker(s,key,action)};
+   const work=workActions.includes(action),preview=action==='deliver'?'15分钟/精力1；定制成品1件已完成，交付实领'+d.reward+'文，实际扣'+payerName(d)+'钱袋（现有'+artisanPayer(s,key).coins+'文）；缺钱时保留成品，不再受制作期限限制。':action==='withdraw'?'15分钟/精力0；不退投入、不发报酬，未交定制件只留记录，不重开。':work?workPreview(s,key,action):(d.context?d.context+' ':'')+'需'+skills[d.skill]+'累计'+d.required+(d.practical?'':'（Lv'+(d.required===300?3:4)+'）')+'、关系'+d.trust+'；接单15分钟/精力1；'+d.days+'游戏日内亲自制作，不接受买来的成品，没有预付款。'+workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join(' 或 ');
+   return {id:'professional:'+key+':'+action,advancedOrder:!d.practical,details:d.practical&&action==='accept'?workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join('\n'):undefined,detailsLabel:'做法、材料与风险',label:people[d.teacher].name+' · '+(work?artisanWorkPlan(key,action).methodName:({accept:'接单',deliver:'交付领取',withdraw:'撤回'})[action])+' · '+d.name,preview:(d.practical&&action==='accept'?(d.context+' 需累计'+d.required+'经验、关系'+d.trust+'；接单15分钟/精力1，'+d.days+'游戏日内亲自作业，不接受购买成品，无预付款。'):preview)+' 实付'+d.reward+'文，付款人'+payerName(d)+'现有'+artisanPayer(s,key).coins+'文；材料成本另计。',blocker:artisanOrderBlocker(s,key,action)};
   });
  });
 }
