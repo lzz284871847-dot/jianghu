@@ -1,16 +1,16 @@
-import {SCENE_ART} from './scene-art.js?v=5.38.0';
-import {places,people,resources} from './content.js?v=5.38.0';
-import {npcPlace} from './world.js?v=5.38.0';
-import {npcAt} from './npc-simulation.js?v=5.38.0';
-import {healthSummary} from './npc-health.js?v=5.38.0';
-import {ARTISAN_ORDERS} from './artisan-orders.js?v=5.38.0';
-import {CULTURE} from './culture.js?v=5.38.0';
-import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.38.0';
-import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.38.0';
-import {OUTINGS} from './outings.js?v=5.38.0';
-import {BUSINESSES} from './business.js?v=5.38.0';
-import {THREADS} from './threads.js?v=5.38.0';
-import {COOPERATIONS} from './companions.js?v=5.38.0';
+import {SCENE_ART} from './scene-art.js?v=5.39.0';
+import {places,people,resources} from './content.js?v=5.39.0';
+import {npcPlace} from './world.js?v=5.39.0';
+import {npcAt} from './npc-simulation.js?v=5.39.0';
+import {healthSummary} from './npc-health.js?v=5.39.0';
+import {ARTISAN_ORDERS} from './artisan-orders.js?v=5.39.0';
+import {CULTURE} from './culture.js?v=5.39.0';
+import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.39.0';
+import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.39.0';
+import {OUTINGS} from './outings.js?v=5.39.0';
+import {BUSINESSES} from './business.js?v=5.39.0';
+import {THREADS} from './threads.js?v=5.39.0';
+import {COOPERATIONS} from './companions.js?v=5.39.0';
 
 // Read-only local scene: the coordinates are a diagram, not new movement or NPC simulation.
 const f=(id,name,panel,group='')=>({id,name,panel,group});

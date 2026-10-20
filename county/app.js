@@ -1,72 +1,83 @@
-import {PRACTICE_XP,resourceGrowth,growthPreview} from './practice-growth.js?v=5.38.0';
-import {localScene,localActionContact} from './local-map.js?v=5.38.0';
-import {forestSummary} from './forest-contracts.js?v=5.38.0';
-import {ASSESSMENTS,assessmentSummary} from './assessments.js?v=5.38.0';
-import {artisanOrderHistory} from './artisan-orders.js?v=5.38.0';
-import {fortSummary,FORT_ROOMS} from './fort.js?v=5.38.0';
-import {raidSummary,RAID_ROOMS} from './raid.js?v=5.38.0';
-import {dungeonSummary} from './dungeon.js?v=5.38.0';
-import {skillOverview,MATERIAL_KEYS,materialSources,stockHint} from './skill-guide.js?v=5.38.0';
-import {CHESS_MOVES,chessBrief,chessChance} from './culture.js?v=5.38.0';
-import {PROFESSIONAL_IDS,ARTISANS} from './professional-data.js?v=5.38.0';
-import {tradePrice} from './civic.js?v=5.38.0';
-import {MEALS,mealDescription,kitchenBlocker} from './kitchen.js?v=5.38.0';
-import {fieldRisk,activeFieldClue} from './field-skills.js?v=5.38.0';
-import {BODY_ARTS,bodyStats,mobilityPlan,mobilityBlocker,mobilityPreview,bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.38.0';
-import {MEDICINES,medicineBlocker} from './medicine.js?v=5.38.0';
-import {countyEventDelay,countyEventNotices,countyLifeOverview} from './county-life.js?v=5.38.0';
-import {equipmentResale,salvageMaterials,spoilSummary} from './spoils.js?v=5.38.0';
-import {companionSummary} from './companions.js?v=5.38.0';
-import {handbook} from './task-handbook.js?v=5.38.0';
-import {GOALS,THREADS} from './threads.js?v=5.38.0';
-import {outingDelay,outingMovementBlocker} from './outings.js?v=5.38.0';
-import {activityGroups} from './activity-layout.js?v=5.38.0';
-import {opponentBrief} from './trials.js?v=5.38.0';
-import {localExplorationSummary} from './exploration.js?v=5.38.0';
-import {ferryDelay} from './world-feedback.js?v=5.38.0';
-import {recoveryAdvice,learningBlocker,martialProgress} from './play-help.js?v=5.38.0';
-import {adventureSummary} from './adventure-view.js?v=5.38.0';
-import {practiceFee} from './adventures.js?v=5.38.0';
-import {villageSchoolSummary} from './npc-village-school.js?v=5.38.0';
-import {journeySummary} from './npc-journeys.js?v=5.38.0';
-import {clinicSummary} from './npc-clinic.js?v=5.38.0';
-import {schoolSummary} from './npc-school.js?v=5.38.0';
-import {studySummary} from './npc-martial.js?v=5.38.0';
-import {outlookSummary,socialSummary} from './npc-social.js?v=5.38.0';
-import {healthSummary} from './npc-health.js?v=5.38.0';
-import {npcCareer} from './npc-economy.js?v=5.38.0';
-import {bondBetween} from './npc-social.js?v=5.38.0';
-import {npcAt} from './npc-simulation.js?v=5.38.0';
-import {districtStatus} from './society.js?v=5.38.0';
-import {stockAt,budgetAt,marketPrice,MARKET_LIMIT} from './commerce.js?v=5.38.0';
-import {JOBS,jobAvailability,livelihoodPressure} from './livelihood.js?v=5.38.0';
-import {EQUIPMENT,equipmentBonuses,craftFailureChance,equipmentWorkCost,rainDelay} from './equipment.js?v=5.38.0';
-import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=5.38.0';
-import {command} from './commands.js?v=5.38.0';
-import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=5.38.0';
-import {KEY,fresh,adventureAction,move,act,choose,fight,trade,talk,socialChoice,cost,chance,resourceBlocker,martialAction,usableMoves,equipmentAction} from './engine.js?v=5.38.0';
-import {date,progress,MAX} from './progression.js?v=5.38.0';
-import {npcPlace} from './world.js?v=5.38.0';
-import {save,load,importSave,inspectImport,exportSave,SAVE_LIMIT} from './storage.js?v=5.38.0';
+import {PRACTICE_XP,resourceGrowth,growthPreview} from './practice-growth.js?v=5.39.0';
+import {facilitySources} from './local-services.js?v=5.39.0';
+import {localScene,localActionContact} from './local-map.js?v=5.39.0';
+import {forestSummary} from './forest-contracts.js?v=5.39.0';
+import {ASSESSMENTS,assessmentSummary} from './assessments.js?v=5.39.0';
+import {artisanOrderHistory} from './artisan-orders.js?v=5.39.0';
+import {fortSummary,FORT_ROOMS} from './fort.js?v=5.39.0';
+import {raidSummary,RAID_ROOMS} from './raid.js?v=5.39.0';
+import {dungeonSummary} from './dungeon.js?v=5.39.0';
+import {skillOverview,MATERIAL_KEYS,materialSources,stockHint} from './skill-guide.js?v=5.39.0';
+import {CHESS_MOVES,chessBrief,chessChance} from './culture.js?v=5.39.0';
+import {PROFESSIONAL_IDS,ARTISANS} from './professional-data.js?v=5.39.0';
+import {tradePrice} from './civic.js?v=5.39.0';
+import {MEALS,mealDescription,kitchenBlocker} from './kitchen.js?v=5.39.0';
+import {fieldRisk,activeFieldClue} from './field-skills.js?v=5.39.0';
+import {BODY_ARTS,bodyStats,mobilityPlan,mobilityBlocker,mobilityPreview,bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.39.0';
+import {MEDICINES,medicineBlocker} from './medicine.js?v=5.39.0';
+import {countyEventDelay,countyEventNotices,countyLifeOverview} from './county-life.js?v=5.39.0';
+import {equipmentResale,salvageMaterials,spoilSummary} from './spoils.js?v=5.39.0';
+import {companionSummary} from './companions.js?v=5.39.0';
+import {handbook} from './task-handbook.js?v=5.39.0';
+import {GOALS,THREADS} from './threads.js?v=5.39.0';
+import {outingDelay,outingMovementBlocker} from './outings.js?v=5.39.0';
+import {activityGroups} from './activity-layout.js?v=5.39.0';
+import {opponentBrief} from './trials.js?v=5.39.0';
+import {localExplorationSummary} from './exploration.js?v=5.39.0';
+import {ferryDelay} from './world-feedback.js?v=5.39.0';
+import {recoveryAdvice,learningBlocker,martialProgress} from './play-help.js?v=5.39.0';
+import {adventureSummary} from './adventure-view.js?v=5.39.0';
+import {practiceFee} from './adventures.js?v=5.39.0';
+import {villageSchoolSummary} from './npc-village-school.js?v=5.39.0';
+import {journeySummary} from './npc-journeys.js?v=5.39.0';
+import {clinicSummary} from './npc-clinic.js?v=5.39.0';
+import {schoolSummary} from './npc-school.js?v=5.39.0';
+import {studySummary} from './npc-martial.js?v=5.39.0';
+import {outlookSummary,socialSummary} from './npc-social.js?v=5.39.0';
+import {healthSummary} from './npc-health.js?v=5.39.0';
+import {npcCareer} from './npc-economy.js?v=5.39.0';
+import {bondBetween} from './npc-social.js?v=5.39.0';
+import {npcAt} from './npc-simulation.js?v=5.39.0';
+import {districtStatus} from './society.js?v=5.39.0';
+import {stockAt,budgetAt,marketPrice,MARKET_LIMIT} from './commerce.js?v=5.39.0';
+import {JOBS,jobAvailability,livelihoodPressure} from './livelihood.js?v=5.39.0';
+import {EQUIPMENT,equipmentBonuses,craftFailureChance,equipmentWorkCost,rainDelay} from './equipment.js?v=5.39.0';
+import {MARTIAL_ARTS,OPPONENTS,DISTANCES,INJURIES} from './martial-data.js?v=5.39.0';
+import {command} from './commands.js?v=5.39.0';
+import {VERSION,places,resources,items,skills,recipes,markets,people,talents} from './content.js?v=5.39.0';
+import {KEY,fresh,adventureAction,move,act,choose,fight,trade,talk,socialChoice,cost,chance,resourceBlocker,martialAction,usableMoves,equipmentAction} from './engine.js?v=5.39.0';
+import {date,progress,MAX} from './progression.js?v=5.39.0';
+import {npcPlace} from './world.js?v=5.39.0';
+import {save,load,importSave,inspectImport,exportSave,SAVE_LIMIT} from './storage.js?v=5.39.0';
 const $=id=>document.getElementById(id);let state=null,view='world',localPanel='field',localPlace=null,selectedLocal=null;const activityOpen=new Map(),skillsOpen=new Map();
 const el=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;};
-function button(label,fn,disabled=false,preview=''){const b=el('button',label);b.type='button';b.disabled=disabled;b.onclick=()=>{try{const from=state.place;fn();persist();render();feedback();if(from!==state.place){tab('world');$('feedback').hidden=true;$('location-stage').scrollIntoView({block:'start'});}if(state.pending||state.combat||state.dead){tab('world');feedback();$('scene').scrollIntoView({block:'start'});}}catch(e){$('save-status').textContent='行动未完成：'+e.message;}};if(preview)b.append(el('small',preview));return b;}
+function button(label,fn,disabled=false,preview='',actionKey=''){const b=el('button',label);if(actionKey)b.dataset.actionKey=actionKey;b.type='button';b.disabled=disabled;b.onclick=()=>{try{const from=state.place;fn();persist();render();feedback();if(from!==state.place){tab('world');$('feedback').hidden=true;$('location-stage').scrollIntoView({block:'start'});}if(state.pending||state.combat||state.dead){tab('world');feedback();$('scene').scrollIntoView({block:'start'});}}catch(e){$('save-status').textContent='行动未完成：'+e.message;}};if(preview)b.append(el('small',preview));return b;}
 function persist(){try{save(state);$('save-status').textContent='已自动保存到此浏览器。';$('save-alert').hidden=true;}catch(e){$('save-status').textContent='保存失败，请导出备份：'+e.message;$('save-alert').textContent='自动保存失败，请到系统页导出备份。';$('save-alert').hidden=false;}}
 function showLocalPanel(key){if(!['field','people','resources','events','roads'].includes(key))return;localPanel=key;for(const panel of document.querySelectorAll('[data-world-panel]'))panel.hidden=panel.dataset.worldPanel!==key;for(const b of $('world-tabs').children)b.setAttribute('aria-pressed',String(b.dataset.panel===key));}
 function tab(key){view=key;if(key!=='system'){$('backup-panel').hidden=true;$('backup-text').value='';}for(const s of document.querySelectorAll('.view'))s.hidden=s.id!==key;for(const b of $('tabs').children)b.setAttribute('aria-current',b.dataset.tab===key?'page':'false');$('feedback').hidden=true;window.scrollTo({top:0});}
 function feedback(){if(!state)return;$('feedback-title').textContent=state.result[0];$('feedback-lines').replaceChildren(...state.result.slice(1).map(t=>el('p',t)));$('feedback').hidden=false;}
-const action=(id,label,preview)=>button(label,()=>act(state,id),state.dead||!!state.pending||!!state.combat,preview);
+const action=(id,label,preview)=>button(label,()=>act(state,id),state.dead||!!state.pending||!!state.combat,preview,id);
 function copyMapControls(source){const copy=source.cloneNode(true);copy.removeAttribute('id');for(const e of copy.querySelectorAll('[id]'))e.removeAttribute('id');if(source.tagName==='BUTTON')copy.onclick=source.onclick;const originals=source.querySelectorAll('button');copy.querySelectorAll('button').forEach((b,i)=>{b.onclick=originals[i].onclick;});return copy;}
 function openMapFacility(facility){if(facility.panel==='bag'||facility.panel==='equipment'){tab('bag');if(facility.panel==='equipment')$('equipment').scrollIntoView({block:'start'});return;}if(facility.group)activityOpen.set(facility.group,true);render();showLocalPanel(facility.panel);const target=facility.panel==='events'?$('activities'):facility.panel==='resources'?$('resources'):$('actions');target.scrollIntoView({block:'start'});}
+function closeLocalContact(){const previous=selectedLocal;selectedLocal=null;renderLocalScene(state,false);if(previous)document.querySelector('[data-map-kind="'+previous.kind+'"][data-map-id="'+previous.id+'"]')?.focus({preventScroll:true});}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&view==='world'&&selectedLocal){event.preventDefault();closeLocalContact();}});
 function renderLocalScene(s,blocked){
- $('local-scene').hidden=!!blocked;if(blocked)return;const scene=localScene(s),board=$('local-map');board.className='local-map terrain-'+scene.terrain;const art=$('local-art'),artSrc=scene.art.src+'?v=5.38.0';if(art.getAttribute('src')!==artSrc){board.classList.remove('art-ready');art.onload=()=>board.classList.add('art-ready');art.onerror=()=>board.classList.remove('art-ready');art.src=artSrc;}else board.classList.toggle('art-ready',art.complete&&art.naturalWidth>0);$('local-map-caption').textContent=scene.lane+' · 场景示意';$('local-pins').replaceChildren();
- const marker=(kind,node)=>{const b=el('button','','map-marker '+kind);b.type='button';b.dataset.mapKind=kind;b.dataset.mapId=node.id;b.setAttribute('aria-label',kind==='npc'?'查看'+node.name+'可办事项':'查看'+node.name);b.setAttribute('aria-pressed',String(selectedLocal?.kind===kind&&selectedLocal.id===node.id));const seal=el('span',kind==='npc'?node.name.slice(-2,-1)||'人':'坊','map-seal');seal.setAttribute('aria-hidden','true');b.append(seal,el('strong',node.name),el('small',kind==='npc'?node.hint:'点击进入'));if(kind==='npc'&&node.status!=='健康'&&node.status!=='在岗')b.append(el('small',node.status,'map-status'));b.onclick=()=>{selectedLocal={kind,id:node.id};renderLocalScene(state,false);$('local-contact').scrollIntoView({block:'start'});};return b;};
+ $('local-scene').hidden=!!blocked;if(blocked)return;const scene=localScene(s),board=$('local-map');board.className='local-map terrain-'+scene.terrain;const art=$('local-art'),artSrc=scene.art.src+'?v=5.39.0';if(art.getAttribute('src')!==artSrc){board.classList.remove('art-ready');art.onload=()=>board.classList.add('art-ready');art.onerror=()=>board.classList.remove('art-ready');art.src=artSrc;}else board.classList.toggle('art-ready',art.complete&&art.naturalWidth>0);$('local-map-caption').textContent=scene.lane+' · 场景示意';$('local-pins').replaceChildren();
+ const marker=(kind,node)=>{const b=el('button','','map-marker '+kind);b.type='button';b.dataset.mapKind=kind;b.dataset.mapId=node.id;b.setAttribute('aria-label',kind==='npc'?'查看'+node.name+'可办事项':'查看'+node.name);b.setAttribute('aria-pressed',String(selectedLocal?.kind===kind&&selectedLocal.id===node.id));const seal=el('span',kind==='npc'?node.name.slice(-2,-1)||'人':'坊','map-seal');seal.setAttribute('aria-hidden','true');b.append(seal,el('strong',node.name),el('small',kind==='npc'?node.hint:'点击进入'));if(kind==='npc'&&node.status!=='健康'&&node.status!=='在岗')b.append(el('small',node.status,'map-status'));b.onclick=()=>{selectedLocal={kind,id:node.id};renderLocalScene(state,false);$('feedback').hidden=true;$('local-contact').scrollTop=0;$('local-contact').querySelector('h3')?.focus({preventScroll:true});};return b;};
  for(const n of scene.actors)$('local-pins').append(marker('npc',n));for(const f of scene.facilities)$('local-pins').append(marker('facility',f));
  $('local-exits').replaceChildren(el('span','离开这里','map-exit-label'));for(const exit of scene.exits){const source=[...$('nearby').children].find(b=>b.firstChild?.textContent==='去'+exit.name);if(!source)continue;const b=copyMapControls(source);b.firstChild.textContent=exit.name;b.classList.add('map-exit');b.setAttribute('aria-label','出口 · '+exit.name);$('local-exits').append(b);}
  const panel=$('local-contact');panel.replaceChildren();panel.hidden=!selectedLocal;if(!selectedLocal)return;
  const target=selectedLocal.kind==='npc'?scene.actors.find(n=>n.id===selectedLocal.id):scene.facilities.find(f=>f.id===selectedLocal.id);if(!target){selectedLocal=null;panel.hidden=true;return;}
- const heading=el('div','','heading'),close=el('button','返回地图');close.type='button';close.onclick=()=>{selectedLocal=null;renderLocalScene(state,false);$('local-map').scrollIntoView({block:'start'});};heading.append(el('h3',target.name+(selectedLocal.kind==='npc'?' · '+target.role:'')),close);panel.append(heading);
- if(selectedLocal.kind==='facility'){panel.append(el('p','在这里查看实际服务、材料、费用和限制。','muted'));const go=el('button','查看'+target.name+'的行动');go.type='button';go.onclick=()=>openMapFacility(target);panel.append(go);return;}
+ const heading=el('div','','heading'),close=el('button','返回地图');close.type='button';close.onclick=closeLocalContact;const title=el('h3',target.name+(selectedLocal.kind==='npc'?' · '+target.role:''));title.tabIndex=-1;heading.append(title,close);panel.append(heading);
+ if(selectedLocal.kind==='facility'){
+  const services=el('div','','contact-services'),sources=facilitySources(target,{actions:$('actions'),activities:$('activities'),resources:$('resources'),market:$('market'),equipment:$('equipment')});
+  const locked=el('details','','facility-locked');locked.append(el('summary','尚需手艺或配方的制作'));
+  for(const source of sources){const copy=copyMapControls(source);if(target.id==='bench'&&source.dataset.skillLocked==='true')locked.append(copy);else services.append(copy);}
+  if(locked.children.length>1)services.append(locked);
+  if(target.id==='office')services.prepend(...[...$('event-notices').children].map(copyMapControls));
+  if(!sources.length)services.append(el('p','此刻没有可办理的事务；人物的教学与委托请直接点击本人。','muted'));
+  panel.append(services);return;
+ }
  const id=target.id;panel.append(el('p',target.status+' · '+target.hint,'muted'));const services=el('div','','contact-services');let offered=0;
  if((id==='merchant'&&s.place==='market')||(id==='stallholder'&&s.place==='liuxi')){const shop=el('details','','contact-shop');shop.open=true;shop.append(el('summary','买卖货架 · 当前报价'));const grid=el('div','','grid');for(const source of $('market').querySelectorAll('button'))if(source.textContent.startsWith('买')||source.textContent.startsWith('卖')&&!source.disabled)grid.append(copyMapControls(source));shop.append(grid);services.append(shop);offered++;}
  if(id==='smith'&&s.place==='workshop'){const b=el('button','打造、穿戴与修理装备');b.type='button';b.onclick=()=>openMapFacility({panel:'equipment'});services.append(b);offered++;}
@@ -100,9 +111,9 @@ function render(){const s=state;if(!s)return;$('setup').hidden=true;$('game').hi
  else if(s.pending?.type==='bandit'){$('scene').append(el('h3','旧道上的拦路人'),el('p','实战可能受伤或死亡。可以绕开，没人要求你拼命。'),button('绕开 · 半小时 / 精力0',()=>choose(s,'avoid')),button('交手 · 对手气血28',()=>choose(s,'fight')));}
  else if(s.pending?.type==='mobility'){$('scene').append(el('h3','轻功通过 · '+places[s.pending.to].name),el('p',mobilityPreview(s,s.pending.to)),button('确认运身通过',()=>choose(s,'traverse'),!!mobilityBlocker(s,s.pending.to,true)),button('取消，仍走普通道路',()=>choose(s,'leave')));}
  else if(s.pending){const d=resources[s.pending.key];$('scene').append(el('h3',d.name),el('p',`${d.minutes}分钟 / 精力${cost(s,d.energy)}，${Math.round(fieldRisk(s,d.risk)*100)}%擦伤${d.damage}点气血；也可能没有收获。${growthPreview(s,d.skill,cost(s,d.energy),resourceGrowth(d).success,resourceGrowth(d).failure)}`),button('确认采集',()=>choose(s,'gather'),!!resourceBlocker(s,s.pending.key)),button('不参与，返回',()=>choose(s,'leave')));}
- $('actions').replaceChildren();if(!blocked){if(p.work){const reason=jobAvailability(s),pressure=livelihoodPressure(s);const info=(pressure.shortage&&['fields','county'].includes(s.place)?'粮食短缺、用工缩减；':'')+(pressure.lowFunds?'商铺资金紧张、用工缩减；':'');$('actions').append(button(reason?'短工已满':'做短工',()=>act(s,'work'),!!reason,reason||`${s.place==='fields'||s.place==='dock'?'06':'07'}:00–18:00；3小时 / 精力${cost(s,24)}；可得4–12文；今日名额${pressure.slots}次；${info}${growthPreview(s,s.place==='fields'?'farming':'carry',cost(s,24),PRACTICE_XP.work)}`));}if(['inn','village'].includes(s.place))$('actions').append(action('sleep','睡一觉',`8小时，精力恢复至100；${s.place==='inn'?'5文':'免费借宿'}`));if(s.place==='school')$('actions').append(action('train','练入门拳脚','2小时 / 精力18，拳脚经验+2'));if(s.place==='village'&&s.minute>=480&&s.minute+60<=1080)$('actions').append(action('doctor','医者治疗','1小时 / 诊金8文，气血最多恢复50'));$('actions').append(action('rest','歇息','2小时 / 精力0，恢复精力30、气血10'),action('wait','等半小时','只流逝时间，不恢复精力'));if(s.minute<480||s.minute>=1080)$('actions').append(action('waitMorning','等待至08:00','真实推进至早晨，不恢复状态；跨日伤势与期限照常结算，出血可能危及生命。'));const bagShortcut=el('button','查看背包与当地交易');bagShortcut.onclick=()=>tab('bag');$('actions').append(bagShortcut);const manualShortcut=el('button','查看任务手册');manualShortcut.onclick=()=>tab('messages');$('actions').append(manualShortcut);}
+ $('actions').replaceChildren();if(!blocked){if(p.work){const reason=jobAvailability(s),pressure=livelihoodPressure(s);const info=(pressure.shortage&&['fields','county'].includes(s.place)?'粮食短缺、用工缩减；':'')+(pressure.lowFunds?'商铺资金紧张、用工缩减；':'');$('actions').append(button(reason?'短工已满':'做短工',()=>act(s,'work'),!!reason,reason||`${s.place==='fields'||s.place==='dock'?'06':'07'}:00–18:00；3小时 / 精力${cost(s,24)}；可得4–12文；今日名额${pressure.slots}次；${info}${growthPreview(s,s.place==='fields'?'farming':'carry',cost(s,24),PRACTICE_XP.work)}`,'work'));}if(['inn','village'].includes(s.place))$('actions').append(action('sleep','睡一觉',`8小时，精力恢复至100；${s.place==='inn'?'5文':'免费借宿'}`));if(s.place==='school')$('actions').append(action('train','练入门拳脚','2小时 / 精力18，拳脚经验+2'));if(s.place==='village'&&s.minute>=480&&s.minute+60<=1080)$('actions').append(action('doctor','医者治疗','1小时 / 诊金8文，气血最多恢复50'));$('actions').append(action('rest','歇息','2小时 / 精力0，恢复精力30、气血10'),action('wait','等半小时','只流逝时间，不恢复精力'));if(s.minute<480||s.minute>=1080)$('actions').append(action('waitMorning','等待至08:00','真实推进至早晨，不恢复状态；跨日伤势与期限照常结算，出血可能危及生命。'));const bagShortcut=el('button','查看背包与当地交易');bagShortcut.onclick=()=>tab('bag');$('actions').append(bagShortcut);const manualShortcut=el('button','查看任务手册');manualShortcut.onclick=()=>tab('messages');$('actions').append(manualShortcut);}
  const groups=activityGroups(s);$('event-count').textContent=groups.reduce((n,g)=>n+g.options.length,0);$('road-count').textContent=p.routes.length;$('resource-count').textContent=Object.values(resources).filter(d=>d.places.includes(s.place)).length;$('people-count').textContent=localScene(s).actors.length;
- $('activities').replaceChildren();if(s.fort.status==='active')$('activities').append(el('h3','荒山旧堡 · 第'+s.fort.stage+'/4段 · '+FORT_ROOMS[s.fort.stage]),el('p',fortSummary(s),'muted'));if(s.raid.status==='active')$('activities').append(el('h3','山中匪寨 · 第'+s.raid.stage+'/4段 · '+RAID_ROOMS[s.raid.stage]),el('p',raidSummary(s),'muted'));if(s.dungeon.status==='active')$('activities').append(el('h3','废弃矿道 · 第'+s.dungeon.stage+'/4段'),el('p',dungeonSummary(s),'muted'));for(const group of groups){const section=el('details','','activity-group'),list=el('div','','activity-list');section.dataset.group=group.id;section.open=activityOpen.get(group.id)??group.open;section.append(el('summary',group.label+' · '+group.options.length+'项'));for(const a of group.options){const row=el('article','','activity-option');row.dataset.npcContact=localActionContact(s,a)||'';row.dataset.group=group.id;row.dataset.actionId=a.id;row.append(el('p',a.brief,'action-preview'));if(a.details){const info=el('details','');info.append(el('summary','完整战前情报'),el('p',a.details,'muted'));row.append(info);}if(a.blocker)row.append(el('p',a.blocker,'muted'));row.append(button(a.label,()=>adventureAction(s,a.id),!!(s.dead||s.pending||s.combat)||!!a.blocker));list.append(row);}section.append(list);section.addEventListener('toggle',()=>{if(section.isConnected)activityOpen.set(group.id,section.open);});$('activities').append(section);}if(!$('activities').children.length)$('activities').append(el('p','此处没有新的委托或合作；查看成长目标或继续自由行动。'));const visit=localExplorationSummary(s);if(visit&&s.dungeon.status!=='active'&&s.raid.status!=='active'&&s.fort.status!=='active')$('activities').append(el('p',visit,'muted'));$('adventure-goals').replaceChildren(...[fortSummary(s),raidSummary(s),dungeonSummary(s),...adventureSummary(s)].filter(Boolean).map(t=>el('p',t)));
+ $('activities').replaceChildren();if(s.fort.status==='active')$('activities').append(el('h3','荒山旧堡 · 第'+s.fort.stage+'/4段 · '+FORT_ROOMS[s.fort.stage]),el('p',fortSummary(s),'muted'));if(s.raid.status==='active')$('activities').append(el('h3','山中匪寨 · 第'+s.raid.stage+'/4段 · '+RAID_ROOMS[s.raid.stage]),el('p',raidSummary(s),'muted'));if(s.dungeon.status==='active')$('activities').append(el('h3','废弃矿道 · 第'+s.dungeon.stage+'/4段'),el('p',dungeonSummary(s),'muted'));for(const group of groups){const section=el('details','','activity-group'),list=el('div','','activity-list');section.dataset.group=group.id;section.open=activityOpen.get(group.id)??group.open;section.append(el('summary',group.label+' · '+group.options.length+'项'));for(const a of group.options){const row=el('article','','activity-option');row.dataset.npcContact=localActionContact(s,a)||'';row.dataset.group=group.id;row.dataset.actionId=a.id;row.dataset.skillLocked=String(!!a.blocker&&/经验|配方|未学/.test(a.blocker));row.append(el('p',a.brief,'action-preview'));if(a.details){const info=el('details','');info.append(el('summary','完整战前情报'),el('p',a.details,'muted'));row.append(info);}if(a.blocker)row.append(el('p',a.blocker,'muted'));row.append(button(a.label,()=>adventureAction(s,a.id),!!(s.dead||s.pending||s.combat)||!!a.blocker));list.append(row);}section.append(list);section.addEventListener('toggle',()=>{if(section.isConnected)activityOpen.set(group.id,section.open);});$('activities').append(section);}if(!$('activities').children.length)$('activities').append(el('p','此处没有新的委托或合作；查看成长目标或继续自由行动。'));const visit=localExplorationSummary(s);if(visit&&s.dungeon.status!=='active'&&s.raid.status!=='active'&&s.fort.status!=='active')$('activities').append(el('p',visit,'muted'));$('adventure-goals').replaceChildren(...[fortSummary(s),raidSummary(s),dungeonSummary(s),...adventureSummary(s)].filter(Boolean).map(t=>el('p',t)));
  $('nearby').replaceChildren(...p.routes.map(to=>button('去'+places[to].name,()=>move(s,to),!!blocked||s.adventures.law.pursuit||!!outingMovementBlocker(s),`${places[to].minutes+rainDelay(s,places[to].area!=='县城与近郊'||to==='road')+ferryDelay(s,to)+outingDelay(s,to)+countyEventDelay(s,to)}分钟 / 精力0`)));
 for(const to of p.routes)if(mobilityPlan(s,to)){const why=mobilityBlocker(s,to)||outingMovementBlocker(s);$('nearby').append(button('轻功去'+places[to].name,()=>move(s,to,undefined,'light'),!!blocked||!!why,mobilityPreview(s,to)+(why?' '+why:'')));}
  $('map').replaceChildren();for(const area of ['县城与近郊','河谷与水路','山林与旧道']){const section=el('section','');section.append(el('h3',area));for(const [key,q] of Object.entries(places).filter(([,q])=>q.area===area))section.append(el('p',(key===s.place?'● 你在这里 · ':'')+q.name+' → '+q.routes.map(k=>places[k].name).join('、'),'muted'));$('map').append(section);}
@@ -165,4 +176,4 @@ $('backup-text').onclick=()=>{$('backup-text').select();};
 $('export').onclick=()=>{try{if(!state)return;const raw=exportSave(state),url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=el('a','');a.href=url;a.download='qinghe-day'+state.day+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);$('transfer-status').textContent='已请求下载存档；请确认文件已保存。若未出现下载，可查看可复制备份。';}catch(e){$('transfer-status').textContent='导出未完成，可查看可复制备份：'+e.message;}};
 $('import').onchange=async e=>{const f=e.target.files?.[0];try{if(!f)return;if(f.size>SAVE_LIMIT)throw Error('存档过大。');const raw=await f.text(),candidate=inspectImport(raw,state);if(!confirm(`导入${candidate.name}，第${candidate.day}日，${candidate.coins}文？将替换青河县当前进度。`)){$('transfer-status').textContent='已取消导入，当前进度保留。';return;}state=importSave(raw,state);$('backup-panel').hidden=true;$('backup-text').value='';view='world';render();tab('world');$('save-status').textContent='导入成功。';$('transfer-status').textContent='导入成功，当前进度已保存。';$('feedback-title').textContent='导入成功';$('feedback-lines').replaceChildren(el('p','已恢复实际存档记录，不补发奖励或刷新有限内容。'));$('feedback').hidden=false;}catch(err){$('transfer-status').textContent='导入未完成，当前进度保留：'+err.message;}finally{e.target.value='';}};
 try{state=load();if(state){render();tab('world');}}catch(e){$('startup-error').textContent='存档未能读取，原始记录没有被覆盖：'+e.message;}
-if(globalThis.navigator?.serviceWorker)navigator.serviceWorker.register('./sw.js?v=5.38.0',{scope:'./'}).then(reg=>{const worker=reg.installing||reg.waiting||reg.active;if(!worker){$('offline').textContent='离线文件尚未就绪。';return;}const status=()=>{$('offline').textContent=worker.state==='activated'?'青河县离线文件已就绪。':worker.state==='redundant'?'离线准备失败，可继续联网玩。':'正在准备青河县离线文件，首次请保持联网。';};worker.addEventListener('statechange',status);status();}).catch(()=>{$('offline').textContent='离线准备失败，可继续联网玩。';});else $('offline').textContent='此浏览器可联网玩，未提供离线缓存。';
+if(globalThis.navigator?.serviceWorker)navigator.serviceWorker.register('./sw.js?v=5.39.0',{scope:'./'}).then(reg=>{const worker=reg.installing||reg.waiting||reg.active;if(!worker){$('offline').textContent='离线文件尚未就绪。';return;}const status=()=>{$('offline').textContent=worker.state==='activated'?'青河县离线文件已就绪。':worker.state==='redundant'?'离线准备失败，可继续联网玩。':'正在准备青河县离线文件，首次请保持联网。';};worker.addEventListener('statechange',status);status();}).catch(()=>{$('offline').textContent='离线准备失败，可继续联网玩。';});else $('offline').textContent='此浏览器可联网玩，未提供离线缓存。';
