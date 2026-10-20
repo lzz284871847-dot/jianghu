@@ -1,15 +1,16 @@
-import {places,people,resources} from './content.js?v=5.36.0';
-import {npcPlace} from './world.js?v=5.36.0';
-import {npcAt} from './npc-simulation.js?v=5.36.0';
-import {healthSummary} from './npc-health.js?v=5.36.0';
-import {ARTISAN_ORDERS} from './artisan-orders.js?v=5.36.0';
-import {CULTURE} from './culture.js?v=5.36.0';
-import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.36.0';
-import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.36.0';
-import {OUTINGS} from './outings.js?v=5.36.0';
-import {BUSINESSES} from './business.js?v=5.36.0';
-import {THREADS} from './threads.js?v=5.36.0';
-import {COOPERATIONS} from './companions.js?v=5.36.0';
+import {SCENE_ART} from './scene-art.js?v=5.37.0';
+import {places,people,resources} from './content.js?v=5.37.0';
+import {npcPlace} from './world.js?v=5.37.0';
+import {npcAt} from './npc-simulation.js?v=5.37.0';
+import {healthSummary} from './npc-health.js?v=5.37.0';
+import {ARTISAN_ORDERS} from './artisan-orders.js?v=5.37.0';
+import {CULTURE} from './culture.js?v=5.37.0';
+import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.37.0';
+import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.37.0';
+import {OUTINGS} from './outings.js?v=5.37.0';
+import {BUSINESSES} from './business.js?v=5.37.0';
+import {THREADS} from './threads.js?v=5.37.0';
+import {COOPERATIONS} from './companions.js?v=5.37.0';
 
 // Read-only local scene: the coordinates are a diagram, not new movement or NPC simulation.
 const f=(id,name,panel,group='')=>({id,name,panel,group});
@@ -37,7 +38,7 @@ export function localScene(s){
  for(const [id,d] of Object.entries(people))if(npcPlace(s,id)===s.place){const n=s.npcWorld.individuals[id];actors.push({id,name:d.name,role:d.role,hint:s.place!==d.place?'交谈 · 非工作地点':hints[id]||'交谈 · 近况',status:healthSummary(n,s.day),interactive:true});}
  for(const n of npcAt(s,s.place))if(!Object.hasOwn(people,n.id))actors.push({id:n.id,name:n.name,role:n.role,hint:hints[n.id]||'查看近况',status:healthSummary(n,s.day),interactive:false});
  if(s.place==='county'&&s.minute>=480&&s.minute<1080)actors.unshift({id:'constable',name:'赵捕快',role:'县衙接洽',hint:'报案 · 治安委托',status:'在岗',interactive:true});
- return {...scene,name:places[s.place].name,actors,facilities:scene.facilities,exits:places[s.place].routes.map(id=>({id,name:places[id].name})),resources:Object.entries(resources).filter(([,r])=>r.places.includes(s.place)).map(([id,r])=>({id,name:r.name}))};
+ return {...scene,art:SCENE_ART[scene.terrain],name:places[s.place].name,actors,facilities:scene.facilities,exits:places[s.place].routes.map(id=>({id,name:places[id].name})),resources:Object.entries(resources).filter(([,r])=>r.places.includes(s.place)).map(([id,r])=>({id,name:r.name}))};
 }
 // Associate only an already-exposed action with its real contact. Self-work stays on facilities.
 export function localActionContact(s,option){
