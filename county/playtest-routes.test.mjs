@@ -5,7 +5,7 @@ import {places} from './content.js';
 import {present} from './adventures.js';
 import {handbook} from './task-handbook.js';
 import {activityGroups} from './activity-layout.js';
-import {countyLifeBlocker,countyLifeOverview,countyLifeOptions} from './county-life.js';
+import {countyLifeBlocker,countyLifeOverview,countyLifeOptions,rememberExperience} from './county-life.js';
 
 // Ordinary starts; no injected money, materials, identities or levels. Controlled rolls
 // reproduce both success and failure while every route uses real movement and game time.
@@ -41,5 +41,5 @@ test('行动预览复用实际门槛且严格只读，不能扣钱物、掷结�
  s.place='market';assert.equal(countyLifeBlocker(s,'stall:rent'),null);s.coins=0;assert.match(countyLifeBlocker(s,'stall:rent'),/6文/);const option=activityGroups(s).find(g=>g.id==='stalls').options.find(o=>o.id==='stall:rent');assert.match(option.blocker,/6文/);assert.equal(s.minute,480);assert.equal(s.coins,0);s.coins=30;s.minute=1080;assert.match(countyLifeBlocker(s,'stall:rent'),/08—18时.*15分钟/);
 });
 test('手册显示当前作业缺料、精力与付款原因，远处只引导道路而不误报当前位置',()=>{
- const s=fresh();s.place='workshop';s.relations.smith=3;adventureAction(s,'bond:smith:meet');s.day=2;s.nodes=Object.fromEntries(Object.entries(s.nodes).map(([k,n])=>[k,{...n,refreshDay:3}]));adventureAction(s,'bond:smith:meet');adventureAction(s,'bond:smith:promise');assert.match(handbook(s).cards.find(c=>c.group==='bonds').blocker,/木料/);s.bag.wood=1;s.energy=0;assert.match(handbook(s).cards.find(c=>c.group==='bonds').blocker,/精力/);s.place='county';assert.equal(handbook(s).cards.find(c=>c.group==='bonds').blocker,'');
+ const s=fresh();s.place='workshop';s.relations.smith=3;rememberExperience(s,'smith','cooperation',true);adventureAction(s,'bond:smith:meet');adventureAction(s,'bond:smith:promise');assert.match(handbook(s).cards.find(c=>c.group==='bonds').blocker,/木料/);s.bag.wood=1;s.energy=0;assert.match(handbook(s).cards.find(c=>c.group==='bonds').blocker,/精力/);s.place='county';assert.equal(handbook(s).cards.find(c=>c.group==='bonds').blocker,'');
 });
