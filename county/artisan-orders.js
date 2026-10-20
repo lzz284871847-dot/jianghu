@@ -1,10 +1,10 @@
-import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.40.0';
-import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.40.0';
-import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.40.0';
-import {EQUIPMENT} from './equipment.js?v=5.40.0';
-import {people,skills,items} from './content.js?v=5.40.0';
-import {gain} from './progression.js?v=5.40.0';
-import {present} from './adventures.js?v=5.40.0';
+import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.40.1';
+import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.40.1';
+import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.40.1';
+import {EQUIPMENT} from './equipment.js?v=5.40.1';
+import {people,skills,items} from './content.js?v=5.40.1';
+import {gain} from './progression.js?v=5.40.1';
+import {present} from './adventures.js?v=5.40.1';
 export const ARTISAN_ORDERS={
  carpenter_frame:{teacher:'carpenter',skill:'woodwork',required:300,trust:4,name:'护路榫接梁架',product:'榫接梁架',input:{hardwood:2,wood:2,cord:2},reward:40,days:4,minutes:180,energy:22,chance:.8},
  carpenter_case:{teacher:'carpenter',skill:'woodwork',required:700,trust:6,name:'精密药箱机关',product:'机关药箱',input:{hardwood:3,iron:2,cord:2},reward:70,days:5,minutes:240,energy:30,chance:.7},
@@ -61,7 +61,7 @@ export function artisanOrderAction(s,key,action,{settle,rng}){
    s.result.push((d.context?d.context+' ':'')+'第'+r.due+'日内亲自完成作业；自备材料，做法不同，投入与成功率不同。没有预付款；成品只用于本单，不能当装备或出售。');
   }else if(work){
    for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;p.energy-=8;const success=rng()<chance;
-   if(success){r.status='claim';r.held=1;s.result.push('完成'+d.product+'一件，留存在本单待交付；材料、时间与精力已实际投入。师傅未付款时保留成品，过期不销毁已完成成果。');}
+   if(success){r.status='claim';r.held=1;s.result.push('完成'+d.product+'一件，留存在本单待交付；材料、时间与精力已实际投入。报酬未到账时保留成品，过期不销毁已完成成果。');}
    else{r.status='failed';s.relations[d.teacher]=Math.max(0,s.relations[d.teacher]-1);s.result.push('定制失手，材料已全部消耗，没有成品或收入；关系最多降低1，失败结果保存，本单不重试。');}
    const line=gain(s,d.skill,practiceAward(s,d.energy,success?PRACTICE_XP.order:PRACTICE_XP.orderFailure));if(line)s.result.push(line);
   }else if(action==='deliver'){
@@ -83,7 +83,7 @@ export function artisanOrderOptions(s){
   const actions=r.status==='none'?['accept']:r.status==='active'?[...workActions,'withdraw']:r.status==='claim'?['deliver','withdraw']:[];
   return actions.map(action=>{
    const work=workActions.includes(action),preview=action==='deliver'?'15分钟/精力1；定制成品1件已完成，交付实领'+d.reward+'文，实际扣'+payerName(d)+'钱袋（现有'+artisanPayer(s,key).coins+'文）；缺钱时保留成品，不再受制作期限限制。':action==='withdraw'?'15分钟/精力0；不退投入、不发报酬，未交定制件只留记录，不重开。':work?workPreview(s,key,action):(d.context?d.context+' ':'')+'需'+skills[d.skill]+'累计'+d.required+(d.practical?'':'（Lv'+(d.required===300?3:4)+'）')+'、关系'+d.trust+'；接单15分钟/精力1；'+d.days+'游戏日内亲自制作，不接受买来的成品，没有预付款。'+workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join(' 或 ');
-   return {id:'professional:'+key+':'+action,advancedOrder:!d.practical,details:d.practical&&action==='accept'?workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join('\n'):undefined,detailsLabel:'做法、材料与风险',label:people[d.teacher].name+' · '+(work?artisanWorkPlan(key,action).methodName:({accept:'接单',deliver:'交付领取',withdraw:'撤回'})[action])+' · '+d.name,preview:(d.practical&&action==='accept'?(d.context+' 需累计'+d.required+'经验、关系'+d.trust+'；接单15分钟/精力1，'+d.days+'游戏日内亲自作业，不接受购买成品，无预付款。'):preview)+' 实付'+d.reward+'文，付款人'+payerName(d)+'现有'+artisanPayer(s,key).coins+'文；材料成本另计。',blocker:artisanOrderBlocker(s,key,action)};
+   return {id:'professional:'+key+':'+action,advancedOrder:!d.practical,details:d.practical&&action==='accept'?workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join('\n'):undefined,detailsLabel:'做法、材料与风险',label:people[d.teacher].name+' · '+(work?artisanWorkPlan(key,action).methodName:({accept:'接单',deliver:'交付领取',withdraw:'撤回'})[action])+' · '+d.name,preview:(d.practical&&action==='accept'?(d.context+' 需累计'+d.required+'经验、关系'+d.trust+'；接单15分钟/精力1，'+d.days+'游戏日内亲自作业，不接受购买成品，无预付款。'):preview)+(action==='withdraw'?'':action==='deliver'?' 材料成本另计。':' 约定报酬'+d.reward+'文，交付后才支付；付款人'+payerName(d)+'现有'+artisanPayer(s,key).coins+'文，材料成本另计。'),blocker:artisanOrderBlocker(s,key,action)};
   });
  });
 }

@@ -1,6 +1,6 @@
-import {namedResidents,saveResident} from './npc-residents.js?v=5.40.0';
-import {alive} from './npc-mortality.js?v=5.40.0';
-import {travelBusy} from './npc-journeys.js?v=5.40.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=5.40.1';
+import {alive} from './npc-mortality.js?v=5.40.1';
+import {travelBusy} from './npc-journeys.js?v=5.40.1';
 const qualified=p=>p.study.practice>=120&&['wood_knife','staff'].every(id=>p.study.otherArts[id]?.practice>=120);
 export const makeVillageSchool=(day=1)=>({holder:'farmer',appointedDay:0,lastDay:day});
 export const villageTeacher=s=>namedResidents(s).find(p=>p.id===s.npcWorld.villageSchool.holder);
