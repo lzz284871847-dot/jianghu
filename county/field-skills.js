@@ -1,7 +1,7 @@
-import {PRACTICE_XP,growthPreview} from './practice-growth.js?v=5.40.0';
-import {forestBonus,useUtility} from './equipment.js?v=5.40.0';
-import {skills} from './content.js?v=5.40.0';
-import {gain} from './progression.js?v=5.40.0';
+import {PRACTICE_XP,growthPreview} from './practice-growth.js?v=5.40.1';
+import {forestBonus,useUtility} from './equipment.js?v=5.40.1';
+import {skills} from './content.js?v=5.40.1';
+import {gain} from './progression.js?v=5.40.1';
 export const FIELD_SKILLS=['navigation','tracking','awareness'];
 export const FIELD_ACTIONS={
  navigation:{name:'辨认路势',minutes:20,energy:3,places:['foot','bamboo','hill','ferry','road','oldroad','mine'],use:'岔路抄近路、轻功通过或旧址搜寻'},

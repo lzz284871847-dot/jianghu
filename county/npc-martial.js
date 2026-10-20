@@ -1,10 +1,10 @@
-import {villageTeacher,villageCanTeach} from './npc-village-school.js?v=5.40.0';
-import {travelBusy} from './npc-journeys.js?v=5.40.0';
-import {schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=5.40.0';
-import {alive} from './npc-mortality.js?v=5.40.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.40.0';
-import {canLearn,learn,train} from './martial-progression.js?v=5.40.0';
-import {people} from './content.js?v=5.40.0';
+import {villageTeacher,villageCanTeach} from './npc-village-school.js?v=5.40.1';
+import {travelBusy} from './npc-journeys.js?v=5.40.1';
+import {schoolTeacher,schoolCanTeach,saveSchoolTeacher} from './npc-school.js?v=5.40.1';
+import {alive} from './npc-mortality.js?v=5.40.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.40.1';
+import {canLearn,learn,train} from './martial-progression.js?v=5.40.1';
+import {people} from './content.js?v=5.40.1';
 export const NPC_ART='qinghe_fist';
 export const makeMentor=()=>({joinedDay:0,endedDay:0,lastAidDay:0,aidCount:0});
 export const makeStudy=(day=1)=>({learnedDay:0,practice:0,insight:0,lastDay:day,otherArts:{},teacherTrust:0,experience:0,mastery:0,lastSparDay:0,mentor:makeMentor()});

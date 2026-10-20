@@ -1,9 +1,9 @@
-import {assessmentStyle} from './assessments.js?v=5.40.0';
-import {bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.40.0';
-import {trialModifiers} from './trials.js?v=5.40.0';
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.40.0';
-import {injuryEffects} from './injury.js?v=5.40.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.40.0';
+import {assessmentStyle} from './assessments.js?v=5.40.1';
+import {bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.40.1';
+import {trialModifiers} from './trials.js?v=5.40.1';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.40.1';
+import {injuryEffects} from './injury.js?v=5.40.1';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.40.1';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);

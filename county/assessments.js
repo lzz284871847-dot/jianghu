@@ -1,7 +1,7 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.40.0';
-import {people} from './content.js?v=5.40.0';
-import {travelBusy} from './npc-journeys.js?v=5.40.0';
-import {companionBusy} from './companions.js?v=5.40.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.40.1';
+import {people} from './content.js?v=5.40.1';
+import {travelBusy} from './npc-journeys.js?v=5.40.1';
+import {companionBusy} from './companions.js?v=5.40.1';
 // Two named, bounded exercises. Instructor arts are the existing teaching roles,
 // never a new NPC lineage or an inferred martial history for ordinary residents.
 export const ASSESSMENTS={
