@@ -1,9 +1,9 @@
-import {dungeonGuideLocation} from './dungeon.js?v=5.45.0';
-import {cooperationRefusal} from './npc-social.js?v=5.45.0';
-import {rememberExperience,sharedWork} from './county-life.js?v=5.45.0';
-import {people,places,items} from './content.js?v=5.45.0';
-import {gain} from './progression.js?v=5.45.0';
-import {travelBusy} from './npc-journeys.js?v=5.45.0';
+import {dungeonGuideLocation} from './dungeon.js?v=5.46.0';
+import {cooperationRefusal} from './npc-social.js?v=5.46.0';
+import {rememberExperience,sharedWork} from './county-life.js?v=5.46.0';
+import {people,places,items} from './content.js?v=5.46.0';
+import {gain} from './progression.js?v=5.46.0';
+import {travelBusy} from './npc-journeys.js?v=5.46.0';
 export const COOPERATIONS={
  boat:{name:'船工同行修架',actor:'boatman',from:'dock',site:'ferry',corridor:['dock','ferry'],fee:3,payer:'merchant',claim:'market',total:12,share:4,skill:'carry',input:{wood:1},dispute:'route',info:'贺船工同行到旧渡口修货架。工钱3文，关系3或有信任的实际共事可免；需自己木料1份。分歧是稳妥处理或说服冒险。雨天更难，实际工钱共12文由柳掌柜支付，协作时船工分4文。'},
  hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
@@ -40,6 +40,25 @@ export function companionInviteTerms(s,key){
  const blocker=cooperationRefusal(s,d.actor)||(failed&&s.day<failed.day+2?'上次约定未成，对方先整理手头活计；第'+(failed.day+2)+'日起可再商量同行。':null);
  return {trusted,fee:trusted?0:d.fee,blocker};
 }
+// A read-only plan drives both the scene preview and the actual work settlement.
+export function companionWorkPlan(s,key){
+ const d=COOPERATIONS[key],r=s.adventures.companions.records[key],p=s.npcWorld.individuals[d.actor];
+ const assisted=r.joined,minutes=r.route==='quick'?30:60,energy=assisted?10:16;
+ const chance=Math.min(.95,(assisted?.8:.55)+(s.skills[d.skill]>=12?.1:0)+(r.trust?.05:0)-(s.weather==='雨'?.15:0)),risk=r.route==='quick'?.25:.05;
+ const missing=Object.entries(d.input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>items[k]+'缺'+(n-s.bag[k])+'份（现有'+s.bag[k]+'/'+n+'）');
+ const blocker=r.status!=='open'||s.place!==d.site?'需沿现有道路到进行中的合作现场。':!r.prepared||r.conflict!=='resolved'?'先商量路线、处理伤势或独行准备。':s.hp<25?'作业需气血25，当前'+s.hp+'；可先养伤或撤回。':missing.length?missing.join('、')+'；备料后再作业，未消耗尝试。':s.minute<360||s.minute+minutes>1080?'白天作业须在18时前完成，当前需'+minutes+'分钟；可改日独行或撤回。':assisted&&(!fit(s,d,minutes)||p.energy<12||clock(s)+minutes>r.until)?'同伴伤病、精力不足12或约定余时不足'+minutes+'分钟；可离队独行或撤回。':s.energy<energy?'自己精力不足'+energy+'，当前'+s.energy+'；可先休息或撤回。':null;
+ return {assisted,minutes,energy,chance,risk,blocker};
+}
+function workPreview(s,key,plan){
+ const d=COOPERATIONS[key],r=s.adventures.companions.records[key],materials=Object.entries(d.input).map(([k,n])=>items[k]+'×'+n+'（现有'+s.bag[k]+'）').join('、')||'无';
+ return plan.minutes+'分钟/精力'+plan.energy+'；当前成功率'+Math.round(plan.chance*100)+'%；材料：'+materials+'。'+Math.round(plan.risk*100)+'%擦伤8气血'+(plan.assisted?'并使同伴轻伤':'')+'，成功与受伤分别判定。'+(plan.assisted?'同伴另耗精力12，须在约定时限内完成。':'独行无同伴分帐。')+'成功后到'+places[d.claim].name+'结算，你'+(d.total-(plan.assisted?r.share:0))+'文；缺款保留成果。开工前可撤回；失败仍耗料，无报酬，不重试。';
+}
+function preparationPreview(s,key,choice){const r=s.adventures.companions.records[key];
+ if(key==='boat')return choice==='safe'?'商量15分钟/精力0；后续作业60分钟，擦伤风险5%，仍需自己的木料1份。':'商量15分钟/精力2，说服率'+(r.trust?75:45)+'%；谈妥后作业30分钟，擦伤风险25%；拒绝则船工离队，可独行或撤回。';
+ if(key==='hunter')return choice==='fair'?'商量15分钟/精力0；成功后实际总工钱10文，猎户分6文，你4文。':'商量15分钟/精力2，谈妥率'+(r.trust?80:50)+'%；成功后猎户分4文，你6文；谈崩则离队，可独行。';
+ if(key==='smith')return '商量15分钟/精力0；'+(choice==='support'?'需已有熟悉关系且铁匠实际有2文，真实转给你。':'自己备料，不预发工钱。')+'后续仍需自己的铁料1、木料1，作业另计工时与风险。';
+ return choice==='safe'?'侦察45分钟/精力8，同伴精力6；本步无身体伤害，后续作业另计。':'侦察20分钟/精力8，同伴精力6；30%损失30气血并使学友轻伤，可能永久死亡。伤后可用药材1份、30分钟/精力2照料，或让其离队。';
+}
 export function companionAction(s,id,{transact,advance,rng}){const [,key,choice]=id.split(':'),d=COOPERATIONS[key],c=s.adventures.companions,r=c.records[key],fail=t=>{s.result=[t];return false;};if(!d)return fail('没有这项熟人合作。');const p=s.npcWorld.individuals[d.actor];
  if(choice==='invite'){
   if(r.status!=='new'||c.active!==null||s.dungeon?.guide==='joined'||s.raid?.guide==='joined')return fail('一次只邀一人，每条合作一次；先交代或结束当前同行。');
@@ -72,12 +91,10 @@ export function companionAction(s,id,{transact,advance,rng}){const [,key,choice]
   if(key==='peer'&&['safe','quick'].includes(choice)){if(s.hp<25||p.energy<8)return fail('侦察需玩家气血25及学友精力8；不足可撤回。');return transact(s,'学友侦察路线',choice==='safe'?45:20,8,()=>{p.energy-=6;r.npcSpent+=6;r.prepared=true;r.route=choice;r.share=d.share;r.conflict='resolved';if(choice==='quick'&&rng()<.3){s.hp=Math.max(0,s.hp-30);p.injuryDays=Math.max(1,p.injuryDays);r.conflict='hurt';s.result.push('险路失足：你损失30气血，学友轻伤；先照料或让其离队。');if(!s.hp){s.dead=true;detach(s,key,'玩家身亡，学友自行返程');r.status='died';r.share=0;}}},advance);}
  }
  if(choice!=='work'||!r.prepared||r.conflict!=='resolved')return fail('先处理合作分歧或独行准备，再实际作业。');
- if(s.hp<25||Object.entries(d.input).some(([k,n])=>s.bag[k]<n))return fail('需气血25和自己的说明中材料；准备不足不消耗作业。');
- const minutes=r.route==='quick'?30:60;if(s.minute<360||s.minute+minutes>1080)return fail('白天作业需留足完成时间；可先准备或改日独行。');
- if(r.joined&&(!fit(s,d,minutes)||p.energy<12||clock(s)+minutes>r.until))return fail('同伴伤病、时间或精力不足；可结束同行后独行，不强迫继续。');
- const assisted=r.joined,energy=assisted?10:16,chance=Math.min(.95,(assisted?.8:.55)+(s.skills[d.skill]>=12?.1:0)+(r.trust?.05:0)-(s.weather==='雨'?.15:0)),risk=r.route==='quick'?.25:.05;
+ const plan=companionWorkPlan(s,key);if(plan.blocker)return fail(plan.blocker);
+ const {assisted,minutes,energy,chance,risk}=plan;
  return transact(s,'实际作业 · '+d.name,minutes,energy,()=>{for(const [k,n] of Object.entries(d.input))s.bag[k]-=n;if(assisted){p.energy-=12;r.npcSpent+=12;}r.assisted=assisted;if(!assisted)r.share=0;const success=rng()<chance;r.status=success?'ready':'failed';if(rng()<risk){s.hp=Math.max(0,s.hp-8);if(assisted)p.injuryDays=Math.max(1,p.injuryDays);s.result.push('意外擦伤8气血'+(assisted?'，同伴轻伤，停止同行。':'。'));if(!s.hp){s.dead=true;r.status='died';}}detach(s,key,'本次作业结束，同伴返程',minutes);if(!s.dead){const line=gain(s,d.skill,success?2:1);if(line)s.result.push(line);if(!success&&assisted){shift(s,key,-1);rememberExperience(s,d.actor,'cooperation',false);}s.result.push(success?'成果保留，去付款处按真实分帐结算。':'作业未成，材料、工钱、精力与伤势保留，无报酬；原有短工仍可谋生。');}},advance);
 }
-export function companionOptions(s){const out=[];if(s.dead)return out;for(const [id,d] of Object.entries(COOPERATIONS)){const r=s.adventures.companions.records[id],add=(choice,label,preview=d.info,blocker=null)=>out.push({id:'companion:'+id+':'+choice,label,preview,blocker});if(r.status==='new'&&s.place===d.from){const t=companionInviteTerms(s,id);add('invite','邀请 · '+d.name,d.info+' 本次邀请工钱'+t.fee+'文'+(t.trusted?'（熟识、同门或真实共事，免邀请费；完工仍按约分帐）。':'；未提前发放报酬。')+(t.blocker?' 暂缓：'+t.blocker:''),t.blocker);}if(r.status==='open'){add('withdraw','撤回 · '+d.name,'投入不退，无罚款或预付报酬。');if(r.joined)add('dismiss','离队独行 · '+d.name,'同伴沿原路返程，不瞬移玩家，仍可独行作业。');if(s.place===d.site){if(!r.joined&&!r.prepared)add('solo','独行准备 · '+d.name,'15分钟；成功率较低，仍需自己的材料。');if(r.joined&&r.conflict==='hurt')add('care','伤后照料 · '+d.name,'药材1份、30分钟/精力2；或结束同行。');else if(!r.prepared&&r.joined){const choices=id==='boat'?['safe','persuade']:id==='hunter'?['fair','bargain']:id==='smith'?['self','support']:['safe','quick'];for(const choice of choices)add(choice,({safe:'选择稳妥',persuade:'说服冒险',fair:'接受猎户分6文',bargain:'商谈分4文',self:'自己备材料',support:'请铁匠出2文',quick:'冒险快查'})[choice]+' · '+d.name);}else if(r.prepared&&r.conflict==='resolved')add('work','实际作业 · '+d.name,'自己的材料：'+(Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')||'无')+'；'+(r.joined?'NPC精力12，你精力10':'你精力16，成功率较低')+'；失手与雨天有损失，不保证成功。');}}
+export function companionOptions(s){const out=[];if(s.dead)return out;for(const [id,d] of Object.entries(COOPERATIONS)){const r=s.adventures.companions.records[id],add=(choice,label,preview=d.info,blocker=null)=>out.push({id:'companion:'+id+':'+choice,label,preview,blocker});if(r.status==='new'&&s.place===d.from){const t=companionInviteTerms(s,id);add('invite','邀请 · '+d.name,d.info+' 本次邀请工钱'+t.fee+'文'+(t.trusted?'（熟识、同门或真实共事，免邀请费；完工仍按约分帐）。':'；未提前发放报酬。'),t.blocker);}if(r.status==='open'){add('withdraw','撤回 · '+d.name,'投入不退，无罚款或预付报酬。');if(r.joined)add('dismiss','离队独行 · '+d.name,'同伴沿原路返程，不瞬移玩家，仍可独行作业。');if(s.place===d.site){if(!r.joined&&!r.prepared)add('solo','独行准备 · '+d.name,'15分钟；成功率较低，仍需自己的材料。');if(r.joined&&r.conflict==='hurt')add('care','伤后照料 · '+d.name,'药材1份、30分钟/精力2；或结束同行。');else if(!r.prepared&&r.joined){const choices=id==='boat'?['safe','persuade']:id==='hunter'?['fair','bargain']:id==='smith'?['self','support']:['safe','quick'];for(const choice of choices)add(choice,({safe:'选择稳妥',persuade:'说服冒险',fair:'接受猎户分6文',bargain:'商谈分4文',self:'自己备材料',support:'请铁匠出2文',quick:'冒险快查'})[choice]+' · '+d.name,preparationPreview(s,id,choice));}else if(r.prepared&&r.conflict==='resolved'){const plan=companionWorkPlan(s,id);add('work','实际作业 · '+d.name,workPreview(s,id,plan),plan.blocker);}}}
  if(r.status==='ready'&&s.place===d.claim)add('claim','结算 · '+d.name,'实际总工钱'+d.total+'文，你'+(d.total-r.share)+'文，同伴'+r.share+'文；余额不足保留成果。');}return out;}
 export function companionSummary(s){return Object.entries(COOPERATIONS).filter(([id])=>s.adventures.companions.records[id].status!=='new').map(([id,d])=>{const r=s.adventures.companions.records[id];return d.name+'：'+({open:r.joined?'同行中':'可独行继续',ready:'待结算',done:'已完成',failed:'失败',withdrawn:'已撤回',died:'身亡结束'})[r.status]+'；合作信任'+r.trust+'/3，邀请工钱'+r.fee+'文，NPC实际精力消耗'+r.npcSpent+'，已收款'+r.paid+'文。';});}

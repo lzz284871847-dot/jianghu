@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {fresh,restore,adventureAction,move,talk,martialAction,socialChoice} from './engine.js';
 import {advance,npcPlace} from './world.js';
 import {npcAt} from './npc-simulation.js';
-import {COOPERATIONS,makeCompanions,companionLocation,companionOptions,companionSummary,sameMaster,companionInviteTerms} from './companions.js';
+import {COOPERATIONS,makeCompanions,companionLocation,companionOptions,companionSummary,sameMaster,companionInviteTerms,companionWorkPlan} from './companions.js';
 import {handbook} from './task-handbook.js';
 import {activityGroups} from './activity-layout.js';
 import {rememberExperience} from './county-life.js';
@@ -44,7 +44,7 @@ test('same-school familiarity requires both actual mentor records rather than in
 const round=s=>assert.deepEqual(restore(JSON.stringify(s)),s);
 const refusal=(s,id)=>{const before=structuredClone(s);assert.equal(run(s,id),false);s.result=before.result;assert.deepEqual(s,before);};
 test('recent quarrel refuses a new invitation before charging; apology permits a real paid invitation',()=>{
- const s=setup('smith');assert.ok(socialChoice(s,'smith','quarrel'));const before=structuredClone(s);assert.match(companionInviteTerms(s,'smith').blocker,/争执/);assert.match(companionOptions(s).find(o=>o.id==='companion:smith:invite').preview,/暂缓.*争执/);assert.deepEqual(s,before);refusal(s,'smith:invite');assert.ok(socialChoice(s,'smith','apologize'));assert.equal(companionInviteTerms(s,'smith').blocker,null);assert.ok(run(s,'smith:invite'));assert.equal(r(s,'smith').fee,2);round(s);
+ const s=setup('smith');assert.ok(socialChoice(s,'smith','quarrel'));const before=structuredClone(s);assert.match(companionInviteTerms(s,'smith').blocker,/争执/);assert.match(companionOptions(s).find(o=>o.id==='companion:smith:invite').blocker,/争执/);assert.deepEqual(s,before);refusal(s,'smith:invite');assert.ok(socialChoice(s,'smith','apologize'));assert.equal(companionInviteTerms(s,'smith').blocker,null);assert.ok(run(s,'smith:invite'));assert.equal(r(s,'smith').fee,2);round(s);
 });
 test('an unfulfilled signed promise pauses only new invitations for two days and costs nothing to refuse',()=>{
  const s=setup('smith');s.relations.smith=3;rememberExperience(s,'smith','cooperation',true);assert.ok(adventureAction(s,'bond:smith:promise'));assert.ok(adventureAction(s,'bond:smith:withdraw'));assert.match(companionInviteTerms(s,'smith').blocker,/第3日/);refusal(s,'smith:invite');advance(s,1440-s.minute);s.minute=480;refusal(s,'smith:invite');advance(s,1440);s.minute=480;assert.equal(companionInviteTerms(s,'smith').blocker,null);assert.ok(run(s,'smith:invite'));round(s);
@@ -65,4 +65,21 @@ test('actual assisted failure still changes shared trust, and an earned split is
 test('voluntary dismissal preserves prior relationship and injury while explaining the actual departure cause',()=>{
  const s=setup('boat');run(s,'boat:invite');const relation=s.relations.boatman;s.npcWorld.individuals.boatman.energy=1;assert.ok(move(s,'ferry',()=>1));assert.equal(r(s,'boat').joined,false);assert.match(s.result.join(' '),/精力不足/);assert.equal(s.relations.boatman,relation);round(s);
  const x=setup('boat');run(x,'boat:invite');move(x,'county',()=>1);assert.match(x.result.join(' '),/超出约定路线/);round(x);
+});
+
+test('all four work previews are pure save projections with actual time, costs, risk and payout split',()=>{
+ for(const id of Object.keys(COOPERATIONS)){const s=setup(id);prepare(s,id);const before=structuredClone(s),raw=JSON.stringify(s),p=companionWorkPlan(s,id),o=companionOptions(s).find(o=>o.id==='companion:'+id+':work');assert.equal(p.blocker,null);assert.match(o.preview,/60分钟\/精力10/);assert.match(o.preview,/当前成功率80%/);assert.match(o.preview,/5%擦伤8气血并使同伴轻伤/);assert.match(o.preview,new RegExp('你'+(COOPERATIONS[id].total-r(s,id).share)+'文'));assert.match(o.preview,/开工前可撤回/);activityGroups(s);assert.deepEqual(s,before);assert.equal(JSON.stringify(restore(raw)),raw);}
+});
+test('previewed success boundary and independent injury probability match settlement with real resources',()=>{
+ for(const id of Object.keys(COOPERATIONS))for(const success of [true,false]){const s=setup(id);prepare(s,id);s.weather='雨';s.skills[COOPERATIONS[id].skill]=12;const p=companionWorkPlan(s,id);assert.ok(Math.abs(p.chance-.75)<1e-9);const before=structuredClone(s);let calls=0;assert.ok(run(s,id+':work',()=>++calls===1?p.chance+(success?-1e-6:0):p.risk-1e-6));assert.equal(calls,2);assert.equal(r(s,id).status,success?'ready':'failed');assert.equal(s.hp,before.hp-8);assert.equal(s.npcWorld.individuals[COOPERATIONS[id].actor].injuryDays,1);assert.equal(s.energy,before.energy-p.energy);assert.equal(s.minute,before.minute+p.minutes);for(const [key,n] of Object.entries(COOPERATIONS[id].input))assert.equal(s.bag[key],before.bag[key]-n);assert.equal(s.coins,before.coins);round(s);}
+});
+test('missing materials, player condition and companion limits disable only work before any cost or RNG change',()=>{
+ const cases=[s=>{s.bag.wood=0;},s=>{s.hp=24;},s=>{s.energy=9;},s=>{s.minute=1050;r(s,'boat').until=s.day*1440+1080;},s=>{s.npcWorld.individuals.boatman.energy=11;},s=>{r(s,'boat').until=s.day*1440+s.minute+30;}];
+ for(const mutate of cases){const s=setup('boat');prepare(s,'boat');mutate(s);const plan=companionWorkPlan(s,'boat'),options=companionOptions(s),work=options.find(o=>o.id==='companion:boat:work');assert.ok(plan.blocker);assert.equal(work.blocker,plan.blocker);assert.equal(options.find(o=>o.id==='companion:boat:dismiss').blocker,null);assert.equal(options.find(o=>o.id==='companion:boat:withdraw').blocker,null);refusal(s,'boat:work');round(s);}
+});
+test('quick route and solo previews update to actual risk, fatigue and zero companion share',()=>{
+ const s=setup('boat');run(s,'boat:invite');move(s,'ferry',()=>1);const options=companionOptions(s);assert.match(options.find(o=>o.id==='companion:boat:persuade').preview,/说服率45%.*作业30分钟.*25%/);run(s,'boat:persuade',()=>0);assert.equal(companionWorkPlan(s,'boat').minutes,30);assert.equal(companionWorkPlan(s,'boat').risk,.25);run(s,'boat:dismiss');const o=companionOptions(s).find(o=>o.id==='companion:boat:work');assert.match(o.preview,/30分钟\/精力16.*当前成功率55%/);assert.match(o.preview,/独行无同伴分帐.*你12文/);assert.equal(companionWorkPlan(s,'boat').blocker,null);round(s);
+});
+test('the dangerous peer preparation warns about the actual separate thirty-percent fall and care alternative',()=>{
+ const s=setup('peer');run(s,'peer:invite');move(s,'county',()=>1);move(s,'road',()=>1);const o=companionOptions(s).find(o=>o.id==='companion:peer:quick');assert.match(o.preview,/20分钟\/精力8.*同伴精力6.*30%损失30气血.*永久死亡/);assert.match(o.preview,/药材1份、30分钟\/精力2/);let calls=0;run(s,'peer:quick',()=>{calls++;return .3;});assert.equal(calls,1);assert.equal(s.hp,100);assert.equal(r(s,'peer').conflict,'resolved');round(s);
 });
