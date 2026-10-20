@@ -1,8 +1,9 @@
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.42.0';
+import {eventOpen,ferryDelay,ferryRepairDone,floodRouteBlocked,floodCleanupDay} from './world-feedback.js?v=5.43.0';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.43.0';
 // Six finite regional adventures using existing skills, tools, actors and combat.
-import {gain} from './progression.js?v=5.42.0';
-import {addInjury} from './injury.js?v=5.42.0';
-import {factionFriendly} from './factions.js?v=5.42.0';
+import {gain} from './progression.js?v=5.43.0';
+import {addInjury} from './injury.js?v=5.43.0';
+import {factionFriendly} from './factions.js?v=5.43.0';
 export const OUTINGS={
  boat:{name:'浅滩搁船',place:'ferry',holder:'boatman',tier:'初期',reward:8,skill:'carry',routes:['push','wood','leave'],outcomes:['new','claim','done','failed','left','died'],info:'船底卡在浅滩；用木料垫底更稳，雨天推船更难。完成后去码头找贺船工，报酬8文来自其现有余额。'},
  flood:{name:'雨后渡口受阻',place:'dock',holder:'boatman',tier:'初期',reward:0,skill:'carry',routes:['repair','bypass','leave'],outcomes:['new','done','failed','left','settled'],info:'渡口受阻期间进出旧渡口多走15分钟；修补需自己的木料2份。若不处理，乡邻三日后自行清理。没有钱物奖励。'},
@@ -22,8 +23,9 @@ export function outingsValid(s){const x=s.adventures.outings;if(!obj(x)||Object.
   return true;
  });
 }
-export function noticeOutings(s){const x=s.adventures?.outings;if(!x)return;if(!x.floodDay&&s.weather==='雨'){x.floodDay=s.day;s.news.unshift('雨后渡口受阻：进出旧渡口多走15分钟，可到码头修补；乡邻三日后自行清理。');s.news.length=Math.min(20,s.news.length);}if(x.floodDay&&s.day>=x.floodDay+3&&['new','failed','left'].includes(x.records.flood.outcome)){x.records.flood.outcome='settled';s.news.unshift('渡口泥障已由乡邻清理，新增绕行时间取消；没有给你补发奖励。');s.news.length=Math.min(20,s.news.length);}if(s.dead)for(const r of Object.values(x.records))if(['fighting','lost','claim'].includes(r.outcome))r.outcome='died';}
-export const outingDelay=(s,to)=>{const x=s.adventures.outings;return (x.floodDay||s.weather==='雨')&&['new','failed','left'].includes(x.records.flood.outcome)&&(to==='ferry'||s.place==='ferry')?15:0;};
+export function noticeOutings(s){const x=s.adventures?.outings;if(!x)return;if(!x.floodDay&&!ferryRepairDone(s)&&s.weather==='雨'){x.floodDay=s.day;s.news.unshift('雨后渡口受阻：与栈道受阻合并只增加15分钟绕行，可到码头修补；第'+floodCleanupDay(s)+'日乡邻自行清理。');s.news.length=Math.min(20,s.news.length);}if(x.floodDay&&s.day>=floodCleanupDay(s)&&['new','failed','left'].includes(x.records.flood.outcome)){x.records.flood.outcome='settled';if(!ferryRepairDone(s))s.news.unshift('渡口泥障已由乡邻清理，新增绕行时间取消；没有给你补发奖励。');s.news.length=Math.min(20,s.news.length);}if(s.dead)for(const r of Object.values(x.records))if(['fighting','lost','claim'].includes(r.outcome))r.outcome='died';}
+// Compatibility accessor; movement itself uses ferryDelay once for the shared route.
+export const outingDelay=(s,to)=>ferryDelay(s,to);
 export const outingMovementBlocker=s=>s.adventures.outings.records.lost.outcome==='lost'&&s.place==='foot'?'先沿原路退回；“脱困返回”不耗精力，即使疲惫受伤也可使用。':null;
 export function outingPlan(s,id,route){const r=s.adventures.outings.records[id];
  if(id==='boat'&&['push','wood'].includes(route)){const wood=route==='wood';return {minutes:wood?60:90,energy:wood?12:s.skills.carry>=12?18:24,chance:Math.min(.95,(wood?.95:r.informed?.85:.7)-(s.weather==='雨'?.1:0)),risk:wood?.05:.2,damage:8,injury:'bruise',input:wood?{wood:2}:{}};}
@@ -38,6 +40,7 @@ export function outingFightBlocker(s){if(s.place!=='oldroad'||s.adventures.outin
 export function settleOutingCombat(s,c,log){const r=s.adventures?.outings?.records.road;if(r?.outcome!=='fighting'||c.opponent!=='chief'||c.practice)return;r.outcome=c.ended==='victory'?'claim':c.ended==='death'?'died':'escaped';log.push(r.outcome==='claim'?'团伙败退，可回街市找柳掌柜交代；未自动发钱或掉装备。':r.outcome==='died'?'旧道团伙冒险：战败身亡。':'已撤离团伙交手，伤势与消耗保留；不重新开战，不发报酬。');}
 export function outingAction(s,id,{present,transact,advance,rng}){
  const [,key,route]=id.split(':'),x=s.adventures.outings,fail=t=>{s.result=[t];return false;};if(!Object.hasOwn(OUTINGS,key))return fail('没有这项县境冒险。');if(key==='mine'&&s.dungeon?.status==='active')return fail('先结束矿道内的连续探索，再在洞口或作坊处理救工。');const d=OUTINGS[key],r=x.records[key],localPresent=(who,n)=>present(s,who,n)&&(who!=='hunter'||s.npcWorld.individuals.hunter.place===s.place);
+ if(key==='flood'&&!floodRouteBlocked(s))return fail('渡口泥障已解除或尚未发生，不再收取材料或重复作业。');
  if(key==='flood'&&!x.floodDay)return fail('需实际出现雨天后，才有渡口泥障；不会编造过去的灾情。');
  if(route==='claim'){if(r.outcome!=='claim'||!d.reward||!localPresent(d.holder,15))return fail('需实际完成冒险，并回付款人在场时交代；不会重复发钱。');const p=s.npcWorld.individuals[d.holder];if(p.coins<d.reward||s.coins>10000000-d.reward)return fail('付款人现有余额不足或自己无法收款，成果保留，可稍后再来。');return transact(s,'交代：'+d.name,15,0,()=>{p.coins-=d.reward;s.coins+=d.reward;r.outcome='done';s.result.push('报酬'+d.reward+'文来自当事人余额，仅支付一次；没有装备或隐藏奖励。');},advance);}
  if(route==='inquire'){if(r.outcome!=='new'||r.informed||!localPresent(d.holder,15))return fail('请在尚未处理冒险且知情人在场时打听，只问一次。');return transact(s,'打听：'+d.name,15,0,()=>{r.informed=true;s.result.push(d.info,'情报保留，但不保证成功；现场选择显示当前概率与成本。');},advance);}
@@ -54,7 +57,7 @@ export function outingAction(s,id,{present,transact,advance,rng}){
  },advance);
 }
 const routeNames={push:'徒手合力推船',wood:'垫木推船',repair:'交木料修补',talk:'交涉',safe:'稳妥处理',shortcut:'冒险抄近路',risk:'冒险搬石',bypass:'绕行避开',pay:'交钱退开',fight:'实际交手',leave:'不参与并离开',return:'沿原路脱困'};
-export function outingOptions(s){const x=s.adventures.outings,out=[],add=(id,label,preview)=>out.push({id:'outing:'+id,label,preview});for(const [key,d] of Object.entries(OUTINGS)){const r=x.records[key];if(key==='flood'&&!x.floodDay)continue;
+export function outingOptions(s){const x=s.adventures.outings,out=[],add=(id,label,preview)=>out.push({id:'outing:'+id,label,preview});for(const [key,d] of Object.entries(OUTINGS)){const r=x.records[key];if(key==='flood'&&(!x.floodDay||!floodRouteBlocked(s)||eventOpen(s,'ferry')))continue;
   const holderPlace={boatman:'dock',hunter:'bamboo',farmer:'fields',smith:'workshop',merchant:'market'}[d.holder];if(r.outcome==='new'&&!r.informed&&s.place===holderPlace)add(key+':inquire','打听 · '+d.name,'15分钟，知情人须在场；'+d.info);
   if(r.outcome==='claim'&&s.place===holderPlace)add(key+':claim','交代 · '+d.name,'15分钟；报酬'+d.reward+'文来自当事人实际余额；资金不足保留成果，不重复结算。');
   if(key==='lost'&&r.outcome==='lost'&&s.place==='foot'){add('lost:return','脱困返回 · 林间岔路','60分钟/精力0；疲惫受伤仍可返回主路，不回血或瞬移，不发奖励。');continue;}
@@ -66,4 +69,4 @@ export function outingOptions(s){const x=s.adventures.outings,out=[],add=(id,lab
   }
  }return out;}
 const outcomeNames={new:'尚未处理',claim:'完成，待交代',done:'已完成',failed:'未解决，其他人接手',left:'未参与',paid:'交钱退开，损失可报案',fighting:'正在实战',escaped:'已败逃，伤势保留',died:'冒险身亡',lost:'失向，待原路脱困',settled:'乡邻已清理'};
-export function outingSummary(s){const x=s.adventures.outings;return Object.entries(OUTINGS).map(([id,d])=>d.name+' · '+d.tier+' · '+(id==='flood'&&!x.floodDay?'等待实际雨天':outcomeNames[x.records[id].outcome])+' · '+(x.records[id].route?routeNames[x.records[id].route]:'未选路线')+'；'+(x.records[id].informed?'已打听':'未打听')+'。');}
+export function outingSummary(s){const x=s.adventures.outings;return Object.entries(OUTINGS).map(([id,d])=>d.name+' · '+d.tier+' · '+(id==='flood'&&ferryRepairDone(s)?'通行已由实际修补恢复；本次记录：'+outcomeNames[x.records[id].outcome]:id==='flood'&&!x.floodDay?'等待实际雨天':outcomeNames[x.records[id].outcome])+' · '+(x.records[id].route?routeNames[x.records[id].route]:'未选路线')+'；'+(x.records[id].informed?'已打听':'未打听')+'。');}
