@@ -1,6 +1,7 @@
-import {cooperationRefusal} from './npc-social.js?v=5.52.0';
-import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.52.0';
-import {gain} from './progression.js?v=5.52.0';
+import {rememberExperience} from './county-life.js?v=5.53.0';
+import {cooperationRefusal} from './npc-social.js?v=5.53.0';
+import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.53.0';
+import {gain} from './progression.js?v=5.53.0';
 // Finite follow-up opportunities; eligibility is earned from existing playable outcomes.
 export const GOALS={settle:{name:'谋生安顿',hint:'先做短工或一项委托，攒够12文可选择客栈短租；无需习武。'},artisan:{name:'手艺立足',hint:'通过采集、炼铁、种植或交易积累手艺，再选择一项经营；别把全部钱投入。'},martial:{name:'习武闯荡',hint:'武馆学一门入门武学，真实交手积累经验；陪练可收手，野外实战可能永久死亡。'},explore:{name:'县境游历',hint:'先准备口粮药材，搜寻两处旧址并处理一次县境冒险；可绕行或非战斗解决。'}};
 export const THREADS={
@@ -47,7 +48,7 @@ export function threadAction(s,id,{present,transact,advance,rng}){const onsite=(
   if(key==='herbs'&&s.npcWorld.clinic.holder!=='doctor')return fail('沈医者不主持诊所，保留成果，暂停接洽。');
   const payer=d.payer==='public'?s.commerce.budget:s.npcWorld.individuals[d.payer],field=d.payer==='public'?'market':'coins';
   if(payer[field]<d.reward||s.coins>10000000-d.reward||r.cargo&&payer.food>=100)return fail('付款人实际余额或收货容量不足，保留成果，改日再来。');
-  return transact(s,'交代 · '+d.name,15,0,()=>{payer[field]-=d.reward;s.coins+=d.reward;if(r.cargo){payer.food+=r.cargo;r.cargo=0;}r.paid=d.reward;r.status='done';r.dueDay=0;relation(s,d,1);s.result.push('实际支付'+d.reward+'文；接洽关系'+(d.relation?' +1':'不变')+'，本项不重复结算。');},advance);
+  return transact(s,'交代 · '+d.name,15,0,()=>{payer[field]-=d.reward;s.coins+=d.reward;if(r.cargo){payer.food+=r.cargo;r.cargo=0;}r.paid=d.reward;r.status='done';r.dueDay=0;relation(s,d,1);if(key==='escort')rememberExperience(s,'merchant','cooperation',true);s.result.push('实际支付'+d.reward+'文；接洽关系'+(d.relation?' +1':'不变')+'，本项不重复结算。');},advance);
  }
  if(r.status==='new'&&!threadEligible(s,key))return fail('需先有相应经营、探索、救援、势力接洽或亲历记录。');
  if(key==='escort'&&choice==='accept'||key==='testimony'&&choice==='accept'){

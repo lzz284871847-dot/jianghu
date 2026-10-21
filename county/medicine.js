@@ -1,9 +1,9 @@
-import {makingGrowth,growthPreview} from './practice-growth.js?v=5.52.0';
-import {items} from './content.js?v=5.52.0';
-import {clinicDoctor} from './npc-clinic.js?v=5.52.0';
-import {travelBusy} from './npc-journeys.js?v=5.52.0';
-import {npcPlace} from './world.js?v=5.52.0';
-import {treatInjury} from './injury.js?v=5.52.0';
+import {makingGrowth,growthPreview} from './practice-growth.js?v=5.53.0';
+import {items} from './content.js?v=5.53.0';
+import {clinicDoctor} from './npc-clinic.js?v=5.53.0';
+import {travelBusy} from './npc-journeys.js?v=5.53.0';
+import {npcPlace} from './world.js?v=5.53.0';
+import {treatInjury} from './injury.js?v=5.53.0';
 export const MEDICINES=Object.freeze({
  stop_powder:{name:'止血散',tier:1,herb:0,practice:0,fee:4,minutes:45,energy:8,chance:.85,input:{herb:2,wood:1},hp:12,injuries:['cut'],reduce:2,description:'气血最多+12，切伤减轻2级；不能处理危重出血。'},
  wound_salve:{name:'舒筋膏',tier:1,herb:10,practice:6,fee:6,minutes:60,energy:10,chance:.80,input:{herb:2,aromatic_herb:1,wood:1},hp:25,injuries:['strain','bruise'],reduce:1,description:'气血最多+25，拉伤或挫伤中现存的一种减轻1级。'},

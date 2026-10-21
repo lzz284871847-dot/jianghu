@@ -1,4 +1,5 @@
-import {cooperationRefusal} from './npc-social.js?v=5.52.0';
+import {rememberExperience} from './county-life.js?v=5.53.0';
+import {cooperationRefusal} from './npc-social.js?v=5.53.0';
 // Finite local responses and events; no repeating daily or lifetime simulation.
 export const EVENTS={
  ferry:{name:'旧渡口修栈道',place:'dock',holder:'boatman',offset:1,days:2,description:'栈道受阻期间进出旧渡口多走15分钟，柳溪原定补货暂缓、脚夫名额缩减；到青石码头找船家接洽。可交木料2份修补（45分钟/精力10）；熟手搬运可改用90分钟/精力20实际劳作。支付8文来自船家余额。'},
@@ -46,7 +47,7 @@ export function feedbackAction(s,id,{present,transact,advance}){
   if(!present(s,key,minutes))return fail('今日剩余接洽时间不足。');
   if(choice==='help'&&Object.entries(materials).some(([id,n])=>s.bag[id]<n))return fail('后续合作材料不足；不会收物或发钱。');
   const reward=choice==='help'?6:0,p=s.npcWorld.individuals[key];if(p.coins<reward||s.coins>10000000-reward)return fail('对方实际资金不足，请稍后再来。');
-  return transact(s,d.name,minutes,energy,()=>{f.followups[key]=choice==='help'?'helped':choice==='explain'?'explained':'declined';if(choice==='help'){for(const [id,n] of Object.entries(materials))s.bag[id]-=n;p.coins-=reward;s.coins+=reward;s.relations[key]=Math.min(100,s.relations[key]+1);s.result.push('实际完成合作，报酬6文从当事人余额支付。');}else s.result.push(choice==='explain'?(done?'你说清帮忙的经过，对方道谢；无额外奖励。':'你解释上次未完成的原因，对方接受交代；无奖励。'):'婉拒后续，各自继续生活；无罚款。');},advance);
+  return transact(s,d.name,minutes,energy,()=>{f.followups[key]=choice==='help'?'helped':choice==='explain'?'explained':'declined';if(choice==='help'){for(const [id,n] of Object.entries(materials))s.bag[id]-=n;p.coins-=reward;s.coins+=reward;s.relations[key]=Math.min(100,s.relations[key]+1);if(['boatman','merchant'].includes(key))rememberExperience(s,key,'cooperation',true);s.result.push('实际完成合作，报酬6文从当事人余额支付。');}else s.result.push(choice==='explain'?(done?'你说清帮忙的经过，对方道谢；无额外奖励。':'你解释上次未完成的原因，对方接受交代；无奖励。'):'婉拒后续，各自继续生活；无罚款。');},advance);
  }
  if(kind==='event'){
   if(key==='ferry'){const refusal=cooperationRefusal(s,'boatman');if(refusal)return fail(refusal);}
@@ -56,7 +57,7 @@ export function feedbackAction(s,id,{present,transact,advance}){
   if(!['supply','skill'].includes(choice)||choice==='skill'&&!specialist)return fail('这个处理方式需要对应职业验收。');
   const minutes=choice==='skill'?90:key==='ferry'?45:60,energy=choice==='skill'?(key==='ferry'?20:16):10,materials=key==='ferry'?(choice==='skill'?{}:{wood:2}):{iron:choice==='skill'?1:2},reward=key==='ferry'?8:18,p=s.npcWorld.individuals[d.holder];
   if(!present(s,d.holder,minutes)||Object.entries(materials).some(([id,n])=>s.bag[id]<n)||p.coins<reward||s.coins>10000000-reward)return fail('需足够材料、实际付款资金与剩余工作时间；尚未结算。');
-  return transact(s,'参与：'+d.name,minutes,energy,()=>{for(const [id,n] of Object.entries(materials))s.bag[id]-=n;p.coins-=reward;s.coins+=reward;f.events[key]='joined';s.relations[d.holder]=Math.min(100,s.relations[d.holder]+1);s.result.push('完成实际作业，报酬'+reward+'文；本活动只结算一次。',key==='ferry'?'栈道修好，进出渡口不再绕行。':'赶集备货已交付。');},advance);
+  return transact(s,'参与：'+d.name,minutes,energy,()=>{for(const [id,n] of Object.entries(materials))s.bag[id]-=n;p.coins-=reward;s.coins+=reward;f.events[key]='joined';if(key==='ferry')rememberExperience(s,'boatman','event',true);s.relations[d.holder]=Math.min(100,s.relations[d.holder]+1);s.result.push('完成实际作业，报酬'+reward+'文；本活动只结算一次。',key==='ferry'?'栈道修好，进出渡口不再绕行。':'赶集备货已交付。');},advance);
  }
  return fail('没有这项后续。');
 }
