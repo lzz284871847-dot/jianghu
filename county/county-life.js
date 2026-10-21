@@ -1,9 +1,10 @@
-import {BOAT_METHODS,boatWorkPlan,boatDemandBlocker} from './boat-work.js?v=5.53.0';
-import {cooperationRefusal} from './npc-social.js?v=5.53.0';
-import {present as contactPresent} from './adventures.js?v=5.53.0';
-import {items,people,places} from './content.js?v=5.53.0';
-import {gain} from './progression.js?v=5.53.0';
-import {districtStatus} from './society.js?v=5.53.0';
+import {MARKET_LIMIT,MARKET_SURPLUS} from './commerce.js?v=5.54.0';
+import {BOAT_METHODS,boatWorkPlan,boatDemandBlocker} from './boat-work.js?v=5.54.0';
+import {cooperationRefusal} from './npc-social.js?v=5.54.0';
+import {present as contactPresent} from './adventures.js?v=5.54.0';
+import {items,people,places} from './content.js?v=5.54.0';
+import {gain} from './progression.js?v=5.54.0';
+import {districtStatus} from './society.js?v=5.54.0';
 
 // Player-facing local life. No background shops, hereditary ownership or new population.
 export const BONDS={
@@ -53,6 +54,8 @@ export function sharedWork(s,id){
   ||id==='boatman'&&a.feedback.events.ferry==='joined'
   ||id==='merchant'&&a.threads.records.escort.status==='done');
 }
+export const merchantDemandBlocker=s=>s.commerce.stock.market.vegetable>=MARKET_SURPLUS?'菜货现存'+s.commerce.stock.market.vegetable+'份，柳掌柜先卖现货；余量降到'+MARKET_SURPLUS+'份以下再新约。居民照常购菜，已有订单和工钱保留。':null;
+const merchantDemandNotice=s=>merchantDemandBlocker(s)?'“先把现货卖掉，旧约和工钱照旧。”':'县城菜货现存'+s.commerce.stock.market.vegetable+'份，'+(s.commerce.stock.market.vegetable<=2?'货架缺菜，想请你自备菜货补一份。':'愿意自备菜货时，可再帮我补一份。');
 export function bondPromiseBlocker(s,id){const d=BONDS[id],r=s.adventures.life.bonds[id],p=s.npcWorld.individuals[id];
  const conflict=cooperationRefusal(s,id);if(conflict)return conflict;
  const failed=r.history.find(h=>h.kind==='promise'&&!h.success);if(failed&&s.day<failed.day+2)return '上次约定未成，'+d.name+'先整理手头活计；第'+(failed.day+2)+'日起可再商量，不扣罚款。';
@@ -62,14 +65,15 @@ export function bondPromiseBlocker(s,id){const d=BONDS[id],r=s.adventures.life.b
  if(['active','ready'].includes(r.promise?.status))return '先完成或交代现有约定。';
  if(r.promise?.accepted===s.day)return '今日已新约一次，另日再商量。';
  if(id==='boatman'){const demand=boatDemandBlocker(s);if(demand)return demand;}
+ if(id==='merchant'){const demand=merchantDemandBlocker(s);if(demand)return demand;}
  if(!contactPresent(s,id,15)||p.energy<8)return '对方不在岗、正在休养或精力不足8，暂缓接洽。';
  if(p.coins<d.reward)return '对方现有余额不足'+d.reward+'文，暂不新约；不会预支工钱。';
  return null;
 }
 export function bondInitiative(s,id){if(s.dead||!Object.hasOwn(BONDS,id))return null;const r=s.adventures.life.bonds[id],d=BONDS[id],p=s.npcWorld.individuals[id];if(p.life.deathDay||!r.promise&&!sharedWork(s,id))return null;
  if(id==='boatman')return boatInitiative(s);
- const status=r.promise?.status,active=status==='active',ready=status==='ready',blocker=active?(!contactPresent(s,id,60)?'需在岗且留足一小时，约定保留。':s.bag[d.item]<1?'需自备'+items[d.item]+'1份，尚未开工。':p.energy<8||s.energy<10||s.hp<25?'双方需足够精力，自己气血至少25；约定保留。':null):ready?(!contactPresent(s,id,15)?'需本人在岗交代，成果保留。':p.coins<d.reward||s.coins>10000000-d.reward?'实际付款资金或钱包容量不足，成果保留，不重复作业。':null):bondPromiseBlocker(s,id);
- return {title:d.name+(active?'等你来作业':ready?'请你交代成果':blocker?'暂缓新的合作':'想再请你搭手'),hint:active?'约定待办':ready?'工钱待结':blocker?'暂缓合作':'再请搭手',minutes:active?60:15,blocker,freeActions:active?['bond:'+id+':withdraw']:[],actions:active?['bond:'+id+':work','bond:'+id+':withdraw']:['bond:'+id+':'+(ready?'claim':'promise')],detail:ready?'上次真实作业已完成，工钱'+d.reward+'文由本人余额支付；成果不过期，争执不扣押应付工钱。':active?'已约好'+d.work+'，截止第'+r.promise.due+'日；自备'+items[d.item]+'1份，1小时/精力10，对方精力8。':(id==='doctor'?'“药铺还有配药杂活，前次共事有了底，想再请你搭手。”':id==='merchant'?'“前次货物交代清楚了，菜货若愿意备来，可以再帮我整理。”':'“炉具要整理，前次共事有了底，想再请你搭手。”')+'自备'+items[d.item]+'1份，作业可能失败，成功后付'+d.reward+'文；当前合作信任'+r.trust+'/10，信任4可使成功率从70%提高到85%。'};
+ const status=r.promise?.status,active=status==='active',ready=status==='ready',blocker=active?(id==='merchant'?countyLifeBlocker(s,'bond:merchant:work'):!contactPresent(s,id,60)?'需在岗且留足一小时，约定保留。':s.bag[d.item]<1?'需自备'+items[d.item]+'1份，尚未开工。':p.energy<8||s.energy<10||s.hp<25?'双方需足够精力，自己气血至少25；约定保留。':null):ready?(!contactPresent(s,id,15)?'需本人在岗交代，成果保留。':p.coins<d.reward||s.coins>10000000-d.reward?'实际付款资金或钱包容量不足，成果保留，不重复作业。':null):bondPromiseBlocker(s,id);
+ return {title:d.name+(active?'等你来作业':ready?'请你交代成果':blocker?'暂缓新的合作':'想再请你搭手'),hint:active?'约定待办':ready?'工钱待结':blocker?'暂缓合作':'再请搭手',minutes:active?60:15,blocker,freeActions:active?['bond:'+id+':withdraw']:[],actions:active?['bond:'+id+':work','bond:'+id+':withdraw']:['bond:'+id+':'+(ready?'claim':'promise')],detail:ready?'上次真实作业已完成，工钱'+d.reward+'文由本人余额支付；成果不过期，争执不扣押应付工钱。':active?'已约好'+d.work+'，截止第'+r.promise.due+'日；自备'+items[d.item]+'1份，1小时/精力10，对方精力8。':id==='merchant'?merchantDemandNotice(s):(id==='doctor'?'“药铺还有配药杂活，前次共事有了底，想再请你搭手。”':'“炉具要整理，前次共事有了底，想再请你搭手。”')+'自备'+items[d.item]+'1份，作业可能失败，成功后付'+d.reward+'文；当前合作信任'+r.trust+'/10，信任4可使成功率从70%提高到85%。'};
 }
 
 function boatInitiative(s){
@@ -137,8 +141,8 @@ function bondAction(s,id,action,h){const d=BONDS[id],r=s.adventures.life.bonds[i
   if(s.bag[d.item]<1)return fail(s,'缺自己的'+items[d.item]+'1份；可先采集、制作或购买。');
   if(p.energy<8)return fail(s,d.name+'当前精力'+p.energy+'，作业需8；改日接洽，约定保留。');
   if(s.hp<25)return fail(s,'当前气血'+s.hp+'，作业需25；先恢复身体。');
-  if(d.item==='vegetable'&&s.commerce.stock.market.vegetable>=30)return fail(s,'当地菜货容量已满，约定保留。');
-  return transact(s,'共同作业 · '+d.work,60,10,()=>{s.bag[d.item]--;p.energy-=8;const ok=rng()<(r.trust>=4?.85:.7);r.promise.status=ok?'ready':'failed';if(d.item==='vegetable')s.commerce.stock.market.vegetable++;rememberExperience(s,id,'promise',ok);relation(s,id,ok?1:-1);xp(s,d.skill,ok?2:1);s.result.push(ok?'真实作业已成，另行交代领实际工钱；缺钱时成果保留。':'作业未成，投入与时间精力不退，关系及信任-1，无工钱。');},advance);
+  if(d.item==='vegetable'&&s.commerce.stock.market.vegetable>=MARKET_LIMIT)return fail(s,'当地菜货容量已满，约定保留。');
+  return transact(s,'共同作业 · '+d.work,60,10,()=>{s.bag[d.item]--;p.energy-=8;const ok=rng()<(r.trust>=4?.85:.7);r.promise.status=ok?'ready':'failed';if(ok&&d.item==='vegetable')s.commerce.stock.market.vegetable++;rememberExperience(s,id,'promise',ok);relation(s,id,ok?1:-1);xp(s,d.skill,ok?2:1);s.result.push(ok?(id==='merchant'?'实际补入菜货1份，县城库存现有'+s.commerce.stock.market.vegetable+'份；另行交代领4文工钱，缺钱时成果保留。':'真实作业已成，另行交代领实际工钱；缺钱时成果保留。'):'作业未成，投入与时间精力不退，关系及信任-1，无工钱。'+(id==='merchant'?'损耗的菜货不进入市场库存。':''));},advance);
  }
  if(action==='claim'){
   if(r.promise?.status!=='ready')return fail(s,'先完成实际作业，再交代领款。');
@@ -205,7 +209,7 @@ export function countyLifeAction(s,id,h){const [kind,key,...rest]=id.split(':');
 export function countyLifeOptions(s){const l=s.adventures.life,out=[],add=(id,label,preview,blocker=null)=>out.push({id,label,preview,...(blocker?{blocker}:{})});
  if(s.place==='fields'){if(!l.sect.river)add('sect:join','加入 · 河湾习武会','已学刀或棍法、陈农户关系3，先退出周门；30分钟，无赠物。');else{add('sect:guide','河湾指点 · 4文','选用刀/棍法，无伤气血25；1小时/精力12，熟练24、领悟8；本人精力和钱款真实结算，每日一次。');add('sect:leave','退出 · 河湾习武会','15分钟，信任-1，武学与历史保留。');}}
  for(const side of ['school','river']){if(!(side==='school'?s.adventures.mentor.member:l.sect.river))continue;const source=side==='school'?'school':'fields',dest=side==='school'?'fields':'school',state=l.sect.letters[side];if(state==='none'&&s.place===source)add('sect:letter:'+side,'门人接洽 · 两门交换函','一次函件，交另一门授艺者，无报酬；实际交付才加信任。');if(state==='carried'&&s.place===dest)add('sect:deliver:'+side,'交付 · 两门交换函','30分钟/精力2，本门信任+1，对方关系+1。');}
- for(const [id,d] of Object.entries(BONDS)){const r=l.bonds[id],prefix='bond:'+id+':';if(r.promise?.status==='active')add(prefix+'withdraw','撤回约定 · '+d.name,'关系与合作信任-1，不罚钱；铁匠与医者需先处理手头活计，再按近况商量新约。');if(s.place!==d.place)continue;if(r.meetDay!==s.day)add(prefix+'meet','盘点近况 · '+d.name,'需关系3，对方精力2；15分钟/精力2，每日一次，无钱物奖励；四位熟人仅首次盘点加信任，之后靠履约；重复盘点不冲掉共事记录。');if(r.promise?.status==='active'&&id==='boatman'){for(const action of Object.keys(BOAT_METHODS)){const plan=boatWorkPlan(s,action);out.push({id:prefix+action,label:'修架 · '+plan.name,preview:plan.brief,details:plan.preview+' 截止第'+r.promise.due+'日。',detailsLabel:'完整投入与风险'});}}else if(r.promise?.status==='active')add(prefix+'work','共同作业 · '+d.work,'自己的'+items[d.item]+'1份，1小时/精力10，对方精力8；成功率70%（信任4为85%），失败保留材料损失与关系代价；截止第'+r.promise.due+'日。');else if(r.promise?.status==='ready')add(prefix+'claim','交代合作 · '+d.name,'真实工钱'+d.reward+'文来自本人余额；不足保留成果，不重掷。');else if(r.trust>=2||sharedWork(s,id))add(prefix+'promise','再次约定 · '+d.work,id==='boatman'?'有真实共事信任后可再接修架；每天最多新约一次，两日内自备新木、按实价购料或用绳线整修旧木；成功后由船工实际付5文，可能亏损。近期失约、争执、缺款或精力不足会暂缓。':id==='merchant'?'实际共事后可再帮柳掌柜整理菜货；自备蔬菜1份，成功交入县城货架，再由本人付4文；可能失败，近期未成或争执会暂缓，无预付款。':'每人每天最多新约一次；两游戏日内实际备料作业，可能失败。铁匠与医者须关系3、实际共事、本人资金和精力，近期未成或争执会暂缓。',bondPromiseBlocker(s,id));}
+ for(const [id,d] of Object.entries(BONDS)){const r=l.bonds[id],prefix='bond:'+id+':';if(r.promise?.status==='active')add(prefix+'withdraw','撤回约定 · '+d.name,'关系与合作信任-1，不罚钱；铁匠与医者需先处理手头活计，再按近况商量新约。');if(s.place!==d.place)continue;if(r.meetDay!==s.day)add(prefix+'meet','盘点近况 · '+d.name,'需关系3，对方精力2；15分钟/精力2，每日一次，无钱物奖励；四位熟人仅首次盘点加信任，之后靠履约；重复盘点不冲掉共事记录。');if(r.promise?.status==='active'&&id==='boatman'){for(const action of Object.keys(BOAT_METHODS)){const plan=boatWorkPlan(s,action);out.push({id:prefix+action,label:'修架 · '+plan.name,preview:plan.brief,details:plan.preview+' 截止第'+r.promise.due+'日。',detailsLabel:'完整投入与风险'});}}else if(r.promise?.status==='active')add(prefix+'work','共同作业 · '+d.work,'自己的'+items[d.item]+'1份，1小时/精力10，对方精力8；成功率70%（信任4为85%），失败保留材料损失与关系代价；截止第'+r.promise.due+'日。'+(id==='merchant'?'成功才补入县城库存1份；失败耗菜但不入库，不付工钱。':''));else if(r.promise?.status==='ready')add(prefix+'claim','交代合作 · '+d.name,'真实工钱'+d.reward+'文来自本人余额；不足保留成果，不重掷。');else if(r.trust>=2||sharedWork(s,id))add(prefix+'promise','再次约定 · '+d.work,id==='boatman'?'有真实共事信任后可再接修架；每天最多新约一次，两日内自备新木、按实价购料或用绳线整修旧木；成功后由船工实际付5文，可能亏损。近期失约、争执、缺款或精力不足会暂缓。':id==='merchant'?'实际共事后可再帮柳掌柜整理菜货；自备蔬菜1份，成功交入县城货架，再由本人付4文；失败耗自己的菜，不入库、不付工钱。菜货积压、近期未成或争执会暂缓新约，无预付款。':'每人每天最多新约一次；两游戏日内实际备料作业，可能失败。铁匠与医者须关系3、实际共事、本人资金和精力，近期未成或争执会暂缓。',bondPromiseBlocker(s,id));}
  const st=l.stall;if(['market','liuxi'].includes(s.place)&&(!st.place||st.place===s.place&&st.until<s.day))add('stall:rent',st.place?'续租 · 三日小摊':'租用 · 三日小摊','08—18时需留足15分钟，6文转付摊位主；租今天起3日，总容量8份，不自动续扣或赚钱。');if(st.place===s.place){add('stall:take','取回全部摊货','自己的存货回背包，容量不足整笔保留。');add('stall:close','收摊退出','取回全部余货，租金不退，历史保留。');if(st.until>=s.day)for(const k of Object.keys(st.stock)){add('stall:stock:'+k,'备货 · '+items[k],'自己的1份，15分钟/精力1，最多8份货。');if(st.stock[k])for(const mode of ['low','fair','high'])add('stall:'+mode+':'+k,({low:'低价',fair:'平价',high:'高价'})[mode]+'摆摊 · '+items[k]+' · '+stallPrice(s,k,mode)+'文','一小时/精力8，每日最多3次；成交率'+({low:85,fair:60,high:30}[mode])+'%，雨天-15个百分点，可能损货；收入扣租金差额还未扣实际货物成本。');}}
  for(const [id,d] of Object.entries(COUNTY_EVENTS)){const r=l.events.records[id],prefix='countyEvent:'+id+':',begin=l.events.startDay+d.offset,end=begin+d.days;if(['failed','left'].includes(r.status)&&r.cargo)add(prefix+'cargo','领回药材 · '+d.name,'独立留存自己的药材1份，不重复领取。');if(r.status==='ready'&&s.place==='county')add(prefix+'claim','交代 · '+d.name,'实际工钱8文由县城现有资金支付；不足保留成果。');if(s.day<begin||s.day>end||!['new','active'].includes(r.status))continue;if(r.status==='new'){if(s.place==='county')add(prefix+'accept','介入 · '+d.name,d.description+' 第'+begin+'—'+end+'日。');continue;}add(prefix+'leave','退出 · '+d.name,'投入不退，留存药材可领回；世界临时影响仍按期限收尾。');for(const actor of id==='patrol'?['master','farmer']:['merchant','doctor'])if(!r.heard.includes(actor)&&s.place===people[actor].place)add(prefix+'ask:'+actor,'查问事件 · '+people[actor].name,'当面15分钟，双方查问后协调成功率90%，否则40%；仅一次。');if(!r.step&&s.place===(id==='patrol'?'road':'village'))add(prefix+(id==='patrol'?'survey':'prepare'),id==='patrol'?'察看 · 联合护路':'备粮药 · 县境互济',id==='patrol'?'45分钟/精力8，气血25；随后到渡口备木料1。':'自己干粮2份、药材1份；医者在岗，干粮交村中、药材留存送柳溪。');if(r.step===1&&s.place===(id==='patrol'?'ferry':'liuxi'))add(prefix+'work','现场作业 · '+d.name,'45分钟/精力8；护路用木料1份，互济交留存药材1份；随后回县城。');if(r.step===2&&s.place==='county')for(const choice of id==='patrol'?['school','river','joint']:['joint'])add(prefix+choice,({school:'支持青河武馆',river:'支持河湾习武会',joint:'协调双方'})[choice]+' · '+d.name,'30分钟/精力4；协调可能失败，查问双方后90%；立场影响两门关系与本门信任，不清旧案。');}
  return out.map(o=>({...o,blocker:countyLifeBlocker(s,o.id)}));
