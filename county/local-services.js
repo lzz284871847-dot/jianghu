@@ -17,3 +17,12 @@ export function facilitySources(facility,roots){
  // Person-specific teaching and paid work belong to their real contact, never a proxy facility.
  return [...roots.activities.querySelectorAll('[data-action-id]')].filter(n=>groups.includes(n.dataset.group)&&(!n.dataset.npcContact||facility.id==='office')||facility.id==='office'&&n.dataset.group==='companions'&&n.dataset.npcContact==='public'&&n.dataset.actionId.endsWith(':claim'));
 }
+
+// Only project progress already present in the action lifecycle; never create work or rewards.
+export function contactActionInProgress(s,id){
+ const [kind,key,action]=id.split(':');
+ const record=kind==='business'?s.adventures.business.records[key]:kind==='professional'?s.professionals.advanced[key]:kind==='forest'?s.forestContracts.records[key]:kind==='companion'?s.adventures.companions.records[key]:kind==='thread'?s.adventures.threads.records[key]:kind==='bond'?s.adventures.life.bonds[key]?.promise:null;
+ if(record)return ['active','claim','open','ready'].includes(record.status);
+ if(['deliver','withdraw','questStep'].includes(kind))return !!s.adventures.quest;
+ return ['deliver','claim','withdraw','work','mix','harvest','tend','keep'].includes(action)||action?.startsWith('work_')||false;
+}

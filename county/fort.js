@@ -1,8 +1,8 @@
-import {gain} from './progression.js?v=5.49.1';
-import {addInjury} from './injury.js?v=5.49.1';
-import {bodyStats,gainBodyUse} from './mobility.js?v=5.49.1';
-import {equipmentBonuses} from './equipment.js?v=5.49.1';
-import {FIELD_ACTIONS} from './field-skills.js?v=5.49.1';
+import {gain} from './progression.js?v=5.50.0';
+import {addInjury} from './injury.js?v=5.50.0';
+import {bodyStats,gainBodyUse} from './mobility.js?v=5.50.0';
+import {equipmentBonuses} from './equipment.js?v=5.50.0';
+import {FIELD_ACTIONS} from './field-skills.js?v=5.50.0';
 export const FORT_ROOMS=['','外院入口','地窖机关','三条奖励支路','撤回旧道'];
 export const FORT_FOES={gate:'escort',pursuit:'teacher'};
 export const makeFort=()=>({status:'new',stage:0,day:0,route:null,trap:null,attempts:[],fight:null,battles:0,branch:null,cache:null,taken:false,known:false,core:'none',vest:0,probe:null});

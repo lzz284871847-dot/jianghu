@@ -1,8 +1,8 @@
-import {EQUIPMENT} from './equipment.js?v=5.49.1';
-import {items,people} from './content.js?v=5.49.1';
-import {marketPrice} from './commerce.js?v=5.49.1';
-import {travelBusy} from './npc-journeys.js?v=5.49.1';
-import {companionBusy} from './companions.js?v=5.49.1';
+import {EQUIPMENT} from './equipment.js?v=5.50.0';
+import {items,people} from './content.js?v=5.50.0';
+import {marketPrice} from './commerce.js?v=5.50.0';
+import {travelBusy} from './npc-journeys.js?v=5.50.0';
+import {companionBusy} from './companions.js?v=5.50.0';
 // These are saved physical reserves, not a reward table rolled on every victory.
 export const SPOILS={
  brawler:{name:'旧道莽汉的随身包',place:'oldroad',coins:4,goods:{food:1},gear:'farm_knife',durability:18,owner:'boatman',kind:'food',missing:1},
