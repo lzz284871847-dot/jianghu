@@ -1,11 +1,11 @@
-import {rememberExperience} from './county-life.js?v=5.50.0';
-import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.50.0';
-import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.50.0';
-import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.50.0';
-import {EQUIPMENT} from './equipment.js?v=5.50.0';
-import {people,skills,items} from './content.js?v=5.50.0';
-import {gain} from './progression.js?v=5.50.0';
-import {present} from './adventures.js?v=5.50.0';
+import {rememberExperience} from './county-life.js?v=5.51.0';
+import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.51.0';
+import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.51.0';
+import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.51.0';
+import {EQUIPMENT} from './equipment.js?v=5.51.0';
+import {people,skills,items} from './content.js?v=5.51.0';
+import {gain} from './progression.js?v=5.51.0';
+import {present} from './adventures.js?v=5.51.0';
 export const ARTISAN_ORDERS={
  carpenter_frame:{teacher:'carpenter',skill:'woodwork',required:300,trust:4,name:'护路榫接梁架',product:'榫接梁架',input:{hardwood:2,wood:2,cord:2},reward:40,days:4,minutes:180,energy:22,chance:.8},
  carpenter_case:{teacher:'carpenter',skill:'woodwork',required:700,trust:6,name:'精密药箱机关',product:'机关药箱',input:{hardwood:3,iron:2,cord:2},reward:70,days:5,minutes:240,energy:30,chance:.7},
@@ -67,7 +67,7 @@ export function artisanOrderAction(s,key,action,{settle,rng}){
    const line=gain(s,d.skill,practiceAward(s,d.energy,success?PRACTICE_XP.order:PRACTICE_XP.orderFailure));if(line)s.result.push(line);
   }else if(action==='deliver'){
    r.held=0;r.stock=1;r.status='done';r.paid=d.reward;artisanPayer(s,key).coins-=d.reward;s.coins+=d.reward;s.relations[d.teacher]=Math.min(100,s.relations[d.teacher]+2);
-   if(d.payer){rememberExperience(s,d.payer,'cooperation',true);s.result.push(payerName(d)+'记下这次实际交付，合作信任+1；实际共同经历已记下，无额外钱物奖励。');}
+   if(d.payer){rememberExperience(s,d.payer,'cooperation',true);s.result.push(payerName(d)+'记下这次实际交付，合作信任+1；实际共同经历已记下，无额外钱物奖励。');if(d.payer==='boatman')s.result.push('以后可到青石码头接洽继续修架，比较做法与实际货源；是否接活仍看船工近况和资金。');}
    const recipe=Object.values(EQUIPMENT).find(e=>e.recipeOrder===key);if(recipe)s.result.push('已解锁'+recipe.name+'独有配方，可在作坊亲手制作；需材料、手艺与台位费，成品需穿戴才生效。');
    s.result.push(d.product+'一件实际交入师傅留存，实付'+d.reward+'文来自'+payerName(d)+'钱袋；不是净利润，材料和学习成本另计，本单不重复。');
   }else{r.status='left';s.result.push('已撤回，不付钱、不退投入；'+(r.held?'未交定制件留作本单记录，不能再兑现。':'自己的未投入材料保留。')+'本单不重开。');}
