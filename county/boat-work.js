@@ -1,7 +1,7 @@
-import {tradeRouteBlocked} from './world-feedback.js?v=5.53.0';
-import {marketPrice} from './commerce.js?v=5.53.0';
-import {districtStatus} from './society.js?v=5.53.0';
-import {practiceAward,growthPreview} from './practice-growth.js?v=5.53.0';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.54.0';
+import {marketPrice} from './commerce.js?v=5.54.0';
+import {districtStatus} from './society.js?v=5.54.0';
+import {practiceAward,growthPreview} from './practice-growth.js?v=5.54.0';
 // Three ways to perform the existing boatman's promise, with no new saved lifecycle.
 export const BOAT_METHODS={
  work:{name:'自备新木修货架',input:{wood:1},minutes:60,energy:10,chance:.7,xp:12},

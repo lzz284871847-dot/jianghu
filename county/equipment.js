@@ -1,4 +1,4 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.53.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.54.0';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
  forest_staff:{name:'探林杖',slot:'weapon',kind:'棍法',tier:2,attack:2,defense:0,durability:40,materials:{hardwood:2,wood:2,cord:2},fee:8,recipeOrder:'carpenter_frame',use:'山林辨路与旧址搜寻成功率+8个百分点，每次尝试耐久-1；占用兵器栏。'},

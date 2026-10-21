@@ -1,10 +1,11 @@
-import {tradeRouteBlocked} from './world-feedback.js?v=5.53.0';
-import {countyEventSurcharge} from './county-life.js?v=5.53.0';
-import {societyDay} from './society.js?v=5.53.0';
-import {farmDelivery} from './agriculture.js?v=5.53.0';
-import {markets} from './content.js?v=5.53.0';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.54.0';
+import {countyEventSurcharge} from './county-life.js?v=5.54.0';
+import {societyDay} from './society.js?v=5.54.0';
+import {farmDelivery} from './agriculture.js?v=5.54.0';
+import {markets} from './content.js?v=5.54.0';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
+export const MARKET_SURPLUS=24;
 export const INITIAL_BUDGET=Object.freeze({market:160,liuxi:110});
 export const initialMarket=()=>({market:{paper:8,ink:6,bamboo_flute:2,food:10,grain:16,wood:12,herb:8,rod:3,pick:3,trap:3,cloth:8,hide:4,leather:3,fine_cloth:2,cord:4},liuxi:{food:7,grain:12,wood:9,herb:7,cloth:6,hide:3,leather:2,fine_cloth:1,cord:3}});
 export const makeCommerce=()=>({stock:Object.fromEntries(Object.entries(markets).map(([place,m])=>[place,Object.fromEntries([...new Set([...Object.keys(m.buy),...Object.keys(m.sell)])].map(key=>[key,initialMarket()[place][key]??0]))])),budget:{...INITIAL_BUDGET},lastDay:1});
@@ -25,11 +26,11 @@ export function marketPrice(s,place,type,key){
  const quantity=stockAt(s,place,key);
  if(type==='buy'){
   if(quantity<=3)return Math.max(1,Math.ceil(base*1.5))+surcharge;
-  if(quantity>=24)return Math.max(1,Math.floor(base*.85))+surcharge;
+  if(quantity>=MARKET_SURPLUS)return Math.max(1,Math.floor(base*.85))+surcharge;
   return base+surcharge;
  }
  if(place==='liuxi'&&tradeRouteBlocked(s)&&quantity<=3&&['grain','herb','wood'].includes(key))return (quantity<=2?Math.ceil(base*1.15):base)+1;
- if(quantity>=24)return Math.max(1,Math.floor(base*.7));
+ if(quantity>=MARKET_SURPLUS)return Math.max(1,Math.floor(base*.7));
  if(quantity<=2)return Math.max(1,Math.ceil(base*1.15));
  return base;
 }
