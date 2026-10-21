@@ -21,6 +21,7 @@ export function facilitySources(facility,roots){
 // Only project progress already present in the action lifecycle; never create work or rewards.
 export function contactActionInProgress(s,id){
  const [kind,key,action]=id.split(':');
+ if(kind==='bond'&&action==='meet')return false;
  const record=kind==='business'?s.adventures.business.records[key]:kind==='professional'?s.professionals.advanced[key]:kind==='forest'?s.forestContracts.records[key]:kind==='companion'?s.adventures.companions.records[key]:kind==='thread'?s.adventures.threads.records[key]:kind==='bond'?s.adventures.life.bonds[key]?.promise:null;
  if(record)return ['active','claim','open','ready'].includes(record.status);
  if(['deliver','withdraw','questStep'].includes(kind))return !!s.adventures.quest;

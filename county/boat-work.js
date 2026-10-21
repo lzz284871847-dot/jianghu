@@ -21,6 +21,7 @@ export function boatWorkPlan(s,action='work'){
  }else if(Object.entries(d.input).some(([k,n])=>s.bag[k]<n))materialBlocker=action==='work_salvage'?'需自己的绳线1份，旧木不另外产出。':'需自己的木料1份；可比较现价购料或整修旧木。';
  const input=action==='work_buy'?'自己付'+price+'文购木1份，实际扣县城货架（现存'+stock+'份），购来即用于本单':action==='work_salvage'?'自己的绳线1份，利用本单旧木，不赠木料':'自己的木料1份';
  const context=(stock<=3?'县城新木货源紧，现存'+stock+'份。':'')+(rain?'雨天木料受潮，成功率降低10个百分点。':'');
- return {...d,action,price,stock,chance,materialBlocker,successXP:practiceAward(s,d.energy,d.xp),failureXP:practiceAward(s,d.energy,4),
+ const shortInput=action==='work_buy'?'自己付'+price+'文购木1份':action==='work_salvage'?'自己的绳线1份':'自己的木料1份';
+ return {...d,action,price,stock,chance,materialBlocker,brief:shortInput+'；'+d.minutes+'分钟/精力'+d.energy+'；成功率'+Math.round(chance*100)+'%。工钱5文另领，失败耗投入。',successXP:practiceAward(s,d.energy,d.xp),failureXP:practiceAward(s,d.energy,4),
   preview:context+input+'；'+d.minutes+'分钟/精力'+d.energy+'，船工精力8；当前成功率'+Math.round(chance*100)+'%。失败耗全部投入，信任及关系-1；成功后另领实际5文，材料成本另计。'+growthPreview(s,'woodwork',d.energy,d.xp,4)};
 }
