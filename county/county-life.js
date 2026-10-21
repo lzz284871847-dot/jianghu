@@ -54,8 +54,8 @@ export function sharedWork(s,id){
   ||id==='boatman'&&a.feedback.events.ferry==='joined'
   ||id==='merchant'&&a.threads.records.escort.status==='done');
 }
-export const merchantDemandBlocker=s=>s.commerce.stock.market.vegetable>=MARKET_SURPLUS?'县城菜货已有'+s.commerce.stock.market.vegetable+'份，柳掌柜先卖现货，暂不新约；居民照常购菜，余量降到'+MARKET_SURPLUS+'份以下再商量。已有订单和工钱保留。':null;
-const merchantDemandNotice=s=>merchantDemandBlocker(s)?'“先把现货卖掉再进菜，已约好的活和工钱照旧。”':'县城菜货现存'+s.commerce.stock.market.vegetable+'份，'+(s.commerce.stock.market.vegetable<=2?'货架缺菜，想请你自备菜货补一份。':'愿意自备菜货时，可再帮我补一份。');
+export const merchantDemandBlocker=s=>s.commerce.stock.market.vegetable>=MARKET_SURPLUS?'菜货现存'+s.commerce.stock.market.vegetable+'份，柳掌柜先卖现货；余量降到'+MARKET_SURPLUS+'份以下再新约。居民照常购菜，已有订单和工钱保留。':null;
+const merchantDemandNotice=s=>merchantDemandBlocker(s)?'“先把现货卖掉，旧约和工钱照旧。”':'县城菜货现存'+s.commerce.stock.market.vegetable+'份，'+(s.commerce.stock.market.vegetable<=2?'货架缺菜，想请你自备菜货补一份。':'愿意自备菜货时，可再帮我补一份。');
 export function bondPromiseBlocker(s,id){const d=BONDS[id],r=s.adventures.life.bonds[id],p=s.npcWorld.individuals[id];
  const conflict=cooperationRefusal(s,id);if(conflict)return conflict;
  const failed=r.history.find(h=>h.kind==='promise'&&!h.success);if(failed&&s.day<failed.day+2)return '上次约定未成，'+d.name+'先整理手头活计；第'+(failed.day+2)+'日起可再商量，不扣罚款。';
