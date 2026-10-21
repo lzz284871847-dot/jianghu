@@ -1,9 +1,9 @@
-import {practiceAward,growthPreview} from './practice-growth.js?v=5.52.0';
-import {skills,markets,places,items} from './content.js?v=5.52.0';
-import {marketPrice,transactionStock,recordTrade} from './commerce.js?v=5.52.0';
-import {districtStatus} from './society.js?v=5.52.0';
-import {EQUIPMENT} from './equipment.js?v=5.52.0';
-import {gain} from './progression.js?v=5.52.0';
+import {practiceAward,growthPreview} from './practice-growth.js?v=5.53.0';
+import {skills,markets,places,items} from './content.js?v=5.53.0';
+import {marketPrice,transactionStock,recordTrade} from './commerce.js?v=5.53.0';
+import {districtStatus} from './society.js?v=5.53.0';
+import {EQUIPMENT} from './equipment.js?v=5.53.0';
+import {gain} from './progression.js?v=5.53.0';
 // Fourteen bounded opportunities. Cargo belongs to the player and is kept out of the saleable bag.
 export const BUSINESSES=Object.freeze(Object.fromEntries(['farm','smith','clinic','merchant'].flatMap(kind=>(kind==='farm'?[0,1,2,3,4]:[0,1,2]).map(t=>[kind+t,{kind,t,name:({farm:['试种小畦','租地种菜','乡邻供菜约定','谷畦试种','药畦试种'],smith:['木棍订单','铁剑订单','精钢刀订单'],clinic:['基础配药协作','分批配药协作','急用药协作'],merchant:['小批药材贩运','柳溪供药约定','大批供药约定']})[kind][t],skill:({farm:'farming',smith:'smelt',clinic:'herb',merchant:'trade'})[kind],required:kind==='farm'&&t>=3?(t===3?6:12):t*(kind==='merchant'?3:6),place:({farm:'fields',smith:'workshop',clinic:'village',merchant:'market'})[kind],giver:({farm:'farmer',smith:'smith',clinic:'doctor',merchant:'merchant'})[kind],days:kind==='farm'?6:kind==='smith'?5:3}]))));
 export function businessFarmProfile(d){const stage=d.t>=3?(d.t===3?1:2):d.t;return {item:d.t===3?'grain':d.t===4?'herb':'vegetable',seed:d.t===4?'herb':'grain',seeds:d.t===4?1:stage+1,fee:[3,5,8][stage],mature:d.t===3?3:d.t===4?4:2,yield:d.t===3?7:d.t===4?5:[3,6,10][stage]};}
