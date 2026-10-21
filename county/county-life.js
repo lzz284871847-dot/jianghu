@@ -1,9 +1,9 @@
-import {BOAT_METHODS,boatWorkPlan} from './boat-work.js?v=5.51.0';
-import {cooperationRefusal} from './npc-social.js?v=5.51.0';
-import {present as contactPresent} from './adventures.js?v=5.51.0';
-import {items,people,places} from './content.js?v=5.51.0';
-import {gain} from './progression.js?v=5.51.0';
-import {districtStatus} from './society.js?v=5.51.0';
+import {BOAT_METHODS,boatWorkPlan,boatDemandBlocker} from './boat-work.js?v=5.52.0';
+import {cooperationRefusal} from './npc-social.js?v=5.52.0';
+import {present as contactPresent} from './adventures.js?v=5.52.0';
+import {items,people,places} from './content.js?v=5.52.0';
+import {gain} from './progression.js?v=5.52.0';
+import {districtStatus} from './society.js?v=5.52.0';
 
 // Player-facing local life. No background shops, hereditary ownership or new population.
 export const BONDS={
@@ -53,6 +53,7 @@ export function bondPromiseBlocker(s,id){const d=BONDS[id],r=s.adventures.life.b
  if(id!=='boatman'&&!sharedWork(s,id))return '需先有实际合作经历；反复盘点不能代替履约。';
  if(['active','ready'].includes(r.promise?.status))return '先完成或交代现有约定。';
  if(r.promise?.accepted===s.day)return '今日已新约一次，另日再商量。';
+ if(id==='boatman'){const demand=boatDemandBlocker(s);if(demand)return demand;}
  if(!contactPresent(s,id,15)||p.energy<8)return '对方不在岗、正在休养或精力不足8，暂缓接洽。';
  if(p.coins<d.reward)return '对方现有余额不足'+d.reward+'文，暂不新约；不会预支工钱。';
  return null;
@@ -66,7 +67,7 @@ export function bondInitiative(s,id){if(s.dead||!workPartners.includes(id)&&id!=
 function boatInitiative(s){
  const r=s.adventures.life.bonds.boatman,p=r.promise,status=p?.status,active=status==='active',ready=status==='ready';
  const choices=Object.keys(BOAT_METHODS).sort((a,b)=>Number(!!countyLifeBlocker(s,'bond:boatman:'+a))-Number(!!countyLifeBlocker(s,'bond:boatman:'+b))),blocker=active?(choices.some(a=>!countyLifeBlocker(s,'bond:boatman:'+a))?null:choices.map(a=>countyLifeBlocker(s,'bond:boatman:'+a)).join('；')):ready?countyLifeBlocker(s,'bond:boatman:claim'):bondPromiseBlocker(s,'boatman');
- return {title:'贺船工'+(active?'等你来修货架':ready?'请你结清工钱':blocker?'暂缓新的活计':'想再请你修货架'),hint:active?'修架待办':ready?'工钱待结':blocker?'暂缓合作':'再请搭手',minutes:15,blocker,freeActions:active?['bond:boatman:withdraw']:[],actions:active?[...choices.map(a=>'bond:boatman:'+a),'bond:boatman:withdraw']:['bond:boatman:'+(ready?'claim':'promise')],detail:active?'截止第'+p.due+'日；县城木料现存'+s.commerce.stock.market.wood+'份。'+(s.weather==='雨'?'雨天木料受潮，成功率降低10个百分点。':'')+'请选择修架做法。':ready?'货架已实际修好，5文工钱由船工本人支付；缺钱保留成果，争执不扣押应付工钱。':'码头货架还有整修活，愿意继续合作时再约。每天最多新约一次，两日内作业；材料与失败成本自担，不保证赚钱。'};
+ return {title:'贺船工'+(active?'等你来修货架':ready?'请你结清工钱':blocker?'暂缓新的活计':'想再请你修货架'),hint:active?'修架待办':ready?'工钱待结':blocker?'暂缓合作':'再请搭手',minutes:15,blocker,freeActions:active?['bond:boatman:withdraw']:[],actions:active?[...choices.map(a=>'bond:boatman:'+a),'bond:boatman:withdraw']:['bond:boatman:'+(ready?'claim':'promise')],detail:active?'截止第'+p.due+'日；县城木料现存'+s.commerce.stock.market.wood+'份。'+(s.weather==='雨'?'雨天木料受潮，成功率降低10个百分点。':'')+'请选择修架做法。':ready?'货架已实际修好，5文工钱由船工本人支付；缺钱保留成果，争执不扣押应付工钱。':(boatDemandBlocker(s)||'柳溪货队可以通行，贺船工可商量货架整修。每天最多新约一次，两日内作业；材料与失败成本自担，不保证赚钱。')};
 }
 export function rememberExperience(s,id,kind,success){const r=s.adventures?.life?.bonds[id];if(!r)return;r.trust=clamp(r.trust+(kind==='meeting'&&workPartners.includes(id)?0:success?1:-1));r.history=[{day:s.day,kind,success},...r.history].slice(0,6);logNPC(s,id,'与你的共同经历：'+({cooperation:'合作',meeting:'当面盘点',promise:'再次约定',event:'县境事件'})[kind]+(success?'已履行':'未完成')+'；旧经历不清除。');}
 export function expireCountyLife(s){const l=s.adventures?.life;if(!l)return;for(const [id,r] of Object.entries(l.bonds))if(r.promise?.status==='active'&&(s.dead||s.day>r.promise.due)){r.promise.status='failed';rememberExperience(s,id,'promise',false);relation(s,id,-1);s.news=['与'+BONDS[id].name+'的约定未完成，关系和合作信任各-1，无罚款。',...s.news].slice(0,20);}

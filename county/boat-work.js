@@ -1,12 +1,15 @@
-import {marketPrice} from './commerce.js?v=5.51.0';
-import {districtStatus} from './society.js?v=5.51.0';
-import {practiceAward,growthPreview} from './practice-growth.js?v=5.51.0';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.52.0';
+import {marketPrice} from './commerce.js?v=5.52.0';
+import {districtStatus} from './society.js?v=5.52.0';
+import {practiceAward,growthPreview} from './practice-growth.js?v=5.52.0';
 // Three ways to perform the existing boatman's promise, with no new saved lifecycle.
 export const BOAT_METHODS={
  work:{name:'自备新木修货架',input:{wood:1},minutes:60,energy:10,chance:.7,xp:12},
  work_buy:{name:'按现价购木再修架',input:{},minutes:90,energy:12,chance:.7,xp:12},
  work_salvage:{name:'绳线整修旧木',input:{cord:1},minutes:90,energy:14,chance:.6,xp:16}
 };
+// Only new promises depend on present demand; accepted jobs and earned wages survive.
+export const boatDemandBlocker=s=>tradeRouteBlocked(s)?'柳溪货队暂缓通行，贺船工先忙栈道，暂不追加货架整修；通行恢复后可再约。可帮忙修栈道，也可等乡邻自行收尾；已有约定和工钱保留。':null;
 export function boatWorkPlan(s,action='work'){
  const d=BOAT_METHODS[action];if(!d)return null;
  const stock=s.commerce.stock.market.wood,price=action==='work_buy'?marketPrice(s,'market','buy','wood'):0;
