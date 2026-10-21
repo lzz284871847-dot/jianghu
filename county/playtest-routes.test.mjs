@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fresh,restore,move,act,trade,talk,socialChoice,adventureAction,martialAction} from './engine.js';
+import {tradeRouteBlocked} from './world-feedback.js';
 import {places} from './content.js';
 import {present} from './adventures.js';
 import {handbook} from './task-handbook.js';
@@ -33,8 +34,8 @@ test('习武两门完整路线：实际学两门武艺、结识授艺者、函�
 });
 test('探索熟人完整路线：有限搜寻、真实受伤诊治、旧合作失败、持续约定成功与再失败',t=>{
  const h=player(),{s}=h;h.walk('foot');h.step(()=>act(s,'wood',()=>0),'采集自用木料');h.contact('boatman');h.action('companion:boat:invite');h.walk('ferry');h.action('companion:boat:safe');h.action('companion:boat:work',()=>.99);assert.equal(s.adventures.companions.records.boat.status,'failed');h.rest();h.action('route:ferry:safe');h.walk('bamboo');h.rest();h.action('route:bamboo:deep');assert.ok(s.hp<100);assert.ok(s.injuries.bruise>0);const goods=s.bag.wood;assert.equal(adventureAction(s,'route:bamboo:deep'),false);assert.equal(s.bag.wood,goods);
- h.contact('doctor',60);h.step(()=>act(s,'doctor'),'付费处理实际伤势');assert.equal(s.hp,100);assert.deepEqual(s.injuries,{});h.contact('boatman',30);h.step(()=>socialChoice(s,'boatman','reconcile'),'赠自己口粮建立关系');h.action('bond:boatman:meet');h.nextDay();h.contact('boatman');h.action('bond:boatman:meet');h.action('bond:boatman:promise');h.hours(60);h.rest();h.hours(60);h.action('bond:boatman:work');h.action('bond:boatman:claim');assert.equal(s.adventures.life.bonds.boatman.promise.status,'done');
- h.nextDay();h.contact('boatman');h.action('bond:boatman:promise');h.hours(60);h.rest();h.hours(60);h.action('bond:boatman:work',()=>.99);assert.equal(s.adventures.life.bonds.boatman.promise.status,'failed');assert.ok(countyLifeOverview(s).some(t=>t.includes('再次合作未成')));assert.equal(adventureAction(s,'bond:boatman:claim'),false);assert.equal(s.adventures.sites.bamboo,'found');assert.equal(s.adventures.sites.ferry,'found');t.diagnostic(JSON.stringify(h.done()));
+ h.contact('doctor',60);h.step(()=>act(s,'doctor'),'付费处理实际伤势');assert.equal(s.hp,100);assert.deepEqual(s.injuries,{});h.contact('boatman',30);h.step(()=>socialChoice(s,'boatman','reconcile'),'赠自己口粮建立关系');h.action('bond:boatman:meet');h.nextDay();h.contact('boatman');h.action('bond:boatman:meet');while(tradeRouteBlocked(s)){assert.ok(s.day<15);h.nextDay();h.contact('boatman');}h.action('bond:boatman:promise');h.hours(60);h.rest();h.hours(60);h.action('bond:boatman:work');h.action('bond:boatman:claim');assert.equal(s.adventures.life.bonds.boatman.promise.status,'done');
+ h.nextDay();h.contact('boatman');while(tradeRouteBlocked(s)){assert.ok(s.day<15);h.nextDay();h.contact('boatman');}h.action('bond:boatman:promise');h.hours(60);h.rest();h.hours(60);h.action('bond:boatman:work',()=>.99);assert.equal(s.adventures.life.bonds.boatman.promise.status,'failed');assert.ok(countyLifeOverview(s).some(t=>t.includes('再次合作未成')));assert.equal(adventureAction(s,'bond:boatman:claim'),false);assert.equal(s.adventures.sites.bamboo,'found');assert.equal(s.adventures.sites.ferry,'found');t.diagnostic(JSON.stringify(h.done()));
 });
 test('行动预览复用实际门槛且严格只读，不能扣钱物、掷结果、推进时间或改记录',()=>{
  const s=fresh();for(const place of ['fields','market','workshop','county']){s.place=place;const raw=JSON.stringify(s);for(const option of countyLifeOptions(s)){assert.equal(option.blocker,countyLifeBlocker(s,option.id));}assert.equal(JSON.stringify(s),raw);}
