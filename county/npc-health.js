@@ -1,9 +1,9 @@
-import {travelBusy} from './npc-journeys.js?v=5.55.0';
-import {clinicDoctor,payClinic} from './npc-clinic.js?v=5.55.0';
-import {saveResident} from './npc-residents.js?v=5.55.0';
-import {alive} from './npc-mortality.js?v=5.55.0';
-import {people} from './content.js?v=5.55.0';
-import {marketPrice} from './commerce.js?v=5.55.0';
+import {travelBusy} from './npc-journeys.js?v=5.56.0';
+import {clinicDoctor,payClinic} from './npc-clinic.js?v=5.56.0';
+import {saveResident} from './npc-residents.js?v=5.56.0';
+import {alive} from './npc-mortality.js?v=5.56.0';
+import {people} from './content.js?v=5.56.0';
+import {marketPrice} from './commerce.js?v=5.56.0';
 const record=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 // Daily appointments are simulated inside the doctor's existing 08:00–18:00 hours.
 // Rain/undernutrition can cause a short illness; no extra world RNG is consumed.

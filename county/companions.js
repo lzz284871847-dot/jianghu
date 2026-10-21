@@ -1,12 +1,12 @@
-import {dungeonGuideLocation} from './dungeon.js?v=5.55.0';
-import {cooperationRefusal} from './npc-social.js?v=5.55.0';
-import {rememberExperience,sharedWork} from './county-life.js?v=5.55.0';
-import {people,places,items} from './content.js?v=5.55.0';
-import {gain} from './progression.js?v=5.55.0';
-import {travelBusy} from './npc-journeys.js?v=5.55.0';
+import {dungeonGuideLocation} from './dungeon.js?v=5.56.0';
+import {cooperationRefusal} from './npc-social.js?v=5.56.0';
+import {rememberExperience,sharedWork} from './county-life.js?v=5.56.0';
+import {people,places,items} from './content.js?v=5.56.0';
+import {gain} from './progression.js?v=5.56.0';
+import {travelBusy} from './npc-journeys.js?v=5.56.0';
 export const COOPERATIONS={
  boat:{name:'船工同行修架',actor:'boatman',from:'dock',site:'ferry',corridor:['dock','ferry'],fee:3,payer:'merchant',claim:'market',total:12,share:4,skill:'carry',input:{wood:1},dispute:'route',info:'贺船工同行到旧渡口修货架。工钱3文，关系3或有信任的实际共事可免；需自己木料1份。分歧是稳妥处理或说服冒险。雨天更难，实际工钱共12文由柳掌柜支付，协作时船工分4文。'},
- hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
+ hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文，已结清追踪伤兽可免；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
  smith:{name:'铁匠同行修具',actor:'smith',from:'workshop',site:'county',corridor:['workshop','county'],fee:2,payer:'public',claim:'county',total:12,share:5,skill:'smelt',input:{iron:1,wood:1},dispute:'materials',info:'许铁匠同行修整县城公用旧工具，邀请2文，关系3或有信任的实际共事可免。用自己的铁料1、木料1；可自备或请熟悉铁匠出实际2文补助。没有免费打造装备；县衙实际支付共12文，协作者分5文。'},
  peer:{name:'学友同行查路',actor:'smithapprentice',from:'workshop',site:'road',corridor:['workshop','county','road'],fee:0,payer:'public',claim:'county',total:10,share:4,skill:'forage',input:{},dispute:'none',info:'许小成实际学会武艺且玩家已学一门后可邀学友查官道。双方真正拜周师傅后才称同门。稳妥侦察或冒险快查；快查可能损失30气血并使学友受伤，可能永久死亡。伤后可用药材照料，或让其离队独行。县衙工钱共10文，协作者分4文；不代打强敌。'}
 };
@@ -35,7 +35,7 @@ function near(s,d){const p=s.npcWorld.individuals[d.actor],expected=people[d.act
 // Only new invitations consult recent memories; an existing share remains payable.
 export function companionInviteTerms(s,key){
  const d=COOPERATIONS[key],bond=s.adventures.life.bonds[d.actor];
- const trusted=(s.relations[d.actor]??0)>=3||key==='peer'&&sameMaster(s)||!!bond&&bond.trust>0&&sharedWork(s,d.actor);
+ const trusted=key==='hunter'&&s.forestContracts?.records.hunt.status==='done'||(s.relations[d.actor]??0)>=3||key==='peer'&&sameMaster(s)||!!bond&&bond.trust>0&&sharedWork(s,d.actor);
  const failed=bond?.history.find(h=>h.kind==='promise'&&!h.success);
  const blocker=cooperationRefusal(s,d.actor)||(failed&&s.day<failed.day+2?'上次约定未成，对方先整理手头活计；第'+(failed.day+2)+'日起可再商量同行。':null);
  return {trusted,fee:trusted?0:d.fee,blocker};
