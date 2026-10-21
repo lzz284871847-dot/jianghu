@@ -1,10 +1,11 @@
-import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.48.0';
-import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.48.0';
-import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.48.0';
-import {EQUIPMENT} from './equipment.js?v=5.48.0';
-import {people,skills,items} from './content.js?v=5.48.0';
-import {gain} from './progression.js?v=5.48.0';
-import {present} from './adventures.js?v=5.48.0';
+import {rememberExperience} from './county-life.js?v=5.49.0';
+import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.49.0';
+import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.49.0';
+import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.49.0';
+import {EQUIPMENT} from './equipment.js?v=5.49.0';
+import {people,skills,items} from './content.js?v=5.49.0';
+import {gain} from './progression.js?v=5.49.0';
+import {present} from './adventures.js?v=5.49.0';
 export const ARTISAN_ORDERS={
  carpenter_frame:{teacher:'carpenter',skill:'woodwork',required:300,trust:4,name:'护路榫接梁架',product:'榫接梁架',input:{hardwood:2,wood:2,cord:2},reward:40,days:4,minutes:180,energy:22,chance:.8},
  carpenter_case:{teacher:'carpenter',skill:'woodwork',required:700,trust:6,name:'精密药箱机关',product:'机关药箱',input:{hardwood:3,iron:2,cord:2},reward:70,days:5,minutes:240,energy:30,chance:.7},
@@ -45,7 +46,7 @@ export function artisanOrderBlocker(s,key,action){
  if(action==='accept'&&Object.entries(ALL_ARTISAN_ORDERS).some(([id,other])=>other.teacher===d.teacher&&['active','claim'].includes(s.professionals.advanced[id].status)))return '先完成或撤回这位师傅正在接洽的订单。';
  const minutes=work?d.minutes:15,energy=work?d.energy:1;
  if(!present(s,d.teacher,minutes)||p.retirement.active||p.energy<(work?8:0))return '需'+people[d.teacher].name+'在作坊08—18时在岗，留足'+minutes+'分钟；休养、外出或退养时暂停，可撤回。';
- if(s.socialActions?.[d.teacher]?.quarrel>=s.day-2)return '师傅还记得近期争执，先赔礼再接洽。';
+ if(action!=='deliver'&&s.socialActions?.[d.teacher]?.quarrel>=s.day-2)return '师傅还记得近期争执，先赔礼再接洽。';
  if(s.hp<25||s.energy<energy)return '需气血25、精力'+energy+'；仍可撤回。';
  if(work){if(s.day>r.due)return '未制作的订单已逾期。';if(Object.entries(d.input).some(([k,n])=>s.bag[k]<n))return '需自己的'+goods(d)+'；材料不足，不开始。';}
  if(['accept','deliver'].includes(action)){const payer=artisanPayer(s,key);if(payer.life.deathDay||payer.coins<d.reward||s.coins>10000000-d.reward)return (d.practical?payerName(d)+'现钱不足或无法付款':'师傅现钱不足')+'或自己的钱袋已满；待付款成品保留，不凭空发钱。';}
@@ -66,6 +67,7 @@ export function artisanOrderAction(s,key,action,{settle,rng}){
    const line=gain(s,d.skill,practiceAward(s,d.energy,success?PRACTICE_XP.order:PRACTICE_XP.orderFailure));if(line)s.result.push(line);
   }else if(action==='deliver'){
    r.held=0;r.stock=1;r.status='done';r.paid=d.reward;artisanPayer(s,key).coins-=d.reward;s.coins+=d.reward;s.relations[d.teacher]=Math.min(100,s.relations[d.teacher]+2);
+   if(d.payer){rememberExperience(s,d.payer,'cooperation',true);s.result.push(payerName(d)+'记下这次实际交付，合作信任+1；今后同行仍需本人愿意、在岗且有精力。');}
    const recipe=Object.values(EQUIPMENT).find(e=>e.recipeOrder===key);if(recipe)s.result.push('已解锁'+recipe.name+'独有配方，可在作坊亲手制作；需材料、手艺与台位费，成品需穿戴才生效。');
    s.result.push(d.product+'一件实际交入师傅留存，实付'+d.reward+'文来自'+payerName(d)+'钱袋；不是净利润，材料和学习成本另计，本单不重复。');
   }else{r.status='left';s.result.push('已撤回，不付钱、不退投入；'+(r.held?'未交定制件留作本单记录，不能再兑现。':'自己的未投入材料保留。')+'本单不重开。');}
@@ -83,7 +85,7 @@ export function artisanOrderOptions(s){
   const actions=r.status==='none'?['accept']:r.status==='active'?[...workActions,'withdraw']:r.status==='claim'?['deliver','withdraw']:[];
   return actions.map(action=>{
    const work=workActions.includes(action),preview=action==='deliver'?'15分钟/精力1；定制成品1件已完成，交付实领'+d.reward+'文，实际扣'+payerName(d)+'钱袋（现有'+artisanPayer(s,key).coins+'文）；缺钱时保留成品，不再受制作期限限制。':action==='withdraw'?'15分钟/精力0；不退投入、不发报酬，未交定制件只留记录，不重开。':work?workPreview(s,key,action):(d.context?d.context+' ':'')+'需'+skills[d.skill]+'累计'+d.required+(d.practical?'':'（Lv'+(d.required===300?3:4)+'）')+'、关系'+d.trust+'；接单15分钟/精力1；'+d.days+'游戏日内亲自制作，不接受买来的成品，没有预付款。'+workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join(' 或 ');
-   return {id:'professional:'+key+':'+action,advancedOrder:!d.practical,details:d.practical&&action==='accept'?workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join('\n'):undefined,detailsLabel:'做法、材料与风险',label:people[d.teacher].name+' · '+(work?artisanWorkPlan(key,action).methodName:({accept:'接单',deliver:'交付领取',withdraw:'撤回'})[action])+' · '+d.name,preview:(d.practical&&action==='accept'?(d.context+' 需累计'+d.required+'经验、关系'+d.trust+'；接单15分钟/精力1，'+d.days+'游戏日内亲自作业，不接受购买成品，无预付款。'):preview)+(action==='withdraw'?'':action==='deliver'?' 材料成本另计。':' 约定报酬'+d.reward+'文，交付后才支付；付款人'+payerName(d)+'现有'+artisanPayer(s,key).coins+'文，材料成本另计。'),blocker:artisanOrderBlocker(s,key,action)};
+   return {id:'professional:'+key+':'+action,advancedOrder:!d.practical,details:d.practical&&action==='accept'?workActions.map(a=>artisanWorkPlan(key,a).methodName+'：'+workPreview(s,key,a)).join('\n'):undefined,detailsLabel:'做法、材料与风险',label:people[d.teacher].name+' · '+(work?artisanWorkPlan(key,action).methodName:({accept:'接单',deliver:'交付领取',withdraw:'撤回'})[action])+' · '+d.name,preview:(d.practical&&action==='accept'?(d.context+' 需累计'+d.required+'经验、关系'+d.trust+'；接单15分钟/精力1，'+d.days+'游戏日内亲自作业，不接受购买成品，无预付款。'):preview)+(action==='withdraw'?'':action==='deliver'?' 材料成本另计；近期争执不阻断已完成成品结款。'+(d.payer?' 实付后'+payerName(d)+'记下履约，合作信任+1。':''):' 约定报酬'+d.reward+'文，交付后才支付；付款人'+payerName(d)+'现有'+artisanPayer(s,key).coins+'文，材料成本另计。'),blocker:artisanOrderBlocker(s,key,action)};
   });
  });
 }
