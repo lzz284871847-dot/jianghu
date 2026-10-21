@@ -1,7 +1,7 @@
-import {places} from './content.js?v=5.54.0';
-import {gain} from './progression.js?v=5.54.0';
-import {addInjury} from './injury.js?v=5.54.0';
-import {travelBusy} from './npc-journeys.js?v=5.54.0';
+import {places} from './content.js?v=5.55.0';
+import {gain} from './progression.js?v=5.55.0';
+import {addInjury} from './injury.js?v=5.55.0';
+import {travelBusy} from './npc-journeys.js?v=5.55.0';
 
 // One finite expedition, sharing the existing mine rescue and its actual payer.
 export const makeDungeon=()=>({status:'new',stage:0,day:0,surveyed:false,inspected:false,route:null,loot:'new',rescue:'new',guide:'none',until:0,returnAt:0});

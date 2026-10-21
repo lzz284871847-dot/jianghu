@@ -1,10 +1,10 @@
-import {milestoneHint} from './skill-milestones.js?v=5.54.0';
-import {artisanSkillGoal} from './artisan-orders.js?v=5.54.0';
-import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.54.0';
-import {progress,MAX} from './progression.js?v=5.54.0';
-import {nextRoad} from './task-handbook.js?v=5.54.0';
-import {initialMarket,marketPrice} from './commerce.js?v=5.54.0';
-import {CRAFTS} from './crafts.js?v=5.54.0';
+import {milestoneHint} from './skill-milestones.js?v=5.55.0';
+import {artisanSkillGoal} from './artisan-orders.js?v=5.55.0';
+import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.55.0';
+import {progress,MAX} from './progression.js?v=5.55.0';
+import {nextRoad} from './task-handbook.js?v=5.55.0';
+import {initialMarket,marketPrice} from './commerce.js?v=5.55.0';
+import {CRAFTS} from './crafts.js?v=5.55.0';
 export const SKILL_GROUPS=[
  {id:'living',name:'生活与采集',keys:['carry','forage','herb','fish','mining','hunt','farming','cook']},
  {id:'crafting',name:'手艺与生产',keys:['smelt','medicine','tailor','leatherwork','woodwork']},
@@ -31,7 +31,7 @@ const SOURCES={
  navigation:{place:'foot',panel:'events',groups:['field'],text:'辨认路势，帮助当天当地相关行动'},
  tracking:{place:'bamboo',panel:'events',groups:['field'],text:'追查足迹，帮助狩猎与失物搜寻'},
  awareness:{place:'foot',panel:'events',groups:['field'],text:'察看危险，仍可能受伤或失败'},
- trade:{place:'market',panel:'bag',text:'实际出售、供货或摆摊，收入需扣成本'},
+ trade:{place:'market',panel:'bag',text:'实际出售、供货或摆摊，收入需扣成本；经商6起使菜货分拣成功率提高5个百分点'},
  negotiation:{place:'market',panel:'events',groups:['civic'],text:'真实议价，每日尝试有限'},
  literacy:{place:'market',teacher:'scribe',panel:'events',groups:['civic'],text:'付费学认字，经验6后可核读告示'},
  accounting:{place:'county',teacher:'bookkeeper',panel:'events',groups:['civic'],text:'需识字6，付费学账算或核对账目'},
