@@ -67,7 +67,7 @@ export function artisanOrderAction(s,key,action,{settle,rng}){
    const line=gain(s,d.skill,practiceAward(s,d.energy,success?PRACTICE_XP.order:PRACTICE_XP.orderFailure));if(line)s.result.push(line);
   }else if(action==='deliver'){
    r.held=0;r.stock=1;r.status='done';r.paid=d.reward;artisanPayer(s,key).coins-=d.reward;s.coins+=d.reward;s.relations[d.teacher]=Math.min(100,s.relations[d.teacher]+2);
-   if(d.payer){rememberExperience(s,d.payer,'cooperation',true);s.result.push(payerName(d)+'记下这次实际交付，合作信任+1；今后同行仍需本人愿意、在岗且有精力。');}
+   if(d.payer){rememberExperience(s,d.payer,'cooperation',true);s.result.push(payerName(d)+'记下这次实际交付，合作信任+1；实际共同经历已记下，无额外钱物奖励。');}
    const recipe=Object.values(EQUIPMENT).find(e=>e.recipeOrder===key);if(recipe)s.result.push('已解锁'+recipe.name+'独有配方，可在作坊亲手制作；需材料、手艺与台位费，成品需穿戴才生效。');
    s.result.push(d.product+'一件实际交入师傅留存，实付'+d.reward+'文来自'+payerName(d)+'钱袋；不是净利润，材料和学习成本另计，本单不重复。');
   }else{r.status='left';s.result.push('已撤回，不付钱、不退投入；'+(r.held?'未交定制件留作本单记录，不能再兑现。':'自己的未投入材料保留。')+'本单不重开。');}
