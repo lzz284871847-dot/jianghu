@@ -1,5 +1,5 @@
-import {travelBusy} from './npc-journeys.js?v=5.59.0';
-import {alive} from './npc-mortality.js?v=5.59.0';
+import {travelBusy} from './npc-journeys.js?v=5.60.0';
+import {alive} from './npc-mortality.js?v=5.60.0';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},

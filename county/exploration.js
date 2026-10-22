@@ -1,13 +1,14 @@
-import {forestBonus,useUtility} from './equipment.js?v=5.59.0';
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.59.0';
-import {openSiteSpoils} from './spoils.js?v=5.59.0';
-import {SITES} from './adventure-data.js?v=5.59.0';
-import {items} from './content.js?v=5.59.0';
-import {gain} from './progression.js?v=5.59.0';
-import {addInjury} from './injury.js?v=5.59.0';
+import {VIGNETTE_STATES} from './vignettes.js?v=5.60.0';
+import {forestBonus,useUtility} from './equipment.js?v=5.60.0';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.60.0';
+import {openSiteSpoils} from './spoils.js?v=5.60.0';
+import {SITES} from './adventure-data.js?v=5.60.0';
+import {items} from './content.js?v=5.60.0';
+import {gain} from './progression.js?v=5.60.0';
+import {addInjury} from './injury.js?v=5.60.0';
 export const makeExploration=()=>({routes:{},encounters:{}});
 export const ENCOUNTERS={bamboo:{name:'废棚旁受困行人',description:'受困行人需要帮助。可用自己药材1份处理（30分钟/精力8），或搬开压枝（1小时/精力18，25%擦伤8气血）。无钱物奖励；也可离开。'},ferry:{name:'药篓旁的争执',description:'两名行人争执一只另有药材2份的破篓。可公平分取其中1份（30分钟/精力6），或劝对方让出1份（45分钟/精力8，60%成功；互助会成员或柳掌柜关系3可直接谈妥）。未谈妥不强迫战斗。'},mine:{name:'矿堆旁的守路棍手',description:'棍手守着另有铁矿1份的碎矿堆。可绕行1小时/精力8，不拿物资；或交自己口粮1份商量（30分钟/精力6，60%放行，无物资奖励）；也可主动实战，可能受伤、撤退失败或永久死亡，胜利后才可收取矿料。'}};
-const outcomes={bamboo:['helped','strained','left'],ferry:['shared','agreed','refused','left'],mine:['bypassed','agreed','refused','left','fighting','won','taken','escaped','died']};
+const outcomes={...VIGNETTE_STATES,bamboo:['helped','strained','left'],ferry:['shared','agreed','refused','left'],mine:['bypassed','agreed','refused','left','fighting','won','taken','escaped','died']};
 export function explorationValid(s){const x=s.adventures.exploration,obj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);return obj(x)&&Object.keys(x).length===2&&obj(x.routes)&&obj(x.encounters)&&Object.entries(x.routes).every(([id,v])=>SITES[id]&&['standard','safe','deep','leave'].includes(v)&&s.adventures.sites[id]&&(v==='leave')===(s.adventures.sites[id]==='retreated'))&&Object.entries(s.adventures.sites).every(([id,v])=>v!=='retreated'||x.routes[id]==='leave')&&Object.entries(x.encounters).every(([id,v])=>outcomes[id]?.includes(v)&&(v!=='fighting'||s.place==='mine'&&s.combat?.opponent==='staffhand'&&!s.combat.practice));}
 export function settleExplorationCombat(s,c,log){const x=s.adventures?.exploration;if(x?.encounters.mine!=='fighting'||c.opponent!=='staffhand'||c.practice)return;x.encounters.mine=c.ended==='victory'?'won':c.ended==='death'?'died':'escaped';log.push(c.ended==='victory'?'守路棍手败退，碎矿堆还留有铁矿1份，可自主收取一次。':c.ended==='death'?'守路遭遇记录：战败身亡。':'守路遭遇记录：已撤离，伤势和耗费保留，不再重开此遭遇。');}
 export function reconcileExploration(s){if(s.dead&&s.adventures?.exploration.encounters.mine==='fighting')s.adventures.exploration.encounters.mine='died';}

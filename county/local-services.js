@@ -12,6 +12,7 @@ export function facilitySources(facility,roots){
  if(facility.panel==='resources')return [...roots.resources.children];
  if(facility.panel==='bag')return [...roots.market.children].filter(n=>!n.classList.contains('material-sources'));
  if(facility.panel==='equipment')return [...roots.equipment.children];
+ if(facility.id==='vignettes')return [roots.activities.querySelector('#vignette-scene'),...roots.activities.querySelectorAll('[data-group="vignettes"][data-action-id]')].filter(n=>n&&!n.dataset.npcContact);
  if(facility.id.startsWith('companion-')){const prefix='companion:'+facility.id.slice(10)+':';return [...roots.activities.querySelectorAll('[data-action-id]')].filter(n=>n.dataset.group==='companions'&&n.dataset.actionId.startsWith(prefix)&&!n.dataset.npcContact);}
  const groups=GROUPS[facility.id]??[facility.group];
  // Person-specific teaching and paid work belong to their real contact, never a proxy facility.
@@ -22,6 +23,7 @@ export function facilitySources(facility,roots){
 export function contactActionInProgress(s,id){
  const [kind,key,action]=id.split(':');
  if(kind==='bond'&&action==='meet')return false;
+ if(kind==='vignette')return !['listen','leave'].includes(action);
  const record=kind==='business'?s.adventures.business.records[key]:kind==='professional'?s.professionals.advanced[key]:kind==='forest'?s.forestContracts.records[key]:kind==='companion'?s.adventures.companions.records[key]:kind==='thread'?s.adventures.threads.records[key]:kind==='bond'?s.adventures.life.bonds[key]?.promise:null;
  if(record)return ['active','claim','open','ready'].includes(record.status);
  if(['deliver','withdraw','questStep'].includes(kind))return !!s.adventures.quest;
