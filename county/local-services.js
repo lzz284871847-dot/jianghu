@@ -25,6 +25,7 @@ export function contactActionInProgress(s,id){
  const [kind,key,action]=id.split(':');
  if(kind==='bond'&&action==='meet')return false;
  if(kind==='vignette')return !['listen','leave'].includes(action);
+ if(kind==='culture'&&key==='calligraphy'){const r=s.culture.records.calligraphy;return ['draft','claim','withdraw'].includes(action)&&['active','claim'].includes(r.status)||action==='take'&&r.status==='failed'&&!!r.held;}
  const record=kind==='business'?s.adventures.business.records[key]:kind==='professional'?s.professionals.advanced[key]:kind==='forest'?s.forestContracts.records[key]:kind==='companion'?s.adventures.companions.records[key]:kind==='thread'?s.adventures.threads.records[key]:kind==='bond'?s.adventures.life.bonds[key]?.promise:null;
  if(record)return ['active','claim','open','ready'].includes(record.status);
  if(['deliver','withdraw','questStep'].includes(kind))return !!s.adventures.quest;
