@@ -1,15 +1,15 @@
-import {noticeOutings} from './outings.js?v=5.56.0';
-import {npcInitiativeNews} from './world-feedback.js?v=5.56.0';
-import {dungeonGuideLocation} from './dungeon.js?v=5.56.0';
-import {expireCulture} from './culture.js?v=5.56.0';
-import {expireProfessionals} from './professionals.js?v=5.56.0';
-import {companionLocation} from './companions.js?v=5.56.0';
-import {expireAdventures} from './adventures.js?v=5.56.0';
-import {travelPlace} from './npc-journeys.js?v=5.56.0';
-import {tickNPCs} from './npc-simulation.js?v=5.56.0';
-import {dailyCommerce} from './commerce.js?v=5.56.0';
-import {tickInjuries} from './injury.js?v=5.56.0';
-import {people,nodeDefs} from './content.js?v=5.56.0';
+import {noticeOutings} from './outings.js?v=5.57.0';
+import {npcInitiativeNews} from './world-feedback.js?v=5.57.0';
+import {dungeonGuideLocation} from './dungeon.js?v=5.57.0';
+import {expireCulture} from './culture.js?v=5.57.0';
+import {expireProfessionals} from './professionals.js?v=5.57.0';
+import {companionLocation} from './companions.js?v=5.57.0';
+import {expireAdventures} from './adventures.js?v=5.57.0';
+import {travelPlace} from './npc-journeys.js?v=5.57.0';
+import {tickNPCs} from './npc-simulation.js?v=5.57.0';
+import {dailyCommerce} from './commerce.js?v=5.57.0';
+import {tickInjuries} from './injury.js?v=5.57.0';
+import {people,nodeDefs} from './content.js?v=5.57.0';
 export function random(s){let x=s.seed>>>0;x^=x<<13;x^=x>>>17;x^=x<<5;s.seed=x>>>0;return s.seed/4294967296;}
 export function npcPlace(s,key){const guide=dungeonGuideLocation(s,key);if(guide!==undefined)return guide;const linked=companionLocation(s,key);if(linked!==undefined)return linked;const n=people[key];if(s.npcWorld.individuals[key]?.life?.deathDay)return null;const away=travelPlace(s,key);if(away)return away;return s.minute>=n.open&&s.minute<n.close?n.place:n.off;}
 export function advance(s,n){let total=s.minute+n;while(total>=1440){total-=1440;s.day++;const recovery=tickInjuries(s);if(recovery.length){s.result.push(...recovery);s.journal.unshift({day:s.day,text:recovery.join('；')});s.journal.length=Math.min(s.journal.length,30);}for(const [key,node] of Object.entries(s.nodes))if(s.day>=node.refreshDay){node.left=nodeDefs[key].capacity;while(s.day>=node.refreshDay)node.refreshDay+=2;}s.weather=random(s)<.3?'雨':'晴';noticeOutings(s);const commerceNews=dailyCommerce(s);const npcNews=tickNPCs(s,s.day);const lives=['柳掌柜收齐货单，打算明日补货。','村民合力清理了一段灌渠。','外地脚夫在县城找到了短工。','渡口船家修好了搁岸小舟。','周师傅收工后去客栈会老友。','邻村农户带菜到柳溪集赶集。'];s.news=[`第${s.day-1}日结束 · 世界新闻`,`【可靠消息】次日天气：${s.weather}。`,lives[Math.floor(random(s)*lives.length)],...commerceNews,...npcInitiativeNews(s),...npcNews,'【当地消息】普通资源点每两日恢复，未参与的乡邻照常生活。',...s.news].slice(0,20);}s.minute=total;expireAdventures(s);expireProfessionals(s);expireCulture(s);}
