@@ -1,5 +1,5 @@
-import {rememberExperience} from './county-life.js?v=5.63.0';
-import {cooperationRefusal} from './npc-social.js?v=5.63.0';
+import {rememberExperience} from './county-life.js?v=5.64.0';
+import {cooperationRefusal} from './npc-social.js?v=5.64.0';
 // Finite local responses and events; no repeating daily or lifetime simulation.
 export const EVENTS={
  ferry:{name:'旧渡口修栈道',place:'dock',holder:'boatman',offset:1,days:2,description:'栈道受阻期间进出旧渡口多走15分钟，柳溪原定补货暂缓、脚夫名额缩减；到青石码头找船家接洽。可交木料2份修补（45分钟/精力10）；熟手搬运可改用90分钟/精力20实际劳作。支付8文来自船家余额。'},

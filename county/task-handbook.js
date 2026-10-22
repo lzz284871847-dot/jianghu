@@ -1,25 +1,25 @@
-import {wreckSummary,wreckRecipeKnown} from './wreck.js?v=5.63.0';
-import {forestTasks} from './forest-contracts.js?v=5.63.0';
-import {ASSESSMENTS,assessmentBlocker,assessmentSummary} from './assessments.js?v=5.63.0';
-import {fortSummary} from './fort.js?v=5.63.0';
-import {raidSummary} from './raid.js?v=5.63.0';
-import {dungeonSummary} from './dungeon.js?v=5.63.0';
-import {cultureTasks} from './culture.js?v=5.63.0';
-import {professionalTasks} from './professionals.js?v=5.63.0';
-import {countyLifeTasks} from './county-life.js?v=5.63.0';
-import {SPOILS} from './spoils.js?v=5.63.0';
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.63.0';
-import {places,people,markets,items} from './content.js?v=5.63.0';
-import {QUESTS} from './adventure-data.js?v=5.63.0';
-import {BUSINESSES,businessFarmProfile,businessAwaitingPayment} from './business.js?v=5.63.0';
-import {CRAFTS,craftBlocker,craftPlan} from './crafts.js?v=5.63.0';
-import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.63.0';
-import {marketPrice} from './commerce.js?v=5.63.0';
-import {districtStatus} from './society.js?v=5.63.0';
-import {OUTINGS} from './outings.js?v=5.63.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.63.0';
-import {POLICE_JOBS} from './law.js?v=5.63.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.63.0';
+import {wreckSummary,wreckRecipeKnown} from './wreck.js?v=5.64.0';
+import {forestTasks} from './forest-contracts.js?v=5.64.0';
+import {ASSESSMENTS,assessmentBlocker,assessmentSummary} from './assessments.js?v=5.64.0';
+import {fortSummary} from './fort.js?v=5.64.0';
+import {raidSummary} from './raid.js?v=5.64.0';
+import {dungeonSummary} from './dungeon.js?v=5.64.0';
+import {cultureTasks} from './culture.js?v=5.64.0';
+import {professionalTasks} from './professionals.js?v=5.64.0';
+import {countyLifeTasks} from './county-life.js?v=5.64.0';
+import {SPOILS} from './spoils.js?v=5.64.0';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.64.0';
+import {places,people,markets,items} from './content.js?v=5.64.0';
+import {QUESTS} from './adventure-data.js?v=5.64.0';
+import {BUSINESSES,businessFarmProfile,businessAwaitingPayment} from './business.js?v=5.64.0';
+import {CRAFTS,craftBlocker,craftPlan} from './crafts.js?v=5.64.0';
+import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.64.0';
+import {marketPrice} from './commerce.js?v=5.64.0';
+import {districtStatus} from './society.js?v=5.64.0';
+import {OUTINGS} from './outings.js?v=5.64.0';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.64.0';
+import {POLICE_JOBS} from './law.js?v=5.64.0';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.64.0';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
@@ -38,7 +38,7 @@ export function handbook(s){const a=s.adventures,cards=[];const add=(title,place
  if(s.dead)add('人生已结束',s.place,'永久死亡；可导出记录或另建普通人。没有继续行动或自动读档。',0,'','','');
  else if(a.law.pursuit)add('县城拦查','county','先投案、接受六小时游戏拘押，或承担逃避风险。',0,'没钱仍可接受拘押。','','law');
  if(a.outings.records.lost.outcome==='lost')add('林间脱困','foot','使用脱困返回，零精力仍能走回原路。',0,'不回血、不瞬移。','','outings');
- if(a.quest){const q=a.quest,d=QUESTS[q.id],place=q.id==='parcel'&&!q.stage?'bamboo':q.id==='escort'?(q.stage?'liuxi':'ferry'):q.id==='rescue'&&!q.stage?'hill':d.from;const next=q.id==='medicine'?'备药材2份，向医者交付':q.id==='parcel'?q.stage?'交还找到的货包':'搜寻失落货包':q.id==='escort'?q.stage?'向魏婶交接':'选择稳妥或近路':q.stage?'回村交代救援':'携药材1份救助';add(d.name,place,next,q.dueDay,'没有预付报酬；可撤回，已花耗不退。',q.id==='medicine'?materialBlock(s,{herb:2}):q.id==='rescue'&&!q.stage?materialBlock(s,{herb:1}):'', 'quests');}
+ if(a.quest){const q=a.quest,d=QUESTS[q.id],place=q.id==='parcel'&&!q.stage?'bamboo':q.id==='escort'?(q.stage?'liuxi':'ferry'):q.id==='rescue'&&!q.stage?'hill':d.from;const next=q.id==='medicine'?'备药材2份，向医者交付':q.id==='parcel'?q.stage?'交还找到的货包':'搜寻失落货包':q.id==='escort'?q.stage?'向魏婶交接':'选择稳妥或近路':q.stage?'回村交代救援':'携药材1份救助';add(d.name,place,q.id==='escort'&&q.stage===2?'行脚人已实际抵达，向在岗魏婶领取原14文；成果不再逾期。':next,q.id==='escort'&&q.stage===2?0:q.dueDay,'没有预付报酬；可撤回，已花耗不退。',q.id==='medicine'?materialBlock(s,{herb:2}):q.id==='rescue'&&!q.stage?materialBlock(s,{herb:1}):'', 'quests');}
  for(const [id,d] of Object.entries(BUSINESSES)){const r=a.business.records[id];if(r.status==='failed'&&r.cargo){add(d.name,s.place,'腾出背包空间，领取留存货物。',0,'留存货物'+r.cargo+'份。','','business');continue;}if(r.status!=='active')continue;let place=d.place,next='',blocker='',goods='投入估值'+r.cost+'文；留存货物'+r.cargo+'份；尚未收款。';
  if(d.kind==='farm'){const p=businessFarmProfile(d);place=r.step?(s.place==='fields'?'fields':'market'):'fields';next=r.step?'可在田地自留收成，或按街市当前收购价供货。':s.day<r.accepted+p.mature?'照看小畦；第'+(r.accepted+p.mature)+'日起可收获。':'白天照看、收获；随后自留或街市供货。';if(!r.step&&s.day<r.accepted+p.mature)blocker='尚未满'+({2:'两个',3:'三个',4:'四个'}[p.mature])+'游戏日，可做别的工作，不需现实等待。';if(s.minute<360||s.minute+(r.step?15:60)>1080)blocker+='田间作业需6—18时。';if(s.energy<(r.step?1:12))blocker+='精力不足。';}
  else if(d.kind==='smith'){const eq=['wood_staff','iron_sword','steel_blade'][d.t],item=EQUIPMENT[eq];next='打造'+item.name+'，完好且卸下后交给许铁匠。';blocker=s.equipment.owned[eq]!==item.durability?'尚缺指定完好装备；查看作坊打造材料与门槛。':Object.values(s.equipment.equipped).includes(eq)?'请先卸下交付装备。':contactBlock(s,'smith');if(s.npcWorld.individuals.smith.coins<[7,30,110][d.t]+(s.equipment.quality[eq]===2?[3,8,20][d.t]:0))blocker+='付款人现有余额不足。';}

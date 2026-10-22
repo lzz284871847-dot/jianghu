@@ -2,7 +2,7 @@
 export const QUESTS={
  medicine:{name:'河湾急用药材',giver:'doctor',from:'village',reward:12,days:3,description:'领取后3日内交付自己现有药材2份，报酬12文由沈医者支付；可撤回，无罚款。'},
  parcel:{name:'竹林失物',giver:'merchant',from:'market',reward:10,days:3,description:'到竹林搜寻失落货包：1小时/精力12，70%找回；找到后回街市交还，报酬10文。未找到也有结局，不可反复领取。'},
- escort:{name:'沿岸护送行脚人',giver:'boatman',payer:'stallholder',from:'dock',reward:14,days:3,description:'码头领取，经旧渡口到柳溪集交付；渡口可走稳妥步道或冒险抄近路。柳溪集魏婶支付报酬14文，无垫资、无强迫战斗。'},
+ escort:{name:'沿岸护送行脚人',giver:'boatman',payer:'stallholder',from:'dock',reward:14,days:3,description:'码头领取，经旧渡口到柳溪集交付；渡口可走稳妥步道或冒险抄近路。柳溪集魏婶支付报酬14文，无垫资、无强迫战斗。完成后可接新一趟，每日最多新接一次，仍须实际走完路线。'},
  rescue:{name:'南山采药人救援',giver:'doctor',from:'village',reward:20,days:2,description:'县境成长第二阶段后开放；携自己药材1份到南山坡救助，1小时/精力16，70%成功，30%擦伤8气血。回村结算20文。'}
 };
 export const SITES={

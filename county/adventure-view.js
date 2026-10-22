@@ -1,35 +1,35 @@
-import {wreckOptions,wreckSummary} from './wreck.js?v=5.63.0';
-import {vignetteOptions,vignetteSummary} from './vignettes.js?v=5.63.0';
-import {forestOptions,forestSummary} from './forest-contracts.js?v=5.63.0';
-import {assessmentOptions} from './assessments.js?v=5.63.0';
-import {fortOptions} from './fort.js?v=5.63.0';
-import {raidOptions,raidSummary} from './raid.js?v=5.63.0';
-import {present} from './adventures.js?v=5.63.0';
-import {dungeonOptions,dungeonSummary} from './dungeon.js?v=5.63.0';
-import {cultureOptions} from './culture.js?v=5.63.0';
-import {professionalOptions} from './professionals.js?v=5.63.0';
-import {civicOptions} from './civic.js?v=5.63.0';
-import {kitchenOptions} from './kitchen.js?v=5.63.0';
-import {fieldOptions,fieldChance} from './field-skills.js?v=5.63.0';
-import {mentorParcelChance} from './player-mentor.js?v=5.63.0';
-import {craftOptions} from './crafts.js?v=5.63.0';
-import {mobilityOptions} from './mobility.js?v=5.63.0';
-import {medicineOptions} from './medicine.js?v=5.63.0';
-import {countyLifeOptions,countyLifeSummary} from './county-life.js?v=5.63.0';
-import {spoilOptions,spoilSummary} from './spoils.js?v=5.63.0';
-import {companionOptions,companionSummary} from './companions.js?v=5.63.0';
-import {threadOptions} from './threads.js?v=5.63.0';
-import {businessOptions,businessSummary} from './business.js?v=5.63.0';
-import {outingOptions,outingSummary} from './outings.js?v=5.63.0';
-import {lawOptions,lawSummary} from './law.js?v=5.63.0';
-import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.63.0';
-import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.63.0';
-import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.63.0';
-import {explorationOptions,explorationSummary,explorationPlan} from './exploration.js?v=5.63.0';
-import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.63.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.63.0';
-import {nextMilestone} from './adventures.js?v=5.63.0';
-import {places,items} from './content.js?v=5.63.0';
+import {wreckOptions,wreckSummary} from './wreck.js?v=5.64.0';
+import {vignetteOptions,vignetteSummary} from './vignettes.js?v=5.64.0';
+import {forestOptions,forestSummary} from './forest-contracts.js?v=5.64.0';
+import {assessmentOptions} from './assessments.js?v=5.64.0';
+import {fortOptions} from './fort.js?v=5.64.0';
+import {raidOptions,raidSummary} from './raid.js?v=5.64.0';
+import {present} from './adventures.js?v=5.64.0';
+import {dungeonOptions,dungeonSummary} from './dungeon.js?v=5.64.0';
+import {cultureOptions} from './culture.js?v=5.64.0';
+import {professionalOptions} from './professionals.js?v=5.64.0';
+import {civicOptions} from './civic.js?v=5.64.0';
+import {kitchenOptions} from './kitchen.js?v=5.64.0';
+import {fieldOptions,fieldChance} from './field-skills.js?v=5.64.0';
+import {mentorParcelChance} from './player-mentor.js?v=5.64.0';
+import {craftOptions} from './crafts.js?v=5.64.0';
+import {mobilityOptions} from './mobility.js?v=5.64.0';
+import {medicineOptions} from './medicine.js?v=5.64.0';
+import {countyLifeOptions,countyLifeSummary} from './county-life.js?v=5.64.0';
+import {spoilOptions,spoilSummary} from './spoils.js?v=5.64.0';
+import {companionOptions,companionSummary} from './companions.js?v=5.64.0';
+import {threadOptions} from './threads.js?v=5.64.0';
+import {businessOptions,businessSummary} from './business.js?v=5.64.0';
+import {outingOptions,outingSummary} from './outings.js?v=5.64.0';
+import {lawOptions,lawSummary} from './law.js?v=5.64.0';
+import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.64.0';
+import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.64.0';
+import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.64.0';
+import {explorationOptions,explorationSummary,explorationPlan} from './exploration.js?v=5.64.0';
+import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.64.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.64.0';
+import {nextMilestone,escortOffer} from './adventures.js?v=5.64.0';
+import {places,items} from './content.js?v=5.64.0';
 export function activityOptions(s){
  if(s.wreck.status==='active')return wreckOptions(s);
  if(s.fort.status==='active')return fortOptions(s);
@@ -37,13 +37,13 @@ export function activityOptions(s){
  if(s.dungeon.status==='active')return dungeonOptions(s);
  const a=s.adventures,out=[...wreckOptions(s),...assessmentOptions(s),...fortOptions(s),...raidOptions(s,present),...dungeonOptions(s),...cultureOptions(s),...professionalOptions(s),...civicOptions(s),...kitchenOptions(s),...fieldOptions(s),...craftOptions(s),...medicineOptions(s),...mobilityOptions(s)],add=(id,label,preview)=>out.push({id,label,preview});
  if(a.law.pursuit)return lawOptions(s);
- for(const [id,d] of Object.entries(QUESTS))if(s.place===d.from&&!a.done.includes(id)&&!a.failed.includes(id)&&!a.quest)add('quest:'+id,'领取 · '+d.name,d.description);
- for(const id of a.failed)if(id!=='parcel'&&s.place===QUESTS[id].from&&!a.quest)add('retry:'+id,'重新约定 · '+QUESTS[id].name,'失败、撤回或逾期后可重新完成；不提前发奖，已成功委托不重复。');
- if(a.quest){const q=a.quest,d=QUESTS[q.id];add('withdraw','撤回当前委托','无罚款，无报酬；药材、护送和救援可回领取处重新约定，失物不重复。');
+ for(const [id,d] of Object.entries(QUESTS))if(s.place===d.from&&(!a.done.includes(id)||id==='escort')&&!a.failed.includes(id)&&!a.quest){if(id==='escort'){const offer=escortOffer(s);out.push({id:'quest:escort',label:(a.done.includes(id)?'再接一趟 · ':'领取 · ')+d.name,preview:offer.preview,blocker:offer.blocker});}else add('quest:'+id,'领取 · '+d.name,d.description);}
+ for(const id of a.failed)if(id!=='parcel'&&s.place===QUESTS[id].from&&!a.quest){if(id==='escort'){const offer=escortOffer(s);out.push({id:'retry:escort',label:'重新约定 · '+QUESTS[id].name,preview:offer.preview,blocker:offer.blocker});}else add('retry:'+id,'重新约定 · '+QUESTS[id].name,'失败、撤回或逾期后可重新完成；不提前发奖，已成功委托不重复。');}
+ if(a.quest){const q=a.quest,d=QUESTS[q.id];add('withdraw','撤回当前委托',q.id==='escort'&&q.stage===2?'主动放弃本趟已抵达护送的未结工钱，不退款或补发。':'无罚款，无报酬；药材、护送和救援可回领取处重新约定，护送每日最多新接一趟，失物不重复。');
   if(q.id==='parcel'&&!q.stage&&s.place==='bamboo')add('questStep:search','搜寻失落货包','1小时 / 精力12，'+Math.round(fieldChance(s,'tracking',mentorParcelChance(s))*100)+'%找回；未找到则委托结束。');
   if(q.id==='escort'&&!q.stage&&s.place==='ferry'){add('questStep:safe','护送 · 稳妥步道','45分钟 / 精力8，不发生路线擦伤。');add('questStep:quick','护送 · 抄近路','15分钟 / 精力12，30%擦伤8气血，可能死亡。');}
   if(q.id==='rescue'&&!q.stage&&s.place==='hill')add('questStep:help','救助采药人','1小时 / 精力16，消耗药材1份；70%成功，失败擦伤8气血。');
-  if(s.place===(q.id==='escort'?'liuxi':d.from)&&(q.id==='medicine'||q.stage===1))add('deliver','交付 · '+d.name,'完成后领取'+d.reward+'文；须付款人实际余额充足，不重复发奖。');
+  if(s.place===(q.id==='escort'?'liuxi':d.from)&&(q.id==='medicine'||q.id==='escort'&&q.stage===2||q.stage===1))add('deliver','交付 · '+d.name,q.id==='escort'&&q.stage===2?'行脚人已抵达，14文工钱待结；不再受原护送期限限制，须魏婶在岗且实际有钱，只结算一次。':'完成后领取'+d.reward+'文；须付款人实际余额充足，不重复发奖。');
  }
  const site=SITES[s.place];if(site&&!a.sites[s.place]){const p=explorationPlan(s,s.place,'standard');add('explore:'+s.place,'搜寻 · '+site.name,Object.entries(site.goods).map(([k,n])=>items[k]+'×'+n).join('、')+'；'+p.minutes+'分钟 / 精力'+p.energy+'；当前成功率'+Math.round(p.chance*100)+'%，'+Math.round(p.risk*100)+'%擦伤'+p.damage+'气血。仅一次，可不参与。'+(s.place==='mine'?'需矿镐。':''));}
  for(const [id,d] of Object.entries(ORGANIZATIONS))if(s.place===d.place&&a.org.id==='none')add('join:'+id,'加入 · '+d.name,d.description+(factionHostile(s,id)?' 当前交恶，先赔礼恢复接洽。':'')+' 退出无罚款，会费不退，贡献保留。');
