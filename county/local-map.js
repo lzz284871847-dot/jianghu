@@ -1,20 +1,20 @@
-import {VIGNETTES,vignetteContact} from './vignettes.js?v=5.61.0';
-import {jobSceneHint} from './livelihood.js?v=5.61.0';
-import {bondInitiative} from './county-life.js?v=5.61.0';
-import {EVENTS,npcInitiative} from './world-feedback.js?v=5.61.0';
-import {SCENE_ART} from './scene-art.js?v=5.61.0';
-import {places,people,resources} from './content.js?v=5.61.0';
-import {npcPlace} from './world.js?v=5.61.0';
-import {npcAt} from './npc-simulation.js?v=5.61.0';
-import {healthSummary} from './npc-health.js?v=5.61.0';
-import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.61.0';
-import {CULTURE} from './culture.js?v=5.61.0';
-import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.61.0';
-import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.61.0';
-import {OUTINGS} from './outings.js?v=5.61.0';
-import {BUSINESSES} from './business.js?v=5.61.0';
-import {THREADS} from './threads.js?v=5.61.0';
-import {COOPERATIONS,companionFeedback,companionActorHint} from './companions.js?v=5.61.0';
+import {VIGNETTES,vignetteContact} from './vignettes.js?v=5.62.0';
+import {jobSceneHint} from './livelihood.js?v=5.62.0';
+import {bondInitiative} from './county-life.js?v=5.62.0';
+import {EVENTS,npcInitiative} from './world-feedback.js?v=5.62.0';
+import {SCENE_ART} from './scene-art.js?v=5.62.0';
+import {places,people,resources} from './content.js?v=5.62.0';
+import {npcPlace} from './world.js?v=5.62.0';
+import {npcAt} from './npc-simulation.js?v=5.62.0';
+import {healthSummary} from './npc-health.js?v=5.62.0';
+import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.62.0';
+import {CULTURE} from './culture.js?v=5.62.0';
+import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.62.0';
+import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.62.0';
+import {OUTINGS} from './outings.js?v=5.62.0';
+import {BUSINESSES} from './business.js?v=5.62.0';
+import {THREADS} from './threads.js?v=5.62.0';
+import {COOPERATIONS,companionFeedback,companionActorHint} from './companions.js?v=5.62.0';
 
 // Read-only local scene: the coordinates are a diagram, not new movement or NPC simulation.
 const f=(id,name,panel,group='')=>({id,name,panel,group});
@@ -28,7 +28,7 @@ export const LOCAL_SCENES={
  village:{lane:'村口小路',terrain:'village',facilities:[f('clinic','药铺制药台','events','medicine'),f('lodging','村中借宿','field')]},
  fields:{lane:'田间小径',terrain:'village',facilities:[f('vegetables','田间资源','resources'),f('work','田间短工','field')]},
  dock:{lane:'码头栈道',terrain:'water',facilities:[f('loading','装船短工','field'),f('fishing','河边钓位','resources')]},
- ferry:{lane:'渡口沿岸',terrain:'water',facilities:[f('fishing','旧钓位','resources'),f('site','渡口旧址','events','explore')]},
+ ferry:{lane:'渡口沿岸',terrain:'water',facilities:[f('fishing','旧钓位','resources'),f('site','渡口旧址','events','explore'),f('wreck','河岸废船','events','wreck')]},
  liuxi:{lane:'柳溪集街口',terrain:'water',facilities:[f('shop','小集商铺','bag'),f('jobs','集上短工','field')]},
  foot:{lane:'南山主径',terrain:'forest',facilities:[f('resources','林间资源','resources'),f('trail','辨路与山林事务','events','forest')]},
  bamboo:{lane:'竹林小径',terrain:'forest',facilities:[f('resources','竹林资源','resources'),f('site','林间探索','events','explore')]},

@@ -1,39 +1,41 @@
-import {vignetteOptions,vignetteSummary} from './vignettes.js?v=5.61.0';
-import {forestOptions,forestSummary} from './forest-contracts.js?v=5.61.0';
-import {assessmentOptions} from './assessments.js?v=5.61.0';
-import {fortOptions} from './fort.js?v=5.61.0';
-import {raidOptions,raidSummary} from './raid.js?v=5.61.0';
-import {present} from './adventures.js?v=5.61.0';
-import {dungeonOptions,dungeonSummary} from './dungeon.js?v=5.61.0';
-import {cultureOptions} from './culture.js?v=5.61.0';
-import {professionalOptions} from './professionals.js?v=5.61.0';
-import {civicOptions} from './civic.js?v=5.61.0';
-import {kitchenOptions} from './kitchen.js?v=5.61.0';
-import {fieldOptions,fieldChance} from './field-skills.js?v=5.61.0';
-import {mentorParcelChance} from './player-mentor.js?v=5.61.0';
-import {craftOptions} from './crafts.js?v=5.61.0';
-import {mobilityOptions} from './mobility.js?v=5.61.0';
-import {medicineOptions} from './medicine.js?v=5.61.0';
-import {countyLifeOptions,countyLifeSummary} from './county-life.js?v=5.61.0';
-import {spoilOptions,spoilSummary} from './spoils.js?v=5.61.0';
-import {companionOptions,companionSummary} from './companions.js?v=5.61.0';
-import {threadOptions} from './threads.js?v=5.61.0';
-import {businessOptions,businessSummary} from './business.js?v=5.61.0';
-import {outingOptions,outingSummary} from './outings.js?v=5.61.0';
-import {lawOptions,lawSummary} from './law.js?v=5.61.0';
-import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.61.0';
-import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.61.0';
-import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.61.0';
-import {explorationOptions,explorationSummary,explorationPlan} from './exploration.js?v=5.61.0';
-import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.61.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.61.0';
-import {nextMilestone} from './adventures.js?v=5.61.0';
-import {places,items} from './content.js?v=5.61.0';
+import {wreckOptions,wreckSummary} from './wreck.js?v=5.62.0';
+import {vignetteOptions,vignetteSummary} from './vignettes.js?v=5.62.0';
+import {forestOptions,forestSummary} from './forest-contracts.js?v=5.62.0';
+import {assessmentOptions} from './assessments.js?v=5.62.0';
+import {fortOptions} from './fort.js?v=5.62.0';
+import {raidOptions,raidSummary} from './raid.js?v=5.62.0';
+import {present} from './adventures.js?v=5.62.0';
+import {dungeonOptions,dungeonSummary} from './dungeon.js?v=5.62.0';
+import {cultureOptions} from './culture.js?v=5.62.0';
+import {professionalOptions} from './professionals.js?v=5.62.0';
+import {civicOptions} from './civic.js?v=5.62.0';
+import {kitchenOptions} from './kitchen.js?v=5.62.0';
+import {fieldOptions,fieldChance} from './field-skills.js?v=5.62.0';
+import {mentorParcelChance} from './player-mentor.js?v=5.62.0';
+import {craftOptions} from './crafts.js?v=5.62.0';
+import {mobilityOptions} from './mobility.js?v=5.62.0';
+import {medicineOptions} from './medicine.js?v=5.62.0';
+import {countyLifeOptions,countyLifeSummary} from './county-life.js?v=5.62.0';
+import {spoilOptions,spoilSummary} from './spoils.js?v=5.62.0';
+import {companionOptions,companionSummary} from './companions.js?v=5.62.0';
+import {threadOptions} from './threads.js?v=5.62.0';
+import {businessOptions,businessSummary} from './business.js?v=5.62.0';
+import {outingOptions,outingSummary} from './outings.js?v=5.62.0';
+import {lawOptions,lawSummary} from './law.js?v=5.62.0';
+import {factionOptions,factionSummary,factionHostile,factionFriendly} from './factions.js?v=5.62.0';
+import {playerMentorOptions,playerMentorSummary} from './player-mentor.js?v=5.62.0';
+import {TRIALS,trialPreview,trialSummary} from './trials.js?v=5.62.0';
+import {explorationOptions,explorationSummary,explorationPlan} from './exploration.js?v=5.62.0';
+import {feedbackOptions,feedbackSummary} from './world-feedback.js?v=5.62.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.62.0';
+import {nextMilestone} from './adventures.js?v=5.62.0';
+import {places,items} from './content.js?v=5.62.0';
 export function activityOptions(s){
+ if(s.wreck.status==='active')return wreckOptions(s);
  if(s.fort.status==='active')return fortOptions(s);
  if(s.raid.status==='active')return raidOptions(s,present);
  if(s.dungeon.status==='active')return dungeonOptions(s);
- const a=s.adventures,out=[...assessmentOptions(s),...fortOptions(s),...raidOptions(s,present),...dungeonOptions(s),...cultureOptions(s),...professionalOptions(s),...civicOptions(s),...kitchenOptions(s),...fieldOptions(s),...craftOptions(s),...medicineOptions(s),...mobilityOptions(s)],add=(id,label,preview)=>out.push({id,label,preview});
+ const a=s.adventures,out=[...wreckOptions(s),...assessmentOptions(s),...fortOptions(s),...raidOptions(s,present),...dungeonOptions(s),...cultureOptions(s),...professionalOptions(s),...civicOptions(s),...kitchenOptions(s),...fieldOptions(s),...craftOptions(s),...medicineOptions(s),...mobilityOptions(s)],add=(id,label,preview)=>out.push({id,label,preview});
  if(a.law.pursuit)return lawOptions(s);
  for(const [id,d] of Object.entries(QUESTS))if(s.place===d.from&&!a.done.includes(id)&&!a.failed.includes(id)&&!a.quest)add('quest:'+id,'领取 · '+d.name,d.description);
  for(const id of a.failed)if(id!=='parcel'&&s.place===QUESTS[id].from&&!a.quest)add('retry:'+id,'重新约定 · '+QUESTS[id].name,'失败、撤回或逾期后可重新完成；不提前发奖，已成功委托不重复。');
@@ -55,7 +57,7 @@ export function activityOptions(s){
 }
 export function adventureSummary(s){
  const a=s.adventures,q=a.quest,n=nextMilestone(s).n;
- const lines=[...vignetteSummary(s),q?'当前委托：'+QUESTS[q.id].name+' · 截止第'+q.dueDay+'日 · '+(q.id==='medicine'?'携药材2份回河湾村':q.id==='parcel'?q.stage?'回县城街市交付':'到竹林搜寻':q.id==='escort'?q.stage?'到柳溪集交付':'经旧渡口选择路线':q.stage?'回河湾村交代':'携药材1份到南山坡救助'):'没有进行中的委托；县城街市、河湾村和青石码头可接洽。',
+ const lines=[...[wreckSummary(s)].filter(Boolean),...vignetteSummary(s),q?'当前委托：'+QUESTS[q.id].name+' · 截止第'+q.dueDay+'日 · '+(q.id==='medicine'?'携药材2份回河湾村':q.id==='parcel'?q.stage?'回县城街市交付':'到竹林搜寻':q.id==='escort'?q.stage?'到柳溪集交付':'经旧渡口选择路线':q.stage?'回河湾村交代':'携药材1份到南山坡救助'):'没有进行中的委托；县城街市、河湾村和青石码头可接洽。',
  '委托完成'+a.done.length+'条；撤回、未完成或逾期'+a.failed.length+'条；有限探索'+Object.keys(a.sites).length+'/3处。',
  '组织：'+(ORGANIZATIONS[a.org.id]?.name||'未加入')+'；武馆贡献'+a.org.rep.school+'，互助会贡献'+a.org.rep.caravan+'。完成新委托增加当前组织贡献；武馆成员完成公开切磋也可增加一次贡献。',
  '职业合作：'+(Object.entries(a.career).filter(([,v])=>v).map(([id])=>CAREERS[id].name).join('、')||'尚未验收；码头、作坊与医者处查看要求。'),

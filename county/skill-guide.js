@@ -1,10 +1,10 @@
-import {milestoneHint} from './skill-milestones.js?v=5.61.0';
-import {artisanSkillGoal} from './artisan-orders.js?v=5.61.0';
-import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.61.0';
-import {progress,MAX} from './progression.js?v=5.61.0';
-import {nextRoad} from './task-handbook.js?v=5.61.0';
-import {initialMarket,marketPrice} from './commerce.js?v=5.61.0';
-import {CRAFTS} from './crafts.js?v=5.61.0';
+import {milestoneHint} from './skill-milestones.js?v=5.62.0';
+import {artisanSkillGoal} from './artisan-orders.js?v=5.62.0';
+import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.62.0';
+import {progress,MAX} from './progression.js?v=5.62.0';
+import {nextRoad} from './task-handbook.js?v=5.62.0';
+import {initialMarket,marketPrice} from './commerce.js?v=5.62.0';
+import {CRAFTS} from './crafts.js?v=5.62.0';
 export const SKILL_GROUPS=[
  {id:'living',name:'生活与采集',keys:['carry','forage','herb','fish','mining','hunt','farming','cook']},
  {id:'crafting',name:'手艺与生产',keys:['smelt','medicine','tailor','leatherwork','woodwork']},
