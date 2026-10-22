@@ -1,4 +1,4 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.63.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.64.0';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
  iron_bound_staff:{name:'包铁短棍',slot:'weapon',kind:'棍法',tier:2,attack:6,defense:0,durability:50,materials:{iron:3,wood:2},fee:10,foundOnly:true,use:'旧堡兵械库固定留存，需实际带出；普通品质、初始耐久30/50。棍法适配时攻击+6；不能打造，作坊按原规则付费耗料修理。'},

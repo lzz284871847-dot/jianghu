@@ -1,11 +1,11 @@
-import {BUSINESSES} from './business.js?v=5.63.0';
-import {CRAFTS} from './crafts.js?v=5.63.0';
-import {EQUIPMENT} from './equipment.js?v=5.63.0';
-import {MEDICINES} from './medicine.js?v=5.63.0';
-import {MEALS} from './kitchen.js?v=5.63.0';
-import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.63.0';
-import {resources,skills} from './content.js?v=5.63.0';
-import {progress,MAX} from './progression.js?v=5.63.0';
+import {BUSINESSES} from './business.js?v=5.64.0';
+import {CRAFTS} from './crafts.js?v=5.64.0';
+import {EQUIPMENT} from './equipment.js?v=5.64.0';
+import {MEDICINES} from './medicine.js?v=5.64.0';
+import {MEALS} from './kitchen.js?v=5.64.0';
+import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.64.0';
+import {resources,skills} from './content.js?v=5.64.0';
+import {progress,MAX} from './progression.js?v=5.64.0';
 function skillTargets(s,key){
  const targets=[],add=(required,name)=>{if(required>0)targets.push({required,name,remaining:required-s.skills[key]});};
  const gates={forage:{hardwood:30},herb:{aromatic_herb:10,mountain_root:30,cliff_bloom:60},mining:{fine_ore:30,cold_ore:60,meteor_ore:100}};

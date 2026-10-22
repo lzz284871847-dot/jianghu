@@ -1,33 +1,33 @@
-import {reconcileForestContracts} from './forest-contracts.js?v=5.63.0';
-import {reconcileFort} from './fort.js?v=5.63.0';
-import {reconcileRaid} from './raid.js?v=5.63.0';
-import {reconcileDungeon,dungeonMovementBlocker} from './dungeon.js?v=5.63.0';
-import {fieldChance,useFieldClue} from './field-skills.js?v=5.63.0';
-import {makeCountyLife,countyLifeValid,expireCountyLife,countyLifeAction,rememberExperience} from './county-life.js?v=5.63.0';
-import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.63.0';
-import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.63.0';
-import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.63.0';
-import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.63.0';
-import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.63.0';
-import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.63.0';
-import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.63.0';
-import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.63.0';
-import {makeTrials,trialsValid} from './trials.js?v=5.63.0';
-import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.63.0';
-import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue} from './world-feedback.js?v=5.63.0';
-import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.63.0';
-import {people,items} from './content.js?v=5.63.0';
-import {gain} from './progression.js?v=5.63.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.63.0';
-import {EQUIPMENT} from './equipment.js?v=5.63.0';
-export const makeAdventures=(day=1)=>({life:makeCountyLife(day),spoils:makeSpoils(),companions:makeCompanions(),threads:makeThreads(),business:makeBusiness(),outings:makeOutings(),law:makeLaw(),factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
+import {reconcileForestContracts} from './forest-contracts.js?v=5.64.0';
+import {reconcileFort} from './fort.js?v=5.64.0';
+import {reconcileRaid} from './raid.js?v=5.64.0';
+import {reconcileDungeon,dungeonMovementBlocker} from './dungeon.js?v=5.64.0';
+import {fieldChance,useFieldClue} from './field-skills.js?v=5.64.0';
+import {makeCountyLife,countyLifeValid,expireCountyLife,countyLifeAction,rememberExperience,countyEventDelay} from './county-life.js?v=5.64.0';
+import {makeSpoils,spoilsValid,spoilAction,disposeEquipment} from './spoils.js?v=5.64.0';
+import {makeCompanions,companionsValid,expireCompanions,companionAction,companionBusy} from './companions.js?v=5.64.0';
+import {GOALS,makeThreads,threadsValid,expireThreads,threadAction} from './threads.js?v=5.64.0';
+import {makeBusiness,businessValid,expireBusiness,businessAction} from './business.js?v=5.64.0';
+import {makeOutings,outingsValid,noticeOutings,outingAction} from './outings.js?v=5.64.0';
+import {makeLaw,lawValid,expireLaw,lawAction} from './law.js?v=5.64.0';
+import {makeFactions,factionsValid,expireFactions,factionAction,factionHostile,factionFriendly,factionDialogue} from './factions.js?v=5.64.0';
+import {makePlayerMentor,playerMentorValid,playerMentorAction,expirePlayerMentor,playerMentorDialogue,mentorParcelChance} from './player-mentor.js?v=5.64.0';
+import {makeTrials,trialsValid} from './trials.js?v=5.64.0';
+import {makeExploration,explorationValid,explorationAction,reconcileExploration} from './exploration.js?v=5.64.0';
+import {makeFeedback,feedbackValid,expireFeedback,feedbackAction,feedbackDialogue,ferryDelay} from './world-feedback.js?v=5.64.0';
+import {QUESTS,SITES,ORGANIZATIONS,CAREERS} from './adventure-data.js?v=5.64.0';
+import {people,items,places} from './content.js?v=5.64.0';
+import {gain} from './progression.js?v=5.64.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.64.0';
+import {EQUIPMENT,rainDelay} from './equipment.js?v=5.64.0';
+export const makeAdventures=(day=1)=>({life:makeCountyLife(day),spoils:makeSpoils(),companions:makeCompanions(),threads:makeThreads(),business:makeBusiness(),outings:makeOutings(),law:makeLaw(),factions:makeFactions(day),mentor:makePlayerMentor(),trials:makeTrials(),exploration:makeExploration(),feedback:makeFeedback(day),quest:null,escortDay:0,done:[],failed:[],sites:{},org:{id:'none',rep:{school:0,caravan:0},aidDay:0},career:{porter:0,smith:0,herb:0},orders:{porter:0,smith:0,herb:0},orderCounts:{porter:0,smith:0,herb:0},home:{untilDay:0,restDay:0},milestones:[],victories:[]});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),num=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
 const unique=(a,keys)=>Array.isArray(a)&&a.length<=keys.length&&new Set(a).size===a.length&&a.every(id=>keys.includes(id));
 export function adventuresValid(s){
- const a=s.adventures;if(!obj(a)||Object.keys(a).length!==23||!countyLifeValid(s)||!spoilsValid(s)||!companionsValid(s)||!threadsValid(s)||!businessValid(s)||!feedbackValid(s)||!factionsValid(s)||!lawValid(s)||!outingsValid(s))return false;
+ const a=s.adventures;if(!obj(a)||Object.keys(a).length!==24||!num(a.escortDay,s.day)||!countyLifeValid(s)||!spoilsValid(s)||!companionsValid(s)||!threadsValid(s)||!businessValid(s)||!feedbackValid(s)||!factionsValid(s)||!lawValid(s)||!outingsValid(s))return false;
  if(!unique(a.done,Object.keys(QUESTS))||!unique(a.failed,Object.keys(QUESTS))||a.done.some(x=>a.failed.includes(x))||!obj(a.sites)||Object.entries(a.sites).some(([id,v])=>!SITES[id]||!['found','empty','retreated'].includes(v)))return false;
  if(!explorationValid(s)||!trialsValid(s)||!playerMentorValid(s))return false;
- if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
+ if(a.quest!==null){const q=a.quest;if(!obj(q)||Object.keys(q).length!==4||!QUESTS[q.id]||a.done.includes(q.id)&&q.id!=='escort'||a.failed.includes(q.id)||!num(q.stage,2)||!num(q.acceptedDay,s.day)||q.acceptedDay<1||q.id==='escort'&&a.escortDay!==q.acceptedDay||q.dueDay!==q.acceptedDay+QUESTS[q.id].days||q.id!=='escort'&&q.stage>1)return false;}
  const o=a.org;if(!obj(o)||Object.keys(o).length!==3||!['none','school','caravan'].includes(o.id)||!obj(o.rep)||Object.keys(o.rep).length!==2||!['school','caravan'].every(id=>num(o.rep[id],100))||!num(o.aidDay,s.day))return false;
  if(!obj(a.orderCounts)||Object.keys(a.orderCounts).length!==3||!Object.keys(CAREERS).every(id=>num(a.orderCounts[id],100000)))return false;
  for(const key of ['career','orders'])if(!obj(a[key])||Object.keys(a[key]).length!==3||!Object.keys(CAREERS).every(id=>num(a[key][id],s.day)))return false;
@@ -40,8 +40,14 @@ export const present=(s,id,minutes=0)=>{const p=s.npcWorld.individuals[id],d=peo
 const paid=(s,id,n)=>{const p=s.npcWorld.individuals[id];return p.coins>=n&&s.coins<=10000000-n;};
 function reward(s,id,n){s.npcWorld.individuals[id].coins-=n;s.coins+=n;}
 function fee(s,id,n){const p=s.npcWorld.individuals[id];if(s.coins<n||p.coins>1000000-n)return false;s.coins-=n;p.coins+=n;return true;}
-function finish(s,success){const a=s.adventures,q=a.quest;(success?a.done:a.failed).push(q.id);if(success&&['doctor','boatman','merchant'].includes(QUESTS[q.id].giver))rememberExperience(s,QUESTS[q.id].giver,'cooperation',true);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
-export function expireAdventures(s){reconcileForestContracts(s);reconcileDungeon(s);reconcileRaid(s);reconcileFort(s);expireCountyLife(s);expireCompanions(s);expireThreads(s);expireBusiness(s);reconcileExploration(s);noticeOutings(s);expireLaw(s);expireFactions(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&s.day>q.dueDay){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
+// The existing escort is a daily livelihood; estimates never reserve cash or advance time.
+export function escortOffer(s){const a=s.adventures,d=QUESTS.escort,p=s.npcWorld.individuals[d.payer],fromDock={...s,place:'dock'},fromFerry={...s,place:'ferry'},walking=places.ferry.minutes+rainDelay(fromDock,true)+ferryDelay(fromDock,'ferry')+countyEventDelay(fromDock,'ferry')+places.liuxi.minutes+rainDelay(fromFerry,true)+ferryDelay(fromFerry,'liuxi')+countyEventDelay(fromFerry,'liuxi');
+ const blocker=a.quest?'先完成或撤回现有委托，再接下一趟。':a.escortDay===s.day?'今日已接过一趟护送，明日可再接；每趟仍须重新走完路线。':!present(s,'boatman',15)?'需贺船工在码头06—18时在岗，留足15分钟接单。':p.life.deathDay?'柳溪接洽人已无法收人，暂缓新护送。':p.coins<d.reward?'魏婶现有'+p.coins+'文，不足本趟14文，暂缓接新护送。':s.coins>10000000-d.reward?'自己的钱袋装不下14文报酬，先处理铜钱。':null;
+ return {walking,blocker,preview:'码头→旧渡口→柳溪集，送至魏婶处；本趟14文由魏婶实际支付，当前余额'+p.coins+'文，无垫资。按当前天气和商路，沿岸步行约'+walking+'分钟；另需接单15分钟、交代15分钟，渡口选稳妥步道45分钟/精力8，或近路15分钟/精力12、30%擦伤8气血。出发后每段仍按当时天气和商路结算。3游戏日截止，每日最多新接一趟；可不接或撤回，未完成不罚钱，已完成的旧经历保留。'};
+}
+export function noteEscortArrival(s){const q=s.adventures.quest;if(!s.dead&&s.place==='liuxi'&&q?.id==='escort'&&q.stage===1){q.stage=2;s.result.push('行脚人已实际抵达柳溪集，本趟护送期限已履行；向魏婶交代领14文，缺款或收工时成果与工钱保留。');if(s.journal[0])s.journal[0].text=s.result.join('；');}}
+function finish(s,success){const a=s.adventures,q=a.quest;if(q.id==='escort'){if(success){if(!a.done.includes('escort'))a.done.push('escort');}else if(!a.done.includes('escort')&&!a.failed.includes('escort'))a.failed.push('escort');}else(success?a.done:a.failed).push(q.id);if(success&&['doctor','boatman','merchant'].includes(QUESTS[q.id].giver))rememberExperience(s,QUESTS[q.id].giver,'cooperation',true);a.quest=null;if(success&&a.org.id!=='none')a.org.rep[a.org.id]=Math.min(100,a.org.rep[a.org.id]+1);}
+export function expireAdventures(s){reconcileForestContracts(s);reconcileDungeon(s);reconcileRaid(s);reconcileFort(s);expireCountyLife(s);expireCompanions(s);expireThreads(s);expireBusiness(s);reconcileExploration(s);noticeOutings(s);expireLaw(s);expireFactions(s);expirePlayerMentor(s);expireFeedback(s);const q=s.adventures?.quest;if(q&&(q.id==='escort'&&s.dead||s.day>q.dueDay&&!(q.id==='escort'&&q.stage===2))){finish(s,false);s.news.unshift(QUESTS[q.id].name+'已逾期，委托结束，没有报酬或罚款。');s.news.length=Math.min(20,s.news.length);}}
 export function recordAdventureVictory(s,c){if(c.ended==='victory'&&!c.practice&&s.adventures&&!s.adventures.victories.includes(c.opponent))s.adventures.victories.push(c.opponent);}
 export const practiceFee=s=>!factionHostile(s,'school')&&(s.adventures?.org.id==='school'&&s.adventures.org.rep.school>=3||factionFriendly(s,'school'))?3:4;
 const trained=(s,tier)=>Object.keys(s.martial.known).filter(id=>MARTIAL_ARTS[id].tier===tier&&s.martial.practice[id]>=120).length;
@@ -68,16 +74,18 @@ export function adventureAction(s,id,{advance,rng}){
  if(kind==='route'||kind==='encounter')return explorationAction(s,String(id),{transact,advance,rng});
  if(kind==='retry'){
   const d=QUESTS[key];if(!d||key==='parcel'||a.quest||!a.failed.includes(key)||a.done.includes(key))return fail(s,'此委托不能重新约定；失物与已完成委托不重复开放。');
+  if(key==='escort'&&escortOffer(s).blocker)return fail(s,escortOffer(s).blocker);
   if(key==='rescue'&&a.milestones.length<2)return fail(s,'救援仍需完成县境成长第二阶段。');
   if(!present(s,d.giver,15))return fail(s,'请在委托人可接洽时回到原领取处。');
-  return transact(s,'重新约定：'+d.name,15,0,()=>{a.failed=a.failed.filter(id=>id!==key);a.quest={id:key,stage:0,acceptedDay:s.day,dueDay:s.day+d.days};s.result.push('不预付报酬；需重新完成实际步骤，本条成功后只结算一次。',d.description);},advance);
+  return transact(s,'重新约定：'+d.name,15,0,()=>{a.failed=a.failed.filter(id=>id!==key);a.quest={id:key,stage:0,acceptedDay:s.day,dueDay:s.day+d.days};if(key==='escort')a.escortDay=s.day;s.result.push('不预付报酬；需重新完成实际步骤，本条成功后只结算一次。',d.description);},advance);
  }
  if(kind==='quest'){
   const d=QUESTS[key];if(!d)return fail(s,'没有这条委托。');
-  if(a.quest||a.done.includes(key)||a.failed.includes(key))return fail(s,'这条委托已处理，或仍有未结束的委托。');
+  if(a.quest||a.done.includes(key)&&key!=='escort'||a.failed.includes(key))return fail(s,'这条委托已处理，或仍有未结束的委托。');
+  if(key==='escort'&&escortOffer(s).blocker)return fail(s,escortOffer(s).blocker);
   if(key==='rescue'&&a.milestones.length<2)return fail(s,'需先完成县境成长第二阶段。');
   if(!present(s,d.giver,15))return fail(s,'请在委托人所在地营业时间内领取；本人须在场且能接洽。');
-  return transact(s,'领取：'+d.name,15,0,()=>{a.quest={id:key,stage:0,acceptedDay:s.day,dueDay:s.day+d.days};s.result.push(d.description,'截止第'+a.quest.dueDay+'日；可自行撤回。');},advance);
+  return transact(s,'领取：'+d.name,15,0,()=>{a.quest={id:key,stage:0,acceptedDay:s.day,dueDay:s.day+d.days};if(key==='escort')a.escortDay=s.day;s.result.push(d.description,'截止第'+a.quest.dueDay+'日；可自行撤回。');},advance);
  }
  if(kind==='withdraw'){if(!a.quest)return fail(s,'没有进行中的委托。');return transact(s,'撤回委托',0,0,()=>{finish(s,false);s.result.push('无报酬，无罚款；本条委托结束。');},advance);}
  if(kind==='questStep'){
@@ -94,7 +102,7 @@ export function adventureAction(s,id,{advance,rng}){
   const q=a.quest;if(!q)return fail(s,'没有进行中的委托。');const d=QUESTS[q.id];
   const destination=q.id==='escort'?'liuxi':d.from;
   if(s.place!==destination||q.id!=='escort'&&!present(s,d.giver,15)||q.id==='escort'&&(s.minute<480||s.minute+15>1080))return fail(s,'请到交付地点，在可接洽时段结算。');
-  if(q.id==='medicine'&&s.bag.herb<2||q.id!=='medicine'&&q.stage!==1)return fail(s,'物资不足或尚未完成所需步骤。');
+  if(q.id==='medicine'&&s.bag.herb<2||q.id!=='medicine'&&!(q.id==='escort'?[1,2].includes(q.stage):q.stage===1))return fail(s,'物资不足或尚未完成所需步骤。');
   if(!paid(s,d.payer||d.giver,d.reward)||q.id==='escort'&&!present(s,d.payer,15))return fail(s,'委托人现有钱不足，未交物或结算；可稍后再来或撤回。');
   return transact(s,'完成：'+d.name,15,0,()=>{if(q.id==='medicine')s.bag.herb-=2;reward(s,d.payer||d.giver,d.reward);s.relations[d.giver]=Math.min(100,s.relations[d.giver]+2);finish(s,true);s.result.push('实际支付报酬'+d.reward+'文，委托完成。');xp(s,q.id==='escort'?'carry':q.id==='parcel'?'forage':'herb',2);},advance);
  }
@@ -143,6 +151,6 @@ export function adventureDialogue(s,id){
  if(id==='doctor'&&a.done.includes('medicine'))return '你交来的两份药材已用于诊所，这趟急单已经结清。';
  if(id==='merchant'&&a.done.includes('parcel'))return '竹林货包已归还，柳掌柜认得这次帮忙的人。';
  if(id==='merchant'&&a.failed.includes('parcel'))return '失物这件事已经结束；没有找到或选择撤回，都不会再逼你去寻。';
- if(id==='boatman'&&a.done.includes('escort'))return '行脚人已经沿岸抵达柳溪，这次护送已结清。';
+ if(id==='boatman'&&a.done.includes('escort'))return '上趟行脚人已抵达柳溪、工钱结清；以后可再接新一趟，每日最多新接一次。';
  return null;
 }
