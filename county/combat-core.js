@@ -1,12 +1,13 @@
-import {assessmentStyle} from './assessments.js?v=5.58.0';
-import {bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.58.0';
-import {trialModifiers} from './trials.js?v=5.58.0';
-import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.58.0';
-import {injuryEffects} from './injury.js?v=5.58.0';
-import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.58.0';
+import {assessmentStyle} from './assessments.js?v=5.59.0';
+import {bodyFleeBlocker,bodyFleeBonus} from './mobility.js?v=5.59.0';
+import {trialModifiers} from './trials.js?v=5.59.0';
+import {MARTIAL_ARTS,DISTANCES,STANCES,INJURIES,OPPONENTS} from './martial-data.js?v=5.59.0';
+import {injuryEffects} from './injury.js?v=5.59.0';
+import {equipmentBonuses,wearEquipment} from './equipment.js?v=5.59.0';
 // Deterministic tactical resolution. Caller supplies a seeded random source for uncertainty.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const ACTIONS=Object.freeze(['strike','heavy','guard','feint','sidestep','advance','retreat','flee']);
+export const basicAttackReach=martial=>MARTIAL_ARTS[martial].category==='枪法'?3:['棍法','剑法','刀法'].includes(MARTIAL_ARTS[martial].category)?2:1;
 export function newCombat(opponent='brawler',martial='qinghe_fist'){
  if(!OPPONENTS[opponent]||!MARTIAL_ARTS[martial])throw Error('未知对手或武学');
  return {opponent,martial,round:0,distance:2,stance:'中正',enemyStance:'中正',enemyHp:100,enemyEnergy:100,playerGuard:0,enemyGuard:0,exits:1,history:[]};
@@ -51,7 +52,7 @@ export function resolve(c,player,action,rng=()=>.5,useBody=false){
   if(rng()<threshold){c.ended='escaped';log.push('成功脱离交手。');}
   else{log.push('撤退受阻，对手仍有机会追击。');c.distance=clamp(c.distance+1,0,4);}
  }else if(['strike','heavy','feint'].includes(action)){
-  const reach=MARTIAL_ARTS[c.martial].category==='枪法'?3:['棍法','剑法','刀法'].includes(MARTIAL_ARTS[c.martial].category)?2:1;
+  const reach=basicAttackReach(c.martial);
   const inReach=c.distance<=reach;
   const base=action==='heavy'?18:action==='strike'?11:0;
   const accuracy=clamp(.78-(action==='heavy'?.18:0)-(c.distance===reach?.08:0)-effects.accuracyPenalty,.08,.95);
