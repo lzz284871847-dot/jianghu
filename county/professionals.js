@@ -1,8 +1,8 @@
-import {growthPreview} from './practice-growth.js?v=5.64.0';
-import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS,makeArtisanOrders,artisanOrdersValid,artisanOrderBlocker,artisanOrderAction,expireArtisanOrders,artisanOrderOptions,artisanOrderTasks} from './artisan-orders.js?v=5.64.0';
-import {ARTISANS,ARTISAN_LESSON_XP} from './professional-data.js?v=5.64.0';
-import {people,skills,items} from './content.js?v=5.64.0';
-import {present} from './adventures.js?v=5.64.0';
+import {growthPreview} from './practice-growth.js?v=5.65.0';
+import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS,makeArtisanOrders,artisanOrdersValid,artisanOrderBlocker,artisanOrderAction,expireArtisanOrders,artisanOrderOptions,artisanOrderTasks} from './artisan-orders.js?v=5.65.0';
+import {ARTISANS,ARTISAN_LESSON_XP} from './professional-data.js?v=5.65.0';
+import {people,skills,items} from './content.js?v=5.65.0';
+import {present} from './adventures.js?v=5.65.0';
 export {ARTISAN_LESSON_XP};
 const empty=()=>({lessonDay:0,guidanceDay:0,guidanceSuccess:false,guidanceUsed:false,status:'none',accepted:0,due:0,stock:0});
 export const makeProfessionals=()=>({records:Object.fromEntries(Object.keys(ARTISANS).map(k=>[k,empty()])),advanced:makeArtisanOrders()});
