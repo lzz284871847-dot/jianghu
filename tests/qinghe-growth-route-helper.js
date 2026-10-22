@@ -46,3 +46,9 @@ export function explorationRoute(){const h=ordinaryRoute(),{s}=h;h.funds(70);h.b
 
 // A beginner's real preparation for the existing raid; no injected growth or supplies.
 export function raidMartialReady(enter=true){const h=ordinaryRoute(),{s}=h;h.funds(70);h.contact('master',60);h.step('learn:fist',()=>martialAction(s,'learn','qinghe_fist'));h.walk('village');h.hours(60);h.step('learn:staff',()=>martialAction(s,'learn','staff'));h.buy('wood',2);h.buy('leather',2);h.buy('cloth');h.funds(15);h.walk('workshop');h.rest();h.hours(60);for(const id of ['wood_staff','leather_vest']){h.step('craft:'+id,()=>equipmentAction(s,'craft',id));h.step('equip:'+id,()=>equipmentAction(s,'equip',id));}h.step('equip:staff',()=>martialAction(s,'equip','staff'));h.walk('market');h.hours();h.action('raid:accept');h.walk('oldroad');h.rest(100);if(enter)h.action('raid:enter');return h;}
+
+// Real tailor lessons and market supplies, then the existing noncombat raid approach.
+export function raidTailorReady(){const h=ordinaryRoute(),{s}=h;
+ while(s.skills.tailor<24){h.funds(6);h.buy('cloth');h.rest();h.contact('tailor',45);if(s.professionals.records.tailor.lessonDay===s.day){h.nextDay();continue;}h.action('professional:tailor:lesson');if(s.skills.tailor<24)h.nextDay();}
+ h.buy('fine_cloth');h.buy('cord');h.funds(8);h.walk('market');h.hours();h.action('raid:accept');h.walk('oldroad');h.rest(100);h.action('raid:enter');h.action('raid:observe');h.action('raid:bypass');h.action('raid:talk');return h;
+}

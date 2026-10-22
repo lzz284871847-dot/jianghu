@@ -1,20 +1,20 @@
-import {VIGNETTES,vignetteContact} from './vignettes.js?v=5.60.0';
-import {jobSceneHint} from './livelihood.js?v=5.60.0';
-import {bondInitiative} from './county-life.js?v=5.60.0';
-import {EVENTS,npcInitiative} from './world-feedback.js?v=5.60.0';
-import {SCENE_ART} from './scene-art.js?v=5.60.0';
-import {places,people,resources} from './content.js?v=5.60.0';
-import {npcPlace} from './world.js?v=5.60.0';
-import {npcAt} from './npc-simulation.js?v=5.60.0';
-import {healthSummary} from './npc-health.js?v=5.60.0';
-import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.60.0';
-import {CULTURE} from './culture.js?v=5.60.0';
-import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.60.0';
-import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.60.0';
-import {OUTINGS} from './outings.js?v=5.60.0';
-import {BUSINESSES} from './business.js?v=5.60.0';
-import {THREADS} from './threads.js?v=5.60.0';
-import {COOPERATIONS,companionFeedback,companionActorHint} from './companions.js?v=5.60.0';
+import {VIGNETTES,vignetteContact} from './vignettes.js?v=5.61.0';
+import {jobSceneHint} from './livelihood.js?v=5.61.0';
+import {bondInitiative} from './county-life.js?v=5.61.0';
+import {EVENTS,npcInitiative} from './world-feedback.js?v=5.61.0';
+import {SCENE_ART} from './scene-art.js?v=5.61.0';
+import {places,people,resources} from './content.js?v=5.61.0';
+import {npcPlace} from './world.js?v=5.61.0';
+import {npcAt} from './npc-simulation.js?v=5.61.0';
+import {healthSummary} from './npc-health.js?v=5.61.0';
+import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.61.0';
+import {CULTURE} from './culture.js?v=5.61.0';
+import {QUESTS,CAREERS,ORGANIZATIONS} from './adventure-data.js?v=5.61.0';
+import {FOREST_CONTRACTS} from './forest-contracts.js?v=5.61.0';
+import {OUTINGS} from './outings.js?v=5.61.0';
+import {BUSINESSES} from './business.js?v=5.61.0';
+import {THREADS} from './threads.js?v=5.61.0';
+import {COOPERATIONS,companionFeedback,companionActorHint} from './companions.js?v=5.61.0';
 
 // Read-only local scene: the coordinates are a diagram, not new movement or NPC simulation.
 const f=(id,name,panel,group='')=>({id,name,panel,group});
