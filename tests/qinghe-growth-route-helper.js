@@ -52,3 +52,9 @@ export function raidTailorReady(){const h=ordinaryRoute(),{s}=h;
  while(s.skills.tailor<24){h.funds(6);h.buy('cloth');h.rest();h.contact('tailor',45);if(s.professionals.records.tailor.lessonDay===s.day){h.nextDay();continue;}h.action('professional:tailor:lesson');if(s.skills.tailor<24)h.nextDay();}
  h.buy('fine_cloth');h.buy('cord');h.funds(8);h.walk('market');h.hours();h.action('raid:accept');h.walk('oldroad');h.rest(100);h.action('raid:enter');h.action('raid:observe');h.action('raid:bypass');h.action('raid:talk');return h;
 }
+
+// Ordinary paid lessons and supplies, walking to the existing ferry rather than adding a map.
+export function wreckReady(){const h=ordinaryRoute(),{s}=h;
+ for(const [teacher,skill,material] of [['carpenter','woodwork','wood'],['tailor','tailor','cloth']])while(s.skills[skill]<12){h.funds(6);h.buy(material);h.rest();h.contact(teacher,45);if(s.professionals.records[teacher].lessonDay===s.day){h.nextDay();continue;}h.action('professional:'+teacher+':lesson');if(s.skills[skill]<12)h.nextDay();}
+ h.buy('wood');h.buy('cord');h.buy('cloth',2);h.funds(3);h.walk('ferry');h.rest(80);return h;
+}

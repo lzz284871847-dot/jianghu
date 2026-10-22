@@ -12,6 +12,7 @@ export function facilitySources(facility,roots){
  if(facility.panel==='resources')return [...roots.resources.children];
  if(facility.panel==='bag')return [...roots.market.children].filter(n=>!n.classList.contains('material-sources'));
  if(facility.panel==='equipment')return [...roots.equipment.children];
+ if(facility.id==='wreck')return [roots.activities.querySelector('#wreck-scene'),...roots.activities.querySelectorAll('[data-group="wreck"][data-action-id]')].filter(Boolean);
  if(facility.id==='vignettes')return [roots.activities.querySelector('#vignette-scene'),...roots.activities.querySelectorAll('[data-group="vignettes"][data-action-id]')].filter(n=>n&&!n.dataset.npcContact);
  if(facility.id.startsWith('companion-')){const prefix='companion:'+facility.id.slice(10)+':';return [...roots.activities.querySelectorAll('[data-action-id]')].filter(n=>n.dataset.group==='companions'&&n.dataset.actionId.startsWith(prefix)&&!n.dataset.npcContact);}
  const groups=GROUPS[facility.id]??[facility.group];

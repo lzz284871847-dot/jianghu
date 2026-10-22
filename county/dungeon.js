@@ -1,14 +1,14 @@
-import {places} from './content.js?v=5.61.0';
-import {gain} from './progression.js?v=5.61.0';
-import {addInjury} from './injury.js?v=5.61.0';
-import {travelBusy} from './npc-journeys.js?v=5.61.0';
+import {places} from './content.js?v=5.62.0';
+import {gain} from './progression.js?v=5.62.0';
+import {addInjury} from './injury.js?v=5.62.0';
+import {travelBusy} from './npc-journeys.js?v=5.62.0';
 
 // One finite expedition, sharing the existing mine rescue and its actual payer.
 export const makeDungeon=()=>({status:'new',stage:0,day:0,surveyed:false,inspected:false,route:null,loot:'new',rescue:'new',guide:'none',until:0,returnAt:0});
 export const expeditionClock=s=>s.day*1440+s.minute;
 const clock=expeditionClock;
 const active=s=>s.dungeon?.status==='active';
-export const dungeonMovementBlocker=s=>s.fort?.status==='active'?'正在荒山旧堡内；先处理机关或交手，再撤回旧道。':s.raid?.status==='active'?'正在山中匪寨内；先处理副本或交手，再撤回旧道。':active(s)?'正在废弃矿道内；先从副本行动撤回洞口，再走县境道路。':null;
+export const dungeonMovementBlocker=s=>s.wreck?.status==='active'?'正在河岸废船内；先沿来路返回河岸，再走县境道路。':s.fort?.status==='active'?'正在荒山旧堡内；先处理机关或交手，再撤回旧道。':s.raid?.status==='active'?'正在山中匪寨内；先处理副本或交手，再撤回旧道。':active(s)?'正在废弃矿道内；先从副本行动撤回洞口，再走县境道路。':null;
 export const dungeonGuideLocation=(s,id)=>{if(id!=='hunter')return undefined;const trips=[s.dungeon,s.raid].filter(Boolean);if(trips.some(d=>d.guide==='joined'))return s.place;return trips.some(d=>d.returnAt>clock(s))?null:undefined;};
 export function guideReturnMinutes(s){const q=[[s.place,0]],seen=new Set();while(q.length){const [id,n]=q.shift();if(id==='bamboo')return n;if(seen.has(id))continue;seen.add(id);for(const to of places[id].routes)q.push([to,n+places[to].minutes]);}return 120;}
 function dismiss(s,text,after=0){const d=s.dungeon;if(d.guide!=='joined')return;d.guide='left';d.until=0;d.returnAt=clock(s)+after+guideReturnMinutes(s);s.result.push(text+'；蒋猎户按县境道路返程，工钱不退，材料与伤势保留。');}
