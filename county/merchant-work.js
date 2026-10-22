@@ -1,5 +1,5 @@
-import {MARKET_LIMIT} from './commerce.js?v=5.58.0';
-import {MAX} from './progression.js?v=5.58.0';
+import {MARKET_LIMIT} from './commerce.js?v=5.59.0';
+import {MAX} from './progression.js?v=5.59.0';
 // Alternative execution of the existing promise. No second contract or saved quote.
 export const MERCHANT_METHODS={
  work:{name:'照常整货',minutes:60,energy:10,chance:.7,trustBonus:.15},
