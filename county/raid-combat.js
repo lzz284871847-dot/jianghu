@@ -1,8 +1,8 @@
-import {MARTIAL_ARTS,OPPONENTS,INJURIES} from './martial-data.js?v=5.65.0';
-import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.65.0';
-import {usableMoves} from './martial-moves.js?v=5.65.0';
-import {basicAttackReach,newCombat} from './combat-core.js?v=5.65.0';
-import {opponentBrief} from './trials.js?v=5.65.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES} from './martial-data.js?v=5.66.0';
+import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.66.0';
+import {usableMoves} from './martial-moves.js?v=5.66.0';
+import {basicAttackReach,newCombat} from './combat-core.js?v=5.66.0';
+import {opponentBrief} from './trials.js?v=5.66.0';
 
 // A read-only snapshot of existing combat rules; no score, predicted win rate or new gate.
 export function raidCombatPreview(s,foe){
