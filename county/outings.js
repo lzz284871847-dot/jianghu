@@ -1,9 +1,9 @@
-import {eventOpen,ferryDelay,ferryRepairDone,floodRouteBlocked,floodCleanupDay} from './world-feedback.js?v=5.57.0';
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.57.0';
+import {eventOpen,ferryDelay,ferryRepairDone,floodRouteBlocked,floodCleanupDay} from './world-feedback.js?v=5.58.0';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.58.0';
 // Six finite regional adventures using existing skills, tools, actors and combat.
-import {gain} from './progression.js?v=5.57.0';
-import {addInjury} from './injury.js?v=5.57.0';
-import {factionFriendly} from './factions.js?v=5.57.0';
+import {gain} from './progression.js?v=5.58.0';
+import {addInjury} from './injury.js?v=5.58.0';
+import {factionFriendly} from './factions.js?v=5.58.0';
 export const OUTINGS={
  boat:{name:'浅滩搁船',place:'ferry',holder:'boatman',tier:'初期',reward:8,skill:'carry',routes:['push','wood','leave'],outcomes:['new','claim','done','failed','left','died'],info:'船底卡在浅滩；用木料垫底更稳，雨天推船更难。完成后去码头找贺船工，报酬8文来自其现有余额。'},
  flood:{name:'雨后渡口受阻',place:'dock',holder:'boatman',tier:'初期',reward:0,skill:'carry',routes:['repair','bypass','leave'],outcomes:['new','done','failed','left','settled'],info:'渡口受阻期间进出旧渡口多走15分钟；修补需自己的木料2份。若不处理，乡邻三日后自行清理。没有钱物奖励。'},
