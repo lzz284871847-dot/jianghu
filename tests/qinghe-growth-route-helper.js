@@ -58,3 +58,8 @@ export function wreckReady(){const h=ordinaryRoute(),{s}=h;
  for(const [teacher,skill,material] of [['carpenter','woodwork','wood'],['tailor','tailor','cloth']])while(s.skills[skill]<12){h.funds(6);h.buy(material);h.rest();h.contact(teacher,45);if(s.professionals.records[teacher].lessonDay===s.day){h.nextDay();continue;}h.action('professional:'+teacher+':lesson');if(s.skills[skill]<12)h.nextDay();}
  h.buy('wood');h.buy('cord');h.buy('cloth',2);h.funds(3);h.walk('ferry');h.rest(80);return h;
 }
+
+// Real lessons, mining and smelting prepare a finite fort visit and later repair.
+export function fortStaffReady(){const {h}=woodRoute(12,false),{s}=h;h.funds(70);h.contact('master',60);h.step('learn:fist',()=>martialAction(s,'learn','qinghe_fist'));h.walk('village');h.hours(60);h.step('learn:staff',()=>martialAction(s,'learn','staff'));h.step('select:staff',()=>martialAction(s,'equip','staff'));h.buy('wood',5);h.buy('cord',2);h.buy('pick');h.walk('mine');
+ for(let tries=0;s.bag.ore<2;tries++){assert.ok(tries<12);h.rest();if(!s.nodes['mine:ore'].left){h.nextDay();h.walk('mine');}h.plain('ore');h.step('confirm:ore',()=>choose(s,'gather'));}
+ h.walk('workshop');h.rest();h.hours(120);h.plain('smelt');if(Object.keys(s.injuries).length){h.funds(8);h.contact('doctor',60);h.plain('doctor');}h.walk('oldroad');h.rest(100);h.action('fort:enter');h.action('fort:tools');if(s.fort.stage===2){h.action('fort:disarm');if(s.fort.stage===2)h.action('fort:force');}return h;}

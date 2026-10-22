@@ -5,8 +5,8 @@ import {fresh,restore,equipmentAction} from './engine.js';
 import {EQUIPMENT,equipmentBonuses,wearEquipment,equipmentWorkCost} from './equipment.js';
 import {newCombat,resolve} from './combat-core.js';
 
-test('23 pieces span five tiers and two slots',()=>{
- assert.equal(Object.keys(EQUIPMENT).length,23);
+test('24 pieces span five tiers and two slots',()=>{
+ assert.equal(Object.keys(EQUIPMENT).length,24);
  assert.deepEqual([...new Set(Object.values(EQUIPMENT).map(x=>x.tier))].sort(),[1,2,3,4,5]);
  assert.deepEqual([...new Set(Object.values(EQUIPMENT).map(x=>x.slot))].sort(),['armor','weapon']);
 });
