@@ -28,8 +28,8 @@ export function useMove(s,c,moveId,rng=()=>.5){
  const log=[];s.energy-=move.energy;
  if(move.restore){s.energy=Math.min(100,s.energy+move.restore);c.playerGuard=move.guard;log.push(move.name+'：调息并稳固防守。');}
  else if(move.distanceShift){c.distance=clamp(c.distance+move.distanceShift,0,4);c.stance='游走';c.playerGuard=move.guard;log.push(move.name+'：拉开距离，准备应变。');}
- else if(c.distance>move.reach){log.push(move.name+'：距离不够，招式落空。当前距离'+c.distance+'，本招可及0—'+move.reach+'；精力'+move.energy+'已消耗。');}
- else {const p=moveCombatPlan(s,c,move);if(rng()<p.chance){const dmg=p.damage;wearEquipment(s,'weapon');c.enemyHp=Math.max(c.assessment?40:0,c.enemyHp-dmg);log.push(move.name+'命中，伤害'+dmg+'。');if(p.guard||p.defense)log.push('本招伤害：基础'+move.damage+'＋有效兵器'+p.attack+'－对手防守'+p.guard+'－护身'+p.defense+'，最低1。'+(c.assessment?'本次考较的实际扣血仍受收手线限制。':'' ));if(c.enemyHp<=(c.assessment?40:0))c.ended='victory';}else log.push(move.name+'未命中。当前命中机会'+Math.round(p.chance*100)+'%'+(p.penalty?'，伤势影响命中':'')+(p.guard?'，对手防守降低命中':'')+'；精力已消耗。');c.playerGuard=move.guard;}
+ else if(c.distance>move.reach){log.push(move.name+'：距离不够，招式落空。');log.push('当前距离'+c.distance+'，本招可及0—'+move.reach+'；精力'+move.energy+'已消耗。');}
+ else {const p=moveCombatPlan(s,c,move);if(rng()<p.chance){const dmg=p.damage;wearEquipment(s,'weapon');c.enemyHp=Math.max(c.assessment?40:0,c.enemyHp-dmg);log.push(move.name+'命中，伤害'+dmg+'。');if(p.guard||p.defense)log.push('本招伤害：基础'+move.damage+'＋有效兵器'+p.attack+'－对手防守'+p.guard+'－护身'+p.defense+'，最低1。'+(c.assessment?'本次考较的实际扣血仍受收手线限制。':'' ));if(c.enemyHp<=(c.assessment?40:0))c.ended='victory';}else{log.push(move.name+'未命中。');log.push('当前命中机会'+Math.round(p.chance*100)+'%'+(p.penalty?'，伤势影响命中':'')+(p.guard?'，对手防守降低命中':'')+'；精力已消耗。');}c.playerGuard=move.guard;}
  return {move:move.id,log,ended:c.ended||null,enemyHp:c.enemyHp,energy:s.energy,distance:c.distance};
 }
 export function moveCatalogValid(){return Object.entries(MARTIAL_ARTS).every(([id,art])=>art.moves.every(m=>{const d=moveStats(id,m.id);return d.energy>0&&d.accuracy>0&&d.reach>=0&&d.damage>=0;}));}

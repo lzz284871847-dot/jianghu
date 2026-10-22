@@ -61,7 +61,7 @@ export function resolve(c,player,action,rng=()=>.5,useBody=false){
   const plan=basicAttackPlan(c,player,action,enemy),{inReach,accuracy}=plan;
   if(action==='feint'){c.enemyGuard=0;log.push('虚招试探，削弱对方防守。');}
   else if(inReach&&rng()<accuracy){const dmg=plan.damage;wearEquipment(player,'weapon');c.enemyHp=Math.max(c.assessment?40:0,c.enemyHp-dmg);log.push('命中对手，造成'+dmg+'点伤害。');if(plan.guard||plan.defense)log.push('本次伤害：基础'+plan.base+'＋有效兵器'+plan.attack+'－对手防守'+plan.guard+'－护身'+plan.defense+'，最低1。'+(c.assessment?'本次考较的实际扣血仍受收手线限制。':'' ));}
-  else log.push(inReach?'攻击未能命中。当前命中机会'+Math.round(accuracy*100)+'%'+(plan.injuryPenalty?'，伤势影响命中':'')+'；未命中不等于距离不足。':'兵器距离不足，攻击落空。当前距离'+c.distance+'，本次可及0—'+plan.reach+'；精力已消耗，可选择逼近或可及更远的已学招式。');
+  else{log.push(inReach?'攻击未能命中。':'兵器距离不足，攻击落空。');log.push(inReach?'当前命中机会'+Math.round(accuracy*100)+'%'+(plan.injuryPenalty?'，伤势影响命中':'')+'；精力已消耗。':'当前距离'+c.distance+'，本次可及0—'+plan.reach+'；精力已消耗，可选择逼近或可及更远的已学招式。');}
  }
  if(c.enemyHp<=(c.assessment?40:0)){c.ended='victory';log.push('对手失去继续战斗的能力。');}
  if(!c.ended)log.push(...enemyResponse(c,player,enemy,rng,action));
