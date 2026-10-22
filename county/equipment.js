@@ -1,6 +1,7 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.62.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.63.0';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
+ iron_bound_staff:{name:'包铁短棍',slot:'weapon',kind:'棍法',tier:2,attack:6,defense:0,durability:50,materials:{iron:3,wood:2},fee:10,foundOnly:true,use:'旧堡兵械库固定留存，需实际带出；普通品质、初始耐久30/50。棍法适配时攻击+6；不能打造，作坊按原规则付费耗料修理。'},
  forest_staff:{name:'探林杖',slot:'weapon',kind:'棍法',tier:2,attack:2,defense:0,durability:40,materials:{hardwood:2,wood:2,cord:2},fee:8,recipeOrder:'carpenter_frame',use:'山林辨路与旧址搜寻成功率+8个百分点，每次尝试耐久-1；占用兵器栏。'},
  rain_cloak:{name:'油布行衣',slot:'armor',kind:'',tier:2,attack:0,defense:2,durability:40,materials:{fine_cloth:2,cloth:2,cord:2},fee:10,recipeOrder:'tailor_outfit',use:'雨天户外赶路延误由15减至5分钟，每段耐久-1；占用护具栏。'},
  hunting_vest:{name:'猎行皮衣',slot:'armor',kind:'',tier:2,attack:0,defense:3,durability:45,materials:{leather:3,cloth:1,cord:2},fee:9,recipeOrder:'tanner_pack',use:'狩猎成功率+8个百分点，每次尝试耐久-1；占用护具栏，仍需猎具。'},
@@ -40,6 +41,7 @@ export function equipmentValid(s){const e=s.equipment;if(!e||typeof e!=='object'
 }
 export function equipmentBonuses(s,martialId=s.martial?.equipped){const e=ensureEquipment(s);let attack=0,defense=0;const martialKind=martialId&&MARTIAL_ARTS[martialId]?.category;for(const id of Object.values(e.equipped)){const item=EQUIPMENT[id];if(item&&e.owned[id]>0){if(item.slot==='weapon'&&item.kind===martialKind)attack+=item.attack+(e.quality[id]===2?1:0);if(item.slot==='armor')defense+=item.defense+(e.quality[id]===2?1:0);}}return {attack,defense};}
 export function equipmentAction(s,kind,id,rng=()=>.5){const e=ensureEquipment(s),item=EQUIPMENT[id];if(!item){s.result=['没有这种装备。'];return false;}
+ if(item.foundOnly&&kind==='craft'){s.result=['包铁短棍仅能从旧堡兵械库实际带出，市场与铁匠不能复制打造。'];return false;}
  if(item.recipeOrder&&['craft','repair'].includes(kind)){s.result=['独有成品需使用亲手制作或自行修理入口，铁匠打造不能代替配方与手艺。'];return false;}
  if(kind==='equip'){if(!Object.hasOwn(e.owned,id)||e.owned[id]===0){s.result=['装备不存在或已损坏。'];return false;}e.equipped[item.slot]=id;s.result=['已装备'+item.name];if(item.slot==='weapon'&&item.kind!==MARTIAL_ARTS[s.martial?.equipped]?.category)s.result.push('当前武学与兵器不适配，无法获得武器攻击加成。');return true;}
  if(kind==='unequip'){if(e.equipped[item.slot]!==id){s.result=['目前没有穿戴此物。'];return false;}e.equipped[item.slot]=null;s.result=['已卸下'+item.name];return true;}
