@@ -1,7 +1,7 @@
-import {rememberExperience} from './county-life.js?v=5.60.0';
-import {cooperationRefusal} from './npc-social.js?v=5.60.0';
-import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.60.0';
-import {gain} from './progression.js?v=5.60.0';
+import {rememberExperience} from './county-life.js?v=5.61.0';
+import {cooperationRefusal} from './npc-social.js?v=5.61.0';
+import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.61.0';
+import {gain} from './progression.js?v=5.61.0';
 // Finite follow-up opportunities; eligibility is earned from existing playable outcomes.
 export const GOALS={settle:{name:'谋生安顿',hint:'先做短工或一项委托，攒够12文可选择客栈短租；无需习武。'},artisan:{name:'手艺立足',hint:'通过采集、炼铁、种植或交易积累手艺，再选择一项经营；别把全部钱投入。'},martial:{name:'习武闯荡',hint:'武馆学一门入门武学，真实交手积累经验；陪练可收手，野外实战可能永久死亡。'},explore:{name:'县境游历',hint:'先准备口粮药材，搜寻两处旧址并处理一次县境冒险；可绕行或非战斗解决。'}};
 export const THREADS={
