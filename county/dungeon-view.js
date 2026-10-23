@@ -1,4 +1,4 @@
-import {dungeonOptions,dungeonPlan} from './dungeon.js?v=5.68.0';
+import {dungeonOptions,dungeonPlan} from './dungeon.js?v=5.69.0';
 
 // Read-only presentation of the finite expedition. Actions and validation stay in dungeon.js.
 const names=['','入口岔路','有限矿堆','塌落支巷','返回洞口'];
@@ -18,12 +18,12 @@ export function dungeonScene(s){
   groups,escape:get('withdraw'),dismiss:get('dismiss')};
 }
 export function dungeonChoice(s,option){const key=option.id.split(':')[1],p=dungeonPlan(s,key);return {intent:intent[key]||'',cost:p?p.minutes+'分钟 · 精力'+p.energy+' · 成功率'+Math.round(p.chance*100)+'%'+(Object.entries(p.input).map(([k,n])=>' · '+({wood:'木料',cord:'绳线'}[k])+'×'+n).join(''))+' · '+(p.risk?'受伤'+Math.round(p.risk*100)+'%，损'+p.damage+'气血并拉伤':'无直接受伤风险'):option.preview};}
-export function renderDungeonScene(s,{el,button,run}){
+export function renderDungeonScene(s,{el,button,run,visible=()=>true}){
  const data=dungeonScene(s);if(!data)return null;const root=el('section','','mine-scene');root.setAttribute('aria-label','废弃矿道当前现场');
  root.append(el('p','废弃矿道 · 第'+data.stage+'/4段','eyebrow'),el('h3',data.title),el('p',data.description,'mine-description'),el('p',data.pack,'mine-pack'));
  for(const text of data.traces)root.append(el('p',text,'mine-trace'));root.append(el('p',data.companion,'muted'));
  const optionRow=(a,escape=false)=>{const c=dungeonChoice(s,a),row=el('article','','activity-option'+(escape?' mine-retreat':''));row.dataset.actionId=a.id;row.dataset.group='dungeon';row.append(el('p',c.intent,'action-preview'),el('p',c.cost,'mine-cost'));if(a.blocker)row.append(el('p',a.blocker,'muted'));row.append(button(a.label,()=>run(a.id),!!a.blocker||s.dead||!!s.pending||!!s.combat));const details=el('details','');details.append(el('summary','完整投入与风险'),el('p',a.preview,'muted'));row.append(details);return row;};
  if(data.escape)root.append(optionRow(data.escape,true));
- for(const group of data.groups){const area=el('section','','mine-object');area.append(el('h4',group.title),el('p',group.text,'mine-object-text'));for(const a of group.options)area.append(optionRow(a));root.append(area);}
+ for(const group of data.groups){const options=group.options.filter(a=>visible(a.id));if(!options.length)continue;const area=el('section','','mine-object');area.append(el('h4',group.title),el('p',group.text,'mine-object-text'));for(const a of options)area.append(optionRow(a));root.append(area);}
  if(data.dismiss)root.append(optionRow(data.dismiss));return root;
 }

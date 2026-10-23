@@ -1,7 +1,7 @@
-import {travelBusy} from './npc-journeys.js?v=5.68.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=5.68.0';
-import {alive} from './npc-mortality.js?v=5.68.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.68.0';
+import {travelBusy} from './npc-journeys.js?v=5.69.0';
+import {namedResidents,saveResident} from './npc-residents.js?v=5.69.0';
+import {alive} from './npc-mortality.js?v=5.69.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.69.0';
 export const makeSchool=(day=1)=>({holder:'master',appointedDay:0,lastDay:day});
 const qualified=p=>p.study.mentor.joinedDay>0&&p.study.practice>=120&&p.study.teacherTrust>=12&&Object.entries(p.study.otherArts).filter(([id,a])=>MARTIAL_ARTS[id].tier===2&&a.practice>=120).length>=2;
 export const schoolTeacher=s=>namedResidents(s).find(p=>p.id===s.npcWorld.school.holder);

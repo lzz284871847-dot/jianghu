@@ -1,7 +1,7 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.68.0';
-import {people} from './content.js?v=5.68.0';
-import {travelBusy} from './npc-journeys.js?v=5.68.0';
-import {companionBusy} from './companions.js?v=5.68.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.69.0';
+import {people} from './content.js?v=5.69.0';
+import {travelBusy} from './npc-journeys.js?v=5.69.0';
+import {companionBusy} from './companions.js?v=5.69.0';
 // Two named, bounded exercises. Instructor arts are the existing teaching roles,
 // never a new NPC lineage or an inferred martial history for ordinary residents.
 export const ASSESSMENTS={
@@ -11,11 +11,11 @@ export const ASSESSMENTS={
 const empty=()=>({attempts:0,wins:0,losses:0,withdrawals:0,lastDay:0,lessonArt:''});
 export const makeAssessments=()=>({active:null,records:Object.fromEntries(Object.keys(ASSESSMENTS).map(id=>[id,empty()]))});
 const exact=(v,keys)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));
-const validArt=(id,art)=>!!MARTIAL_ARTS[art]&&(id==='farmer'?['wood_knife','staff'].includes(art):MARTIAL_ARTS[art].source==='school'&&!['身法','内功'].includes(MARTIAL_ARTS[art].category));
+export const assessmentArtValid=(id,art)=>!!MARTIAL_ARTS[art]&&(id==='farmer'?['wood_knife','staff'].includes(art):MARTIAL_ARTS[art].source==='school'&&!['身法','内功'].includes(MARTIAL_ARTS[art].category));
 export function assessmentsValid(s){const a=s.assessments;if(!exact(a,['active','records'])||!exact(a.records,Object.keys(ASSESSMENTS))||a.active!==null&&!ASSESSMENTS[a.active])return false;
- for(const [id,d] of Object.entries(ASSESSMENTS)){const r=a.records[id];if(!exact(r,Object.keys(empty()))||!['attempts','losses','withdrawals'].every(k=>Number.isSafeInteger(r[k])&&r[k]>=0&&r[k]<=100000)||![0,1].includes(r.wins)||!Number.isSafeInteger(r.lastDay)||r.lastDay<0||r.lastDay>s.day||!!r.attempts!==!!r.lastDay||r.attempts!==r.wins+r.losses+r.withdrawals+(a.active===id?1:0)||typeof r.lessonArt!=='string'||r.lessonArt&&(!r.wins||!validArt(id,r.lessonArt)||s.martial.known[r.lessonArt]!==true))return false;}
+ for(const [id,d] of Object.entries(ASSESSMENTS)){const r=a.records[id];if(!exact(r,Object.keys(empty()))||!['attempts','losses','withdrawals'].every(k=>Number.isSafeInteger(r[k])&&r[k]>=0&&r[k]<=100000)||![0,1].includes(r.wins)||!Number.isSafeInteger(r.lastDay)||r.lastDay<0||r.lastDay>s.day||!!r.attempts!==!!r.lastDay||r.attempts!==r.wins+r.losses+r.withdrawals+(a.active===id?1:0)||typeof r.lessonArt!=='string'||r.lessonArt&&(!r.wins||!assessmentArtValid(id,r.lessonArt)||s.martial.known[r.lessonArt]!==true))return false;}
  const c=s.combat;if(a.active===null)return !Object.hasOwn(c||{},'assessment');
- const id=a.active,d=ASSESSMENTS[id],r=a.records[id];return !s.dead&&!!c&&!c.ended&&c.assessment===id&&!c.practice&&c.opponent===d.foe&&s.place===d.place&&validArt(id,c.martial)&&s.martial.known[c.martial]===true&&s.martial.equipped===c.martial&&r.lastDay===s.day&&!r.wins&&s.hp>40&&s.energy>=3&&c.enemyHp>40&&c.enemyEnergy>=4&&c.enemyEnergy===s.npcWorld.individuals[id].energy&&c.round<20;
+ const id=a.active,d=ASSESSMENTS[id],r=a.records[id];return !s.dead&&!!c&&!c.ended&&c.assessment===id&&!c.practice&&c.opponent===d.foe&&s.place===d.place&&assessmentArtValid(id,c.martial)&&s.martial.known[c.martial]===true&&s.martial.equipped===c.martial&&r.lastDay===s.day&&!r.wins&&s.hp>40&&s.energy>=3&&c.enemyHp>40&&c.enemyEnergy>=4&&c.enemyEnergy===s.npcWorld.individuals[id].energy&&c.round<20;
 }
 export function assessmentBlocker(s,id,action){const d=ASSESSMENTS[id],r=s.assessments?.records[id];if(!d||!r||!['start','lesson'].includes(action))return '没有这项人物考较行动。';
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit||s.assessments.active)return '先处理眼前选择或交手；永久死亡后不能考较或授艺。';
@@ -29,7 +29,7 @@ export function assessmentBlocker(s,id,action){const d=ASSESSMENTS[id],r=s.asses
  if(s.place!==d.place||s.minute<hours.open||s.minute+minutes>hours.close||travelBusy(s,id)||companionBusy(s,id)||p.life.deathDay||p.retirement.active||p.life.sickDays||p.life.restDay===s.day||p.injuryDays||p.energy<(action==='start'?40:16))return '需'+hours.name+'在'+(id==='farmer'?'河湾田地':'县城武馆')+'在岗且有精力；休养、外出或退养时可拒绝，留足准备及交手/授艺时间。';
  if(s.relations[id]<d.trust||s.socialActions?.[id]?.quarrel>=s.day-2)return '需关系'+d.trust+'，近期争执先赔礼；不会强迫此人出手。';
  if(s.hp<60||s.energy<(action==='start'?30:16)||Object.keys(s.injuries).length)return '需气血60、无伤势和精力'+(action==='start'?30:16)+'；原伤势与耗费不自动恢复。';
- const m=s.martial,art=m.equipped;if(!m.known[art]||!validArt(id,art)||(m.practice[art]||0)<d.required||(m.experience[art]||0)<6)return '需选用'+(id==='farmer'?'已学柴刀法或农家棍法':'已学武馆攻防武艺')+'，熟练'+d.required+'、实际出招经验6；内功身法不能单独替代攻防考较。';
+ const m=s.martial,art=m.equipped;if(!m.known[art]||!assessmentArtValid(id,art)||(m.practice[art]||0)<d.required||(m.experience[art]||0)<6)return '需选用'+(id==='farmer'?'已学柴刀法或农家棍法':'已学武馆攻防武艺')+'，熟练'+d.required+'、实际出招经验6；内功身法不能单独替代攻防考较。';
  if(action==='lesson'&&m.practice[art]>=2400&&m.insight[art]>=2400)return '所选武艺的专题练习积累已满，不收费也不占用机会。';
  if(s.coins<fee||p.coins>1000000-fee)return '需自己的'+fee+'文实际付给'+hours.name+'，钱袋不足或对方无法收款时不开始。';return null;
 }
