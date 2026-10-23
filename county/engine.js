@@ -128,9 +128,9 @@ export function martialAction(s,kind,id,rng=()=>random(s)){
   try{if(kind==='lightFlee'&&s.combat.assessment)return fail(s,'约定考较可直接认输，无需运身撤退。');const named=!!s.combat.assessment;const outcome=kind==='move'?martialMoveTurn(s,id,rng):martialTurn(s,kind==='lightFlee'?'flee':id,rng,kind==='lightFlee');if(named)advance(s,1);return !!outcome;}catch(e){return fail(s,e.message);}
  }
  if(!available(s))return false;
- if(kind==='learn'){if(s.minute<480||s.minute+60>1080)return fail(s,'授艺08:00–18:00，需留足1小时。');const village=MARTIAL_ARTS[id]?.source==='village',teacher=village?villageTeacher(s):schoolTeacher(s);if(!teacher||teacher.life.deathDay)return fail(s,'授艺者已故或岗位空缺；已学武艺仍可自行练习。');if(teacher.retirement.active)return fail(s,'授艺者已退养，不能授课；已学武艺仍可自行练习。');if(teacher.life.sickDays||teacher.life.restDay===s.day||teacher.injuryDays||travelBusy(s,teacher.id))return fail(s,'授艺者正在休养或外出，今日不能授课。');if(village?!villageCanTeach(s,id):!schoolCanTeach(s,id))return fail(s,'现任教习尚不能教授这门武艺。');const successor=teacher.id!==(village?'farmer':'master'),fee=(MARTIAL_ARTS[id]?.tier||1)*8;if(successor&&(teacher.energy<20||teacher.coins>1000000-fee))return fail(s,'现任教习暂时无法授课。');if(teacher.coins>1000000-fee)return fail(s,'授艺者暂时无法收款。');if(!learnArt(s,id))return false;teacher.coins+=fee;if(successor){teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);saveSchoolTeacher(teacher);}advance(s,60);s.result.push('求学耗时1小时。');return true;}
+ if(kind==='learn'){if(s.minute<480||s.minute+60>1080)return fail(s,'授艺08:00–18:00，需留足1小时。');const village=MARTIAL_ARTS[id]?.source==='village',teacher=village?villageTeacher(s):schoolTeacher(s);if(!teacher||teacher.life.deathDay)return fail(s,'授艺者已故或岗位空缺；已学武艺仍可自行练习。');if(teacher.retirement.active)return fail(s,'授艺者已退养，不能授课；已学武艺仍可自行练习。');if(teacher.life.sickDays||teacher.life.restDay===s.day||teacher.injuryDays||travelBusy(s,teacher.id))return fail(s,'授艺者正在休养或外出，今日不能授课。');if(village?!villageCanTeach(s,id):!schoolCanTeach(s,id))return fail(s,'现任教习尚不能教授这门武艺。');const successor=teacher.id!==(village?'farmer':'master'),fee=(MARTIAL_ARTS[id]?.tier||1)*8;if(successor&&(teacher.energy<20||teacher.coins>1000000-fee))return fail(s,'现任教习暂时无法授课。');if(teacher.coins>1000000-fee)return fail(s,'授艺者暂时无法收款。');if(!learnArt(s,id))return false;teacher.coins+=fee;if(successor){teacher.energy-=20;teacher.workDays=Math.min(100000,teacher.workDays+1);saveSchoolTeacher(teacher);}advance(s,60);s.result.splice(1,0,'你付过学费，跟着授艺者逐个练过基本架势，记下这门武艺的入门练法。');s.result.push('求学耗时1小时。');return true;}
  if(kind==='equip')return equipArt(s,id);
- if(kind==='train'){if(!trainArt(s,id,true))return false;advance(s,60);s.result.push('练习耗时1小时。');return true;}
+ if(kind==='train'){if(!trainArt(s,id,true))return false;advance(s,60);s.result.splice(1,0,'你把已学的动作从头练过，反复体会起手、发力与收势，练完才停下来歇息。');s.result.push('练习耗时1小时。');return true;}
  if(kind==='practice'){
   const teacher=schoolTeacher(s);
   if(s.place!=='school'||s.minute<480||s.minute+30>1080)return fail(s,'陪练需在县城武馆08:00–18:00内完成准备，共半小时。');
@@ -159,7 +159,7 @@ export function equipmentAction(s,kind,id,rng=()=>random(s)){
   s.energy-=work.energy;
   if(kind==='craft'){const line=gain(s,'smelt',practiceAward(s,0,Object.hasOwn(s.equipment.owned,id)?(EQUIPMENT[id].tier>=3?20:12):4));if(line)s.result.push(line);}
   advance(s,work.minutes);
-  s.result.push('作业耗时'+work.minutes+'分钟，精力 -'+work.energy+'。');
+  s.result.splice(1,0,kind==='craft'?'你在铁匠炉前备好自己的材料，按做法逐步加工，收工前检查这一回做得怎样。':'你检查旧装备的损坏处，备好修料，在作坊逐处修整。');s.result.push('作业耗时'+work.minutes+'分钟，精力 -'+work.energy+'。');
  }
  return result;
 }

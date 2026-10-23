@@ -18,11 +18,11 @@ export function actionNarrative(b,s,title){
  if(title==='练习入门拳脚')return '你在武馆练场站定，把入门拳脚一遍遍练下来，收势后歇了歇。';
  const recipe=Object.values(recipes).find(d=>d.name===title);if(recipe)return '你在作坊备好自己的材料，'+(recipe.skill==='smelt'?'看着炉火，将矿石慢慢炼成铁料。':'守着灶火，把食材加工成干粮。')+'收工时，你把做好的'+goods(b,s,Object.keys(recipe.output))+'装进行囊。';
  if(/^(购买|出售)/.test(title)){const buying=title.startsWith('购买'),changed=Object.keys(items).find(k=>buying?s.bag[k]>b.bag[k]:s.bag[k]<b.bag[k]);if(changed)return '你在货摊前谈妥这笔买卖，'+(buying?'点过钱，将'+items[changed]+'收进行囊。':'交出'+items[changed]+'，收好对方付来的钱。');}
- if(/^亲手制作/.test(title))return '你在手艺台铺开自己的材料，照着已会的做法逐步加工，最后检查成品。';
+ if(/^亲手制作/.test(title))return '你在手艺台铺开自己的材料，照着已会的做法逐步加工，收工前检查这一回做得怎样。';
  if(/^自行修理/.test(title))return '你把旧装备放上手艺台，检查损坏的地方，动手修整。';
  if(/^烹饪 · /.test(title))return '你在公用灶备好食材，下锅后留意火候，忙到可以起锅时才查看这次做得怎样。';
  if(/^学方 · /.test(title))return '你付过学费，跟着医者辨认用料，把这张药方的配伍和做法记下来。';
- if(/^制作 · /.test(title)&&s.skills.medicine>b.skills.medicine)return '你照着学过的药方备料，逐份处理药材，守着火候完成这一回配制。';
+ if(/^制作 · /.test(title))return '你照着学过的药方备料，逐份处理药材，守着火候完成这一回配制。';
  if(/^学习 · 识字/.test(title))return '你跟着先生逐字辨认，把常用的字来回认读几遍。';
  if(/^学习 · 账算/.test(title))return '你跟着账房把进出一笔笔列开，重新核算，学着分清本钱和收入。';
  if(title==='核读告示与约定')return '你走近告示，逐句辨认字意，回头核对容易看错的地方。';
@@ -30,7 +30,7 @@ export function actionNarrative(b,s,title){
  if(/^与.+交谈$/.test(title))return '你停下脚步，和对方说了一阵话。';
  return '';
 }
-function recovery(b,s){if(s.dead)return '休整没能挽回伤势，这段人生走到了尽头。';const better=s.energy>b.energy||s.hp>b.hp;return better?'再起身时，身体比先前缓过来一些。':s.hp<b.hp?'原有伤势仍在拖累身体，这段时间里气血反而减少了。':'身体的变化见实际结算，原有伤势仍需留意。';}
+function recovery(b,s){if(s.dead)return '休整没能挽回伤势，这段人生走到了尽头。';if(s.hp<b.hp)return '原有伤势仍在拖累身体，这段时间里气血反而减少了。';return s.energy>b.energy||s.hp>b.hp?'再起身时，身体比先前缓过来一些。':'歇过这一阵，身体仍和先前一样。';}
 // Old saves may only contain accounting lines. Preserve them in a folded ledger.
 const ledger=t=>/→|^(精力[： ]|金钱[： ]|气血[： ]|单价|本次收获[：]|本次生产[：]|材料消耗[：]|当前库存[：]|本资源点每两日|资源每两日|疲惫[：]|极疲[：])/.test(t);
 export function experienceView(s){const [title='眼下',...lines]=s.result||[];return {title,prose:lines.filter(t=>!ledger(t)),ledger:lines.filter(ledger),recent:(s.journal||[]).filter(j=>j.text!==(s.result||[]).join('；')).slice(0,3).map(j=>{const [title,...lines]=j.text.split('；');return {day:j.day,title,prose:lines.filter(t=>!ledger(t)).slice(0,3)};})};}
