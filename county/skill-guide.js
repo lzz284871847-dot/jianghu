@@ -1,10 +1,17 @@
-import {milestoneHint} from './skill-milestones.js?v=5.67.0';
-import {artisanSkillGoal} from './artisan-orders.js?v=5.67.0';
-import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.67.0';
-import {progress,MAX} from './progression.js?v=5.67.0';
-import {nextRoad} from './task-handbook.js?v=5.67.0';
-import {initialMarket,marketPrice} from './commerce.js?v=5.67.0';
-import {CRAFTS} from './crafts.js?v=5.67.0';
+import {craftPlan} from './crafts.js?v=5.68.0';
+import {MEALS} from './kitchen.js?v=5.68.0';
+import {MEDICINES} from './medicine.js?v=5.68.0';
+import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.68.0';
+import {wreckRecipeKnown} from './wreck.js?v=5.68.0';
+import {ALL_ARTISAN_ORDERS} from './artisan-orders.js?v=5.68.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.68.0';
+import {milestoneHint} from './skill-milestones.js?v=5.68.0';
+import {artisanSkillGoal} from './artisan-orders.js?v=5.68.0';
+import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.68.0';
+import {progress,MAX} from './progression.js?v=5.68.0';
+import {nextRoad} from './task-handbook.js?v=5.68.0';
+import {initialMarket,marketPrice} from './commerce.js?v=5.68.0';
+import {CRAFTS} from './crafts.js?v=5.68.0';
 export const SKILL_GROUPS=[
  {id:'living',name:'生活与采集',keys:['carry','forage','herb','fish','mining','hunt','farming','cook']},
  {id:'crafting',name:'手艺与生产',keys:['smelt','medicine','tailor','leatherwork','woodwork']},
@@ -44,4 +51,18 @@ export function skillOverview(s){const row=key=>{const source=SOURCES[key],p=sou
 export function plannedRestock(s,place,key){if(!Object.hasOwn(markets[place]?.buy||{},key)||!(initialMarket()[place]?.[key]>0))return null;let day=s.day+1;if(day%2===0)day++;if(place==='liuxi'&&day%11===7)day+=2;return day;}
 export function stockHint(s,place,key){const n=s.commerce.stock[place]?.[key];if(n===undefined||!Object.hasOwn(markets[place]?.buy||{},key))return '';const day=plannedRestock(s,place,key);return n===0?'已售空'+(day?'，下一批计划第'+day+'日补货':'')+'；仍受实际补货与营业影响。':'实际存货'+n+'份；购买仍需钱款、容量和营业时间。';}
 export const MATERIAL_KEYS=['paper','ink','bamboo_flute','grain','wood','cloth','fine_cloth','hide','leather','hardwood','cord','iron','rod','pick','trap'];
-export function materialSources(s,key){const out=[];for(const [place,m] of Object.entries(markets))if(Object.hasOwn(m.buy,key))out.push(places[place].name+'：单份原价'+marketPrice(s,place,'buy',key)+'文，'+stockHint(s,place,key));for(const d of Object.values(resources))if(Object.hasOwn(d.output,key))out.push(d.places.map(p=>places[p].name).join('、')+'：'+d.name+(key==='hardwood'?'，需实际采集经验30':'')+'，尝试有限，可能失败。');for(const d of Object.values(recipes))if(Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，自己的'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'，耗时间精力。');for(const d of Object.values(CRAFTS))if(d.output&&Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，需'+skills[d.skill]+d.required+'、'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'、台位费'+d.fee+'文，可能做坏。');return out;}
+export function materialSources(s,key){const out=[];for(const [place,m] of Object.entries(markets))if(Object.hasOwn(m.buy,key))out.push(places[place].name+'：单份原价'+marketPrice(s,place,'buy',key)+'文，'+stockHint(s,place,key));for(const [id,d] of Object.entries(resources))if(resourceKnown(s,id)&&Object.hasOwn(d.output,key))out.push(d.places.map(p=>places[p].name).join('、')+'：'+d.name+'，尝试有限，可能失败。');for(const d of Object.values(recipes))if(Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，自己的'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'，耗时间精力。');for(const [id,d] of Object.entries(CRAFTS))if(activityKnown(s,'craft:make:'+id)&&d.output&&Object.hasOwn(d.output,key))out.push('作坊街：'+d.name+'，使用自己的'+Object.entries(d.input).map(([k,n])=>items[k]+'×'+n).join('、')+'、台位费'+d.fee+'文，可能做坏。');return out;}
+
+// Discovery affects presentation only; the original action validators remain authoritative.
+export function resourceKnown(s,key){const need={hardwood:['forage',30],aromatic_herb:['herb',10],mountain_root:['herb',30],cliff_bloom:['herb',60],fine_ore:['mining',30],cold_ore:['mining',60],meteor_ore:['mining',100]}[key];return !need||s.skills[need[0]]>=need[1];}
+export function activityKnown(s,id){const [kind,action,key]=id.split(':');
+ if(kind==='civic'&&['accounting','read','audit'].includes(action))return s.skills.literacy>=6;
+ if(kind==='culture'){const record=s.culture.records[action];if(['active','claim'].includes(record.status)&&['draft','perform','claim','withdraw'].includes(key))return true;if(key==='lesson'&&action==='calligraphy')return s.skills.literacy>=6;if(['practice','play'].includes(key))return s.skills[action]>=3;if(key==='accept')return record.status!=='none'||s.skills[action]>=6;return true;}
+ if(kind==='craft'){if(action==='repair'&&Object.hasOwn(s.equipment.owned,key))return true;const d=craftPlan(s,key,action);return !!d&&(!d.recipeOrder||artisanRecipeKnown(s,key))&&(!d.wreckRecipe||wreckRecipeKnown(s))&&(!d.fortRecipe||s.fort.known)&&s.skills[d.skill]>=d.required&&(!d.extraSkill||s.skills[d.extraSkill]>=d.extraRequired);}
+ if(kind==='kitchen'&&action==='cook'){const d=MEALS[key];return !!d&&s.skills.cook>=d.required&&s.skills.herb>=(d.herb||0);}
+ if(kind==='medicine'&&action==='learn'){const d=MEDICINES[key];return !!d&&s.skills.herb>=d.herb&&s.skills.medicine>=d.practice;}
+ if(kind==='professional'&&ALL_ARTISAN_ORDERS[action]){const d=ALL_ARTISAN_ORDERS[action],record=s.professionals.advanced[action];return record.status!=='none'||s.skills[d.skill]>=d.required;}
+ return true;
+}
+export function equipmentKnown(s,id){const d=EQUIPMENT[id];if(Object.hasOwn(s.equipment.owned,id))return true;if(!d||d.foundOnly||s.place!=='workshop')return false;if(d.recipeOrder)return artisanRecipeKnown(s,id);return d.tier<3||(s.relations.smith||0)>=(d.tier-2)*8;}
+export function martialKnown(s,id){const art=MARTIAL_ARTS[id];if(!art)return false;if(s.martial.known[id])return true;if(s.place!==(art.source==='village'?'village':'school'))return false;if(art.tier===1)return true;return (s.relations.master||0)>=(art.tier===2?5:12)&&Object.entries(s.martial.known).filter(([k,v])=>v&&MARTIAL_ARTS[k].tier===art.tier-1&&(s.martial.practice[k]||0)>=120).length>=2;}

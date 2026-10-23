@@ -20,14 +20,18 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.62.1
           npx playwright install --with-deps chromium
           sudo apt-get install -y fonts-noto-cjk
-      - name: Local map, facilities and actual NPC actions
+      - name: Immersive action story and gradual discovery
         env:
           QINGHE_MAP_SCREENSHOT: /tmp/qinghe-scene.png
-        run: node scripts/qinghe-local-map-review.mjs
+        run: node scripts/qinghe-immersion-review.mjs
       - name: Save export and import on mobile widths and landscape
         run: node scripts/qinghe-mobile-review.mjs
       - name: Offline sixteen-place acceptance
         run: node scripts/qinghe-scene-art-offline-review.mjs
+      - name: Local map, facilities and actual NPC actions
+        env:
+          QINGHE_MAP_SCREENSHOT: /tmp/qinghe-scene.png
+        run: node scripts/qinghe-local-map-review.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
