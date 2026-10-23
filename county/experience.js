@@ -33,4 +33,4 @@ export function actionNarrative(b,s,title){
 function recovery(b,s){if(s.dead)return '休整没能挽回伤势，这段人生走到了尽头。';const better=s.energy>b.energy||s.hp>b.hp;return better?'再起身时，身体比先前缓过来一些。':s.hp<b.hp?'原有伤势仍在拖累身体，这段时间里气血反而减少了。':'身体的变化见实际结算，原有伤势仍需留意。';}
 // Old saves may only contain accounting lines. Preserve them in a folded ledger.
 const ledger=t=>/→|^(精力[： ]|金钱[： ]|气血[： ]|单价|本次收获[：]|本次生产[：]|材料消耗[：]|当前库存[：]|本资源点每两日|资源每两日|疲惫[：]|极疲[：])/.test(t);
-export function experienceView(s){const [title='眼下',...lines]=s.result||[];return {title,prose:lines.filter(t=>!ledger(t)),ledger:lines.filter(ledger),recent:(s.journal||[]).filter(j=>j.text!==(s.result||[]).join('；')).slice(0,3).map(j=>({day:j.day,title:j.text.split('；')[0]}))};}
+export function experienceView(s){const [title='眼下',...lines]=s.result||[];return {title,prose:lines.filter(t=>!ledger(t)),ledger:lines.filter(ledger),recent:(s.journal||[]).filter(j=>j.text!==(s.result||[]).join('；')).slice(0,3).map(j=>{const [title,...lines]=j.text.split('；');return {day:j.day,title,prose:lines.filter(t=>!ledger(t)).slice(0,3)};})};}
