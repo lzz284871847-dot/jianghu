@@ -1,5 +1,5 @@
-import {tradeRouteBlocked} from './world-feedback.js?v=5.71.0';
-import {stockAt,budgetAt,ensureCommerce} from './commerce.js?v=5.71.0';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.71.1';
+import {stockAt,budgetAt,ensureCommerce} from './commerce.js?v=5.71.1';
 // 青河县生计：每日短工名额、雇主履约和天气影响，不由玩家操作自动保底收益。
 export const JOBS=Object.freeze({
  county:{name:'县城杂役',slots:2,base:12,success:.83},
@@ -46,3 +46,4 @@ export function jobOutcome(s,rng){const blocked=jobAvailability(s);if(blocked){s
  s.result.push('今日本处已完成'+(count+1)+'/'+pressure.slots+'次短工。');if(pressure.shortage&&['fields','county'].includes(s.place))s.result.push('粮食紧缺，雇主缩减用工并提高验收要求。');if(pressure.routeBlocked)s.result.push('栈道受阻，到货减少，柳溪雇主缩减脚夫名额。');if(pressure.lowFunds)s.result.push('商户周转资金紧张，雇主缩减用工。');
  return paid;
 }
+

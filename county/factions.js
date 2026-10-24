@@ -1,5 +1,5 @@
 // Three finite local disputes. Standing affects optional services, never basic survival.
-import {ORGANIZATIONS} from './adventure-data.js?v=5.71.0';
+import {ORGANIZATIONS} from './adventure-data.js?v=5.71.1';
 export const DISPUTES={
  escort:{name:'护送规矩之争',place:'market',holder:'merchant',offset:0,days:3,school:'武馆要求先花时间探路，宁可晚到也不冒险。',caravan:'互助会愿走官道赶交期，但不愿另付武馆探路费。'},
  yard:{name:'武馆场地借用',place:'school',holder:'master',offset:2,days:3,school:'武馆要保留学徒练功时段，反对货物占满场地。',caravan:'互助会希望借场地避雨，愿意分批搬入而非长期占用。'},
@@ -53,3 +53,4 @@ export function factionOptions(s){const f=s.adventures.factions,out=[],add=(id,l
 const labels={open:'尚未处理',school:'支持武馆',caravan:'支持互助会',mediated:'调停成功',failed:'调停失败',neutral:'不介入',ignored:'双方自行收尾'};
 export function factionSummary(s){const f=s.adventures.factions;return ['势力立场：武馆'+f.standing.school+'，互助会'+f.standing.caravan+'。立场与组织贡献分开；退出组织不抹去选择。友好达到2获得特别照应，交恶不高于-2暂停照应；基础谋生与求学不受限。',...Object.entries(DISPUTES).map(([id,d])=>d.name+' · 第'+(f.startDay+d.offset)+'—'+(f.startDay+d.offset+d.days)+'日 · '+labels[f.cases[id].outcome]+' · 接洽地点：'+({market:'县城街市',school:'县城武馆',dock:'青石码头'}[d.place]))];}
 export function factionDialogue(s,id){const side=sides.find(k=>ORGANIZATIONS[k].holder===id);return side&&factionHostile(s,side)?'对方记得你在组织争议中的立场，暂停特别照应；可带自己的口粮赔礼，基本生意照常。':side&&factionFriendly(s,side)?'对方记得你的支持或调停，愿按当前组织立场提供特别照应。':null;}
+

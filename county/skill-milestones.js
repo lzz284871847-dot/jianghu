@@ -1,11 +1,11 @@
-import {BUSINESSES} from './business.js?v=5.71.0';
-import {CRAFTS} from './crafts.js?v=5.71.0';
-import {EQUIPMENT} from './equipment.js?v=5.71.0';
-import {MEDICINES} from './medicine.js?v=5.71.0';
-import {MEALS} from './kitchen.js?v=5.71.0';
-import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.71.0';
-import {resources,skills} from './content.js?v=5.71.0';
-import {progress,MAX} from './progression.js?v=5.71.0';
+import {BUSINESSES} from './business.js?v=5.71.1';
+import {CRAFTS} from './crafts.js?v=5.71.1';
+import {EQUIPMENT} from './equipment.js?v=5.71.1';
+import {MEDICINES} from './medicine.js?v=5.71.1';
+import {MEALS} from './kitchen.js?v=5.71.1';
+import {ALL_ARTISAN_ORDERS as ARTISAN_ORDERS} from './artisan-orders.js?v=5.71.1';
+import {resources,skills} from './content.js?v=5.71.1';
+import {progress,MAX} from './progression.js?v=5.71.1';
 function skillTargets(s,key){
  const targets=[],add=(required,name)=>{if(required>0)targets.push({required,name,remaining:required-s.skills[key]});};
  const gates={forage:{hardwood:30},herb:{aromatic_herb:10,mountain_root:30,cliff_bloom:60},mining:{fine_ore:30,cold_ore:60,meteor_ore:100}};
@@ -21,3 +21,4 @@ function skillTargets(s,key){
 }
 export function nextSkillMilestone(s,key){return skillTargets(s,key).find(t=>t.remaining>0)||null;}
 export function milestoneHint(s,key){const targets=skillTargets(s,key),next=targets.find(t=>t.remaining>0),ready=targets.filter(t=>t.remaining<=0).at(-1),known=ready?'经验已满足：'+ready.name+'；仍需现场条件。':'';if(next)return known+ '下一用途：'+next.name+'；'+skills[key]+'累计'+next.required+'，还差'+next.remaining+'经验。仍需满足材料、关系、配方及现场条件。';if(s.skills[key]===MAX)return known+ '本技能经验已满；现有用途与作业条件保留。';const p=progress(s.skills[key]);return known+ (p.level===5?'距离本级练满还差':'距离Lv'+(p.level+1)+'还差')+(p.cap-p.xp)+'经验；现有用途继续可用。';}
+

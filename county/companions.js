@@ -1,9 +1,9 @@
-import {dungeonGuideLocation} from './dungeon.js?v=5.71.0';
-import {cooperationRefusal} from './npc-social.js?v=5.71.0';
-import {rememberExperience,sharedWork} from './county-life.js?v=5.71.0';
-import {people,places,items} from './content.js?v=5.71.0';
-import {gain} from './progression.js?v=5.71.0';
-import {travelBusy} from './npc-journeys.js?v=5.71.0';
+import {dungeonGuideLocation} from './dungeon.js?v=5.71.1';
+import {cooperationRefusal} from './npc-social.js?v=5.71.1';
+import {rememberExperience,sharedWork} from './county-life.js?v=5.71.1';
+import {people,places,items} from './content.js?v=5.71.1';
+import {gain} from './progression.js?v=5.71.1';
+import {travelBusy} from './npc-journeys.js?v=5.71.1';
 export const COOPERATIONS={
  boat:{name:'船工同行修架',actor:'boatman',from:'dock',site:'ferry',corridor:['dock','ferry'],fee:3,payer:'merchant',claim:'market',total:12,share:4,skill:'carry',input:{wood:1},dispute:'route',info:'贺船工同行到旧渡口修货架。工钱3文，关系3或有信任的实际共事可免；需自己木料1份。分歧是稳妥处理或说服冒险。雨天更难，实际工钱共12文由柳掌柜支付，协作时船工分4文。'},
  hunter:{name:'猎户同行清径',actor:'hunter',from:'bamboo',site:'hill',corridor:['bamboo','hill','foot'],fee:2,payer:'merchant',claim:'market',total:10,share:4,skill:'hunt',input:{wood:1},dispute:'split',info:'蒋猎户同行清理南山猎径，需自己木料1份。邀请工钱2文，已结清追踪伤兽可免；猎户想分6文，可接受或谈4文，谈崩后仍可独行。实际工钱共10文来自柳掌柜，不凭空提供猎物。'},
@@ -126,3 +126,4 @@ export function companionActorHint(s,actor){
  }return null;
 }
 export function companionSummary(s){return Object.entries(COOPERATIONS).filter(([id])=>s.adventures.companions.records[id].status!=='new').map(([id,d])=>{const r=s.adventures.companions.records[id];return d.name+'：'+({open:r.joined?'同行中':'可独行继续',ready:'待结算',done:'已完成',failed:'失败',withdrawn:'已撤回',died:'身亡结束'})[r.status]+'；合作信任'+r.trust+'/3，邀请工钱'+r.fee+'文，NPC实际精力消耗'+r.npcSpent+'，已收款'+r.paid+'文。';});}
+

@@ -1,8 +1,8 @@
-import {travelBusy} from './npc-journeys.js?v=5.71.0';
-import {alive} from './npc-mortality.js?v=5.71.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=5.71.0';
-import {marketPrice,stockAt} from './commerce.js?v=5.71.0';
-import {districtStatus} from './society.js?v=5.71.0';
+import {travelBusy} from './npc-journeys.js?v=5.71.1';
+import {alive} from './npc-mortality.js?v=5.71.1';
+import {namedResidents,saveResident} from './npc-residents.js?v=5.71.1';
+import {marketPrice,stockAt} from './commerce.js?v=5.71.1';
+import {districtStatus} from './society.js?v=5.71.1';
 export const makeClinic=(day=1)=>({holder:'doctor',appointedDay:0,lastDay:day,learners:{}});
 export const clinicDoctor=s=>namedResidents(s).find(p=>p.id===s.npcWorld.clinic.holder);
 const fit=(p,day)=>!!p&&alive(p)&&!p.retirement.active&&!p.life.sickDays&&!p.injuryDays&&p.life.restDay!==day;
@@ -21,3 +21,4 @@ export function payClinic(s,payer,doctor){
  payer.coins-=8;doctor.coins+=8-quote;doctor.energy-=10;doctor.workDays=Math.min(100000,doctor.workDays+1);s.commerce.budget.market+=quote;s.commerce.stock.market.herb--;saveResident(doctor);return quote;
 }
 export function clinicSummary(s){const d=clinicDoctor(s);return [d&&alive(d)?'河湾村医者：'+d.name+(d.retirement.active?'，旧档中的休养记录。':d.life.sickDays||d.life.restDay===s.day||d.injuryDays?'，今日休养，暂停诊治。':'')+(d.id==='doctor'?'，原有医者。':'，第'+s.npcWorld.clinic.appointedDay+'日接任。'):'河湾村医者空缺，旧档记录保留，本版不自动接班。'];}
+

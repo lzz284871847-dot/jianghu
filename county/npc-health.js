@@ -1,9 +1,9 @@
-import {travelBusy} from './npc-journeys.js?v=5.71.0';
-import {clinicDoctor,payClinic} from './npc-clinic.js?v=5.71.0';
-import {saveResident} from './npc-residents.js?v=5.71.0';
-import {alive} from './npc-mortality.js?v=5.71.0';
-import {people} from './content.js?v=5.71.0';
-import {marketPrice} from './commerce.js?v=5.71.0';
+import {travelBusy} from './npc-journeys.js?v=5.71.1';
+import {clinicDoctor,payClinic} from './npc-clinic.js?v=5.71.1';
+import {saveResident} from './npc-residents.js?v=5.71.1';
+import {alive} from './npc-mortality.js?v=5.71.1';
+import {people} from './content.js?v=5.71.1';
+import {marketPrice} from './commerce.js?v=5.71.1';
 const record=(p,text)=>{p.history=[text,...p.history].slice(0,8);};
 // Daily appointments are simulated inside the doctor's existing 08:00–18:00 hours.
 // Rain/undernutrition can cause a short illness; no extra world RNG is consumed.
@@ -40,3 +40,4 @@ export function npcHealthDay(s,p,_age,day){
  return {resting,notes};
 }
 export const healthSummary=(p,day)=>p.life.sickDays?'染病休养，尚需'+p.life.sickDays+'日':p.life.restDay===day?'病情缓解，今日休养':'健康';
+

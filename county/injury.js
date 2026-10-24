@@ -1,4 +1,4 @@
-import {INJURIES} from './martial-data.js?v=5.71.0';
+import {INJURIES} from './martial-data.js?v=5.71.1';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const INJURY_DAYS=Object.freeze({bruise:2,cut:4,strain:5,fracture:16,internal:12,critical:24});
 export function injuriesOf(s){if(!s.injuries)s.injuries={};return s.injuries;}
@@ -7,3 +7,4 @@ export function injuryEffects(s){const x=injuriesOf(s);return {accuracyPenalty:c
 export function tickInjuries(s,days=1){const x=injuriesOf(s),logs=[];if(!Number.isSafeInteger(days)||days<0||days>10000)throw Error('天数无效');for(let day=0;day<days;day++){const bleed=injuryEffects(s).bleeding;if(bleed){s.hp=Math.max(0,s.hp-Math.min(12,bleed));logs.push('伤口失血：气血 -'+Math.min(12,bleed));}for(const id of Object.keys(x)){if(!INJURIES[id])continue;const n=x[id];const recovery=INJURY_DAYS[id];if(!s.injuryRecovery)s.injuryRecovery={};s.injuryRecovery[id]=(s.injuryRecovery[id]||0)+1;if(s.injuryRecovery[id]>=recovery){s.injuryRecovery[id]=0;if(n<=1){delete x[id];logs.push(INJURIES[id].name+'痊愈');}else{x[id]=n-1;logs.push(INJURIES[id].name+'减轻一级');}}}if(s.hp===0){s.dead=true;s.combat=null;s.pending=null;logs.push('失血身亡，这段人生结束。');break;}}return logs;}
 export function treatInjury(s,id,quality='doctor'){const x=injuriesOf(s);if(!x[id])return '没有这种伤势';if(quality==='herb'&&!['bruise','cut','strain'].includes(id))return '重伤必须由医者治疗';if(quality==='prepared'&&id==='fracture')return '骨折必须由医者治疗';if(quality!=='herb'&&quality!=='doctor'&&quality!=='prepared')throw Error('未知治疗方式');const reduce=quality==='doctor'?2:1;if(x[id]<=reduce)delete x[id];else x[id]-=reduce;if(s.injuryRecovery)delete s.injuryRecovery[id];return INJURIES[id].name+'得到处理';}
 export function injuryValid(s){const x=s.injuries||{};return !!x&&typeof x==='object'&&!Array.isArray(x)&&Object.entries(x).every(([k,v])=>Object.hasOwn(INJURIES,k)&&Number.isSafeInteger(v)&&v>=1&&v<=5);}
+

@@ -26,6 +26,8 @@ jobs:
         run: node scripts/qinghe-immersion-review.mjs
       - name: Save export and import on mobile widths and landscape
         run: node scripts/qinghe-mobile-review.mjs
+      - name: Browser save protection and recovery across reloads
+        run: node scripts/qinghe-save-protection-review.mjs
       - name: Offline sixteen-place acceptance
         run: node scripts/qinghe-scene-art-offline-review.mjs
       - name: Local map, facilities and actual NPC actions
@@ -38,3 +40,4 @@ jobs:
           name: qinghe-scene-mobile
           path: /tmp/qinghe-scene*.png
           if-no-files-found: ignore
+

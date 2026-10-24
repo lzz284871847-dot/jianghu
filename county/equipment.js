@@ -1,4 +1,4 @@
-import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.1';
 // 青河县装备系统：数据、穿戴、耐久与锻造独立于人物经济/战斗层。
 export const EQUIPMENT=Object.freeze({
  iron_bound_staff:{name:'包铁短棍',slot:'weapon',kind:'棍法',tier:2,attack:6,defense:0,durability:50,materials:{iron:3,wood:2},fee:10,foundOnly:true,use:'旧堡兵械库固定留存，需实际带出；普通品质、初始耐久30/50。棍法适配时攻击+6；不能打造，作坊按原规则付费耗料修理。'},
@@ -75,3 +75,4 @@ export const wornUtility=(s,id)=>s.equipment?.equipped?.[EQUIPMENT[id]?.slot]===
 export function useUtility(s,id){if(!wornUtility(s,id))return;const line=wearEquipment(s,EQUIPMENT[id].slot);s.result.push(EQUIPMENT[id].name+'实际使用，耐久-1。');if(line)s.result.push(line);}
 export const forestBonus=s=>['foot','bamboo','hill','oldroad'].includes(s.place)&&wornUtility(s,'forest_staff')?.08:0;
 export const rainDelay=(s,outdoor)=>s.weather==='雨'&&outdoor?(wornUtility(s,'rain_cloak')?5:15):0;
+

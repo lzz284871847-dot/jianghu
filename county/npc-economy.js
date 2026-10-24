@@ -1,8 +1,8 @@
-import {alive} from './npc-mortality.js?v=5.71.0';
-import {bondBetween} from './npc-social.js?v=5.71.0';
-import {marketPrice,stockAt,budgetAt} from './commerce.js?v=5.71.0';
-import {MARKET_LIMIT} from './commerce.js?v=5.71.0';
-import {districtStatus} from './society.js?v=5.71.0';
+import {alive} from './npc-mortality.js?v=5.71.1';
+import {bondBetween} from './npc-social.js?v=5.71.1';
+import {marketPrice,stockAt,budgetAt} from './commerce.js?v=5.71.1';
+import {MARKET_LIMIT} from './commerce.js?v=5.71.1';
+import {districtStatus} from './society.js?v=5.71.1';
 // Positions are permanent shop jobs, NOT the player's separately posted casual day-work slots.
 export const POSITIONS=Object.freeze({
  shopassistant:{market:'market',pay:4},
@@ -212,3 +212,4 @@ export function npcCareerDay(s,p,day){
 export const makeRetirement=(day=1)=>({active:false,retiredDay:0,lastDay:day});
 export const retirementValid=(r,day)=>!!r&&typeof r==='object'&&!Array.isArray(r)&&Object.keys(r).length===3&&typeof r.active==='boolean'&&
  Number.isSafeInteger(r.lastDay)&&r.lastDay>=1&&r.lastDay<=day&&Number.isSafeInteger(r.retiredDay)&&r.retiredDay>=0&&r.retiredDay<=r.lastDay&&(!r.active||r.retiredDay>0);
+

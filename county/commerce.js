@@ -1,8 +1,8 @@
-import {tradeRouteBlocked} from './world-feedback.js?v=5.71.0';
-import {countyEventSurcharge} from './county-life.js?v=5.71.0';
-import {societyDay} from './society.js?v=5.71.0';
-import {farmDelivery} from './agriculture.js?v=5.71.0';
-import {markets} from './content.js?v=5.71.0';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.71.1';
+import {countyEventSurcharge} from './county-life.js?v=5.71.1';
+import {societyDay} from './society.js?v=5.71.1';
+import {farmDelivery} from './agriculture.js?v=5.71.1';
+import {markets} from './content.js?v=5.71.1';
 // Goods exist independently from the player. Fixed daily arrivals represent local producers.
 export const MARKET_LIMIT=30;
 export const MARKET_SURPLUS=24;
@@ -75,3 +75,4 @@ export function dailyCommerce(s){
  commerce.lastDay=s.day;
  return messages.slice(-2);
 }
+

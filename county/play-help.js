@@ -1,7 +1,7 @@
-import {schoolCanTeach} from './npc-school.js?v=5.71.0';
-import {villageCanTeach} from './npc-village-school.js?v=5.71.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
-import {canLearn,availableMoves} from './martial-progression.js?v=5.71.0';
+import {schoolCanTeach} from './npc-school.js?v=5.71.1';
+import {villageCanTeach} from './npc-village-school.js?v=5.71.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.1';
+import {canLearn,availableMoves} from './martial-progression.js?v=5.71.1';
 export function starterAdvice(s){
  const lines=['这些是可忽略的建议，不是强制主线。普通职业与武者都能完成县境目标。'];
  if((s.injuries?.cut||0)+(s.injuries?.critical||0)>0)lines.push('正在出血：先用药材处理切伤，或到河湾村找医者；带着出血睡觉可能危及生命。');
@@ -33,3 +33,4 @@ export function recoveryAdvice(s){
  if(s.adventures.failed.length&&!s.adventures.quest)lines.push('委托失败仍可继续：药材、护送和救援可回委托人处重新约定；失物不重复。');
  return lines;
 }
+

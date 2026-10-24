@@ -1,8 +1,8 @@
-import {gain} from './progression.js?v=5.71.0';
-import {addInjury} from './injury.js?v=5.71.0';
-import {bodyStats,gainBodyUse} from './mobility.js?v=5.71.0';
-import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.0';
-import {FIELD_ACTIONS} from './field-skills.js?v=5.71.0';
+import {gain} from './progression.js?v=5.71.1';
+import {addInjury} from './injury.js?v=5.71.1';
+import {bodyStats,gainBodyUse} from './mobility.js?v=5.71.1';
+import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.1';
+import {FIELD_ACTIONS} from './field-skills.js?v=5.71.1';
 export const FORT_ROOMS=['','外院入口','地窖机关','三条奖励支路','撤回旧道'];
 export const FORT_FOES={gate:'escort',pursuit:'teacher'};
 export const makeFort=()=>({status:'new',stage:0,day:0,route:null,trap:null,attempts:[],fight:null,battles:0,branch:null,cache:null,taken:false,known:false,core:'none',vest:0,staff:0,probe:null});
@@ -53,3 +53,4 @@ export function fortValid(s){const r=s.fort,e=makeFort(),int=(v,max)=>Number.isS
  if(active(s)&&(s.place!=='oldroad'||s.dead||s.pending||s.dungeon.status==='active'||s.raid.status==='active'||s.adventures.companions.active!==null||s.dungeon.guide==='joined'||s.raid.guide==='joined'))return false;if(active(s)&&!!s.combat!==!!r.fight)return false;if(r.fight&&(r.status!=='active'||s.combat?.opponent!==FORT_FOES[r.fight]||s.combat.practice||r.stage!==({gate:1,pursuit:4}[r.fight])||!r.battles))return false;
  if(r.stage>=2&&!r.route||r.stage>=3&&!r.trap||r.stage<4&&(r.branch||r.taken||r.core!=='none'||r.vest)||r.stage===4&&!r.branch||r.branch&&!r.attempts.includes(r.branch)||r.route&&r.route!=='force'&&!r.attempts.includes(r.route)||r.trap&&!r.attempts.includes(r.trap)||r.route==='force'&&!r.battles||r.vest&&(r.branch!=='armory'||r.vest!==r.cache.vest)||r.known!==(r.core==='secured')||r.core!=='none'&&r.branch!=='craft'||r.core==='held'&&r.status!=='active'||r.core==='secured'&&r.status==='active'||r.status==='died'&&!s.dead||r.status==='done'&&r.stage!==4)return false;
  if(r.branch==='craft'&&r.taken&&!['held','secured','lost'].includes(r.core)||r.status==='active'&&r.stage===4&&!r.taken||r.status==='done'&&!r.taken)return false;return true;}
+

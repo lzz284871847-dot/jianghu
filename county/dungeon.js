@@ -1,7 +1,7 @@
-import {places} from './content.js?v=5.71.0';
-import {gain} from './progression.js?v=5.71.0';
-import {addInjury} from './injury.js?v=5.71.0';
-import {travelBusy} from './npc-journeys.js?v=5.71.0';
+import {places} from './content.js?v=5.71.1';
+import {gain} from './progression.js?v=5.71.1';
+import {addInjury} from './injury.js?v=5.71.1';
+import {travelBusy} from './npc-journeys.js?v=5.71.1';
 
 // One finite expedition, sharing the existing mine rescue and its actual payer.
 export const makeDungeon=()=>({status:'new',stage:0,day:0,surveyed:false,inspected:false,route:null,loot:'new',rescue:'new',guide:'none',until:0,returnAt:0});
@@ -80,3 +80,4 @@ export function dungeonOptions(s){const d=s.dungeon,out=[],add=(key,label,previe
  return out;
 }
 export function dungeonSummary(s){const d=s.dungeon;return d.status==='new'?null:'废弃矿道 · '+({active:'第'+d.stage+'/4段 · '+['','入口岔路','有限矿堆','塌落支巷','返回洞口'][d.stage],done:'已返回',left:'已撤回',died:'身亡'}[d.status])+'；矿堆'+({new:'未处理',ore:'铁矿2',fine:'精铁1',empty:'无所得',skipped:'已跳过'}[d.loot])+'；救工'+({new:'未处理',saved:s.adventures.outings.records.mine.outcome==='done'?'已救出，10文已领取':s.adventures.outings.records.mine.outcome==='died'?'救援成果随人生结束':'已救出，回作坊领取10文',failed:'未成',skipped:'已略过',unavailable:'已有旧结局'}[d.rescue])+'；同行'+({none:'独行',joined:'蒋猎户（不晚于18时）',left:'已离队',refused:'猎户已拒绝'}[d.guide])+'。再访不刷新材料或救援。';}
+

@@ -1,11 +1,11 @@
-import {rememberExperience} from './county-life.js?v=5.71.0';
-import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.71.0';
-import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.71.0';
-import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.71.0';
-import {EQUIPMENT} from './equipment.js?v=5.71.0';
-import {people,skills,items} from './content.js?v=5.71.0';
-import {gain} from './progression.js?v=5.71.0';
-import {present} from './adventures.js?v=5.71.0';
+import {rememberExperience} from './county-life.js?v=5.71.1';
+import {PRACTICAL_WOODWORK} from './artisan-work-data.js?v=5.71.1';
+import {PRACTICE_XP,practiceAward,growthPreview} from './practice-growth.js?v=5.71.1';
+import {ARTISAN_LESSON_XP} from './professional-data.js?v=5.71.1';
+import {EQUIPMENT} from './equipment.js?v=5.71.1';
+import {people,skills,items} from './content.js?v=5.71.1';
+import {gain} from './progression.js?v=5.71.1';
+import {present} from './adventures.js?v=5.71.1';
 export const ARTISAN_ORDERS={
  carpenter_frame:{teacher:'carpenter',skill:'woodwork',required:300,trust:4,name:'护路榫接梁架',product:'榫接梁架',input:{hardwood:2,wood:2,cord:2},reward:40,days:4,minutes:180,energy:22,chance:.8},
  carpenter_case:{teacher:'carpenter',skill:'woodwork',required:700,trust:6,name:'精密药箱机关',product:'机关药箱',input:{hardwood:3,iron:2,cord:2},reward:70,days:5,minutes:240,energy:30,chance:.7},
@@ -93,3 +93,4 @@ function practicalWorkBlocker(s,key){const actions=['work',...Object.keys(ALL_AR
 export function artisanOrderTasks(s){return Object.entries(ALL_ARTISAN_ORDERS).flatMap(([key,d])=>{const r=s.professionals.advanced[key];return ['active','claim'].includes(r.status)?[{title:d.name,place:'workshop',group:d.practical?'professionals':'advancedOrders',next:r.status==='active'?'选择做法并自备对应材料，亲自完成作业；可撤回。':'向'+people[d.teacher].name+'交付定制成品并领取实际报酬；可撤回。',due:r.status==='active'?r.due:0,goods:r.held?'定制成品1件尚未交付，报酬'+d.reward+'文未到账。':'尚无成品，报酬未到账。',blocker:r.status==='active'?practicalWorkBlocker(s,key):artisanOrderBlocker(s,key,'deliver')||''}]:[];});}
 export function artisanOrderHistory(s){return Object.entries(ALL_ARTISAN_ORDERS).filter(([key])=>s.professionals.advanced[key].status!=='none').map(([key,d])=>{const r=s.professionals.advanced[key];return d.name+(r.status==='done'&&Object.values(EQUIPMENT).some(e=>e.recipeOrder===key)?'（独有配方已解锁）':'')+' · '+({active:'待制作',claim:'待付款',done:'已交付',failed:'未成或逾期',left:'已撤回'}[r.status])+'；定制件待交'+r.held+'、师傅留存'+r.stock+'；实领'+r.paid+'文，材料投入与失败不重置。';});}
 export function artisanSkillGoal(s,skill){const entries=Object.entries(ALL_ARTISAN_ORDERS).filter(([key,d])=>d.skill===skill&&(!d.practical||s.skills[skill]<300||['active','claim'].includes(s.professionals.advanced[key].status))).sort((a,b)=>a[1].required-b[1].required);if(!entries.length)return '';const current=entries.find(([key])=>['active','claim'].includes(s.professionals.advanced[key].status)),next=current||entries.find(([key])=>s.professionals.advanced[key].status==='none');if(!next){const recipe=Object.values(EQUIPMENT).find(e=>e.recipeOrder&&ALL_ARTISAN_ORDERS[e.recipeOrder].skill===skill&&s.professionals.advanced[e.recipeOrder].status==='done');return (recipe?'已解锁'+recipe.name+'，作坊可亲手制作并穿戴；':'')+'现有有限订单已处理；原有制作与修理仍可使用。';}const [key,d]=next,r=s.professionals.advanced[key];const recipe=Object.values(EQUIPMENT).find(e=>e.recipeOrder&&ALL_ARTISAN_ORDERS[e.recipeOrder].skill===skill&&s.professionals.advanced[e.recipeOrder].status==='done');const hint=recipe?'已解锁'+recipe.name+'，作坊可亲手制作并穿戴；':'';return (skill==='woodwork'?'可以不上课：通过实际木工制作、有限实作委托积累经验；课程可选。':'作坊每日练习课：成功'+ARTISAN_LESSON_XP.success+'、失败'+ARTISAN_LESSON_XP.failure+'经验，需自己的材料与学费；')+hint+(d.practical?(r.status==='claim'?'实作已完成，待向梁木匠交付。':r.status==='active'?'实作：'+d.name+'；选择做法并备料，逾期可能失约。':'可接洽：'+d.name+'；需累计'+d.required+'经验、关系'+d.trust+'。'):(r.status==='claim'?'高级订单：'+d.name+'已完成，待实际付款。':r.status==='active'?'高级订单：'+d.name+'待制作。':'下一目标：Lv'+(d.required===300?3:4)+' / 累计'+d.required+'，'+d.name+'；关系'+d.trust+'。'));}
+

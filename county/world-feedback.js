@@ -1,5 +1,5 @@
-import {rememberExperience} from './county-life.js?v=5.71.0';
-import {cooperationRefusal} from './npc-social.js?v=5.71.0';
+import {rememberExperience} from './county-life.js?v=5.71.1';
+import {cooperationRefusal} from './npc-social.js?v=5.71.1';
 // Finite local responses and events; no repeating daily or lifetime simulation.
 export const EVENTS={
  ferry:{name:'旧渡口修栈道',place:'dock',holder:'boatman',offset:1,days:2,description:'栈道受阻期间进出旧渡口多走15分钟，柳溪原定补货暂缓、脚夫名额缩减；到青石码头找船家接洽。可交木料2份修补（45分钟/精力10）；熟手搬运可改用90分钟/精力20实际劳作。支付8文来自船家余额。'},
@@ -68,3 +68,4 @@ export function feedbackOptions(s){const f=s.adventures.feedback,out=[],add=(id,
 }
 export function feedbackSummary(s){const f=s.adventures.feedback;return Object.entries(EVENTS).map(([id,d])=>{const begin=f.startDay+d.offset,end=begin+d.days,status=f.events[id];return d.name+' · 第'+begin+'—'+end+'日 · '+(id==='ferry'&&ferryRepairDone(s)?status==='joined'?'已参与':'已由实际修补解除，不重复接单':id==='ferry'&&!status&&s.day>=ferryWindows(s).end?'通行已恢复，接洽结束':status==='joined'?'已参与':status==='ignored'?'未参与，乡邻自行收尾':status==='withdrew'?'提前退出':status==='entered'?'正在交手':s.day<begin?'预告':s.day<=end?'开放中':'已结束')+' · '+d.description;});}
 export function feedbackDialogue(s,id){const v=s.adventures.feedback.followups[id],base=v==='helped'?'后续合作已结清，对方记得你的实际帮助。':v==='explained'?'你已说清经过，这件事有了交代。':v==='declined'?'你婉拒了后续，对方不会继续催办。':null,route=['merchant','boatman','stallholder'].includes(id)?tradeRouteNotice(s,id==='merchant'?'market':id==='boatman'?'dock':'liuxi'):'';return [base,route].filter(Boolean).join(' ')||null;}
+

@@ -1,25 +1,25 @@
-import {wreckSummary,wreckRecipeKnown} from './wreck.js?v=5.71.0';
-import {forestTasks} from './forest-contracts.js?v=5.71.0';
-import {ASSESSMENTS,assessmentBlocker,assessmentSummary} from './assessments.js?v=5.71.0';
-import {fortSummary} from './fort.js?v=5.71.0';
-import {raidSummary} from './raid.js?v=5.71.0';
-import {dungeonSummary} from './dungeon.js?v=5.71.0';
-import {cultureTasks} from './culture.js?v=5.71.0';
-import {professionalTasks} from './professionals.js?v=5.71.0';
-import {countyLifeTasks} from './county-life.js?v=5.71.0';
-import {SPOILS} from './spoils.js?v=5.71.0';
-import {COOPERATIONS,companionSummary} from './companions.js?v=5.71.0';
-import {places,people,markets,items} from './content.js?v=5.71.0';
-import {QUESTS} from './adventure-data.js?v=5.71.0';
-import {BUSINESSES,businessFarmProfile,businessAwaitingPayment} from './business.js?v=5.71.0';
-import {CRAFTS,craftBlocker,craftPlan} from './crafts.js?v=5.71.0';
-import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.71.0';
-import {marketPrice} from './commerce.js?v=5.71.0';
-import {districtStatus} from './society.js?v=5.71.0';
-import {OUTINGS} from './outings.js?v=5.71.0';
-import {MENTOR_TASKS} from './player-mentor.js?v=5.71.0';
-import {POLICE_JOBS} from './law.js?v=5.71.0';
-import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.71.0';
+import {wreckSummary,wreckRecipeKnown} from './wreck.js?v=5.71.1';
+import {forestTasks} from './forest-contracts.js?v=5.71.1';
+import {ASSESSMENTS,assessmentBlocker,assessmentSummary} from './assessments.js?v=5.71.1';
+import {fortSummary} from './fort.js?v=5.71.1';
+import {raidSummary} from './raid.js?v=5.71.1';
+import {dungeonSummary} from './dungeon.js?v=5.71.1';
+import {cultureTasks} from './culture.js?v=5.71.1';
+import {professionalTasks} from './professionals.js?v=5.71.1';
+import {countyLifeTasks} from './county-life.js?v=5.71.1';
+import {SPOILS} from './spoils.js?v=5.71.1';
+import {COOPERATIONS,companionSummary} from './companions.js?v=5.71.1';
+import {places,people,markets,items} from './content.js?v=5.71.1';
+import {QUESTS} from './adventure-data.js?v=5.71.1';
+import {BUSINESSES,businessFarmProfile,businessAwaitingPayment} from './business.js?v=5.71.1';
+import {CRAFTS,craftBlocker,craftPlan} from './crafts.js?v=5.71.1';
+import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.71.1';
+import {marketPrice} from './commerce.js?v=5.71.1';
+import {districtStatus} from './society.js?v=5.71.1';
+import {OUTINGS} from './outings.js?v=5.71.1';
+import {MENTOR_TASKS} from './player-mentor.js?v=5.71.1';
+import {POLICE_JOBS} from './law.js?v=5.71.1';
+import {THREADS,threadEligible,goalProgress} from './threads.js?v=5.71.1';
 // A read-only projection of existing save data. Never enrolls, settles, or moves a player.
 export function nextRoad(s,to){if(s.place===to)return null;const queue=[[s.place]],seen=new Set();while(queue.length){const path=queue.shift(),last=path.at(-1);if(last===to)return path[1];if(seen.has(last))continue;seen.add(last);for(const p of places[last].routes)queue.push([...path,p]);}return null;}
 const materialBlock=(s,input)=>Object.entries(input).filter(([k,n])=>s.bag[k]<n).map(([k,n])=>'缺'+items[k]+(n-s.bag[k])+'份').join('；');
@@ -54,3 +54,4 @@ export function handbook(s){const a=s.adventures,cards=[];const add=(title,place
  for(const [id,d] of Object.entries(SPOILS)){const r=a.spoils.records[id];if(r.state==='sealed')continue;if(r.coins||r.gear||Object.values(r.goods).some(Boolean))add(d.name,s.place,'打开留存钱物，分别拾取；同名装备冲突时旧物保留。',0,'铜钱'+r.coins+'文，装备'+(r.gear?EQUIPMENT[r.gear.id].name:'已取')+'，不自动穿戴。','','spoils');if(r.stolen.status==='held')add('有主失物 · '+d.name,r.stolen.identified?people[d.owner].place:'county','辨认后归还原主，或去县衙代还；明知留下会影响关系。',0,'实际失物独立留存，不混入可卖背包。','','spoils');if(r.stolen.status==='kept')add('补还失物 · '+d.name,'county','备原数钱物和2文转交费，向县衙补还；不清除已有案件。',0,'欠还'+r.stolen.value+(d.kind==='coins'?'文':'份干粮')+'。','','spoils');}
  for(const task of countyLifeTasks(s))add(task.title,task.place,task.next,task.due,task.goods,task.blocker??'',task.group);
  const critical=['人生已结束','县城拦查','林间脱困'];cards.sort((x,y)=>Number(critical.includes(y.title))-Number(critical.includes(x.title))||(x.due||Infinity)-(y.due||Infinity));return {goal:goalProgress(s),cards};}
+

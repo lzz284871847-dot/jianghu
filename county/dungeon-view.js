@@ -1,4 +1,4 @@
-import {dungeonOptions,dungeonPlan} from './dungeon.js?v=5.71.0';
+import {dungeonOptions,dungeonPlan} from './dungeon.js?v=5.71.1';
 
 // Read-only presentation of the finite expedition. Actions and validation stay in dungeon.js.
 const names=['','入口岔路','有限矿堆','塌落支巷','返回洞口'];
@@ -27,3 +27,4 @@ export function renderDungeonScene(s,{el,button,run,visible=()=>true}){
  for(const group of data.groups){const options=group.options.filter(a=>visible(a.id));if(!options.length)continue;const area=el('section','','mine-object');area.append(el('h4',group.title),el('p',group.text,'mine-object-text'));for(const a of options)area.append(optionRow(a));root.append(area);}
  if(data.dismiss)root.append(optionRow(data.dismiss));return root;
 }
+

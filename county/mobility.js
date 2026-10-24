@@ -1,7 +1,7 @@
-import {fieldBonus} from './field-skills.js?v=5.71.0';
-import {places} from './content.js?v=5.71.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
-import {injuryEffects} from './injury.js?v=5.71.0';
+import {fieldBonus} from './field-skills.js?v=5.71.1';
+import {places} from './content.js?v=5.71.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.1';
+import {injuryEffects} from './injury.js?v=5.71.1';
 export const BODY_ARTS=['footwork','cloud_step'];
 export const makeMobility=()=>({art:null});
 export function mobilityValid(s){const m=s.mobility;return !!m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===1&&(m.art===null||BODY_ARTS.includes(m.art)&&s.martial?.known[m.art]===true);}
@@ -29,3 +29,4 @@ export function bodyFleeBlocker(s){if(!s.combat||Object.hasOwn(s.combat,'hp')||s
 export function bodyFleeBonus(s){const b=bodyStats(s);return b?Math.min(.18,.04+b.points/4000+(b.tier===3?.04:0)):0;}
 export function gainBodyUse(s,challenging=false){const b=bodyStats(s);if(!b)return;const m=s.martial,id=b.id;m.practice[id]=Math.min(m.experience[id]<6?Math.max(120,m.practice[id]):2400,m.practice[id]+2);m.insight[id]=Math.min(2400,m.insight[id]+1);if(challenging)m.experience[id]=Math.min(2400,m.experience[id]+2);s.result?.push(b.name+'实际运用：熟练+2、领悟+1'+(challenging?'、身法运用经验+2':'')+'（封顶不再增加）。');}
 export function mobilityOptions(s){const out=[];if(s.place==='school')out.push({id:'mobility:guide',label:'了解轻功与身法',preview:'人物页学习基础步法（8文），独立选用身法并练习；30点可赶路、120点可初步越障。可配合刀剑使用；精力不足或腿伤仍能普通步行。'});return out;}
+
