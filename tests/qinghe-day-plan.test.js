@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {fresh,act,move,trade,restore} from '../county/engine.js';
-import {dayOptions,dayOptionSkill,daySkillGroups,parseDayNumbers,runDayPlan} from '../county/day-plan.js';
+import {countyDayOptions,performDayOption,dayOptions,dayOptionSkill,daySkillGroups,parseDayNumbers,runDayPlan} from '../county/day-plan.js';
+import {places} from '../county/content.js';
 const numbers=(list,...ids)=>ids.map(id=>list.findIndex(a=>a.id===id)+1);
 test('number syntax is unambiguous, validated before action, and disallows duplicate work',()=>{
  assert.deepEqual(parseDayNumbers('126',20),[1,2,6]);assert.deepEqual(parseDayNumbers('1 2 12',20),[1,2,12]);assert.deepEqual(parseDayNumbers('#12',20),[12]);assert.deepEqual(parseDayNumbers('#1 #2 #12',20),[1,2,12]);
@@ -40,4 +41,24 @@ test('grouping is read-only, includes only present options, and preserves each o
 test('numbers from skill-grouped lists still execute frozen action IDs in the selected order',()=>{
  const s=fresh(),manual=structuredClone(s),snapshot=daySkillGroups(dayOptions(s)).flatMap(g=>g.options);const picked=numbers(snapshot,'act:work','act:rest','act:wait');const out=runDayPlan(s,snapshot,picked);assert.ok(act(manual,'work'));assert.ok(act(manual,'rest'));assert.ok(act(manual,'wait'));assert.deepEqual(s,manual);assert.equal(out.report.length,3);
  const trader=fresh();trader.place='market';const groups=daySkillGroups(dayOptions(trader)),trades=groups.find(g=>g.key==='trade').options;assert.ok(trades.every(a=>dayOptionSkill(a)==='trade'));const other=structuredClone(trader);const result=runDayPlan(trader,trades,numbers(trades,'buy:food'));assert.ok(trade(other,'buy','food'));assert.deepEqual(trader,other);assert.equal(result.report.length,1);
+});
+
+test('county catalogue gathers all sixteen locations by real skills without altering progress or exposing locked resources',()=>{
+ const s=fresh();s.bag.pick=1;s.bag.rod=1;const before=structuredClone(s),options=countyDayOptions(s);
+ assert.deepEqual(s,before);assert.ok(options.some(a=>a.id==='at:fields:act:vegetables'));assert.ok(options.some(a=>a.id==='at:mine:act:ore'));assert.ok(!options.some(a=>a.key==='fine_ore'));assert.ok(!options.some(a=>a.key==='hardwood'));
+ const fish=daySkillGroups(options).find(g=>g.key==='fish');assert.ok(new Set(fish.options.map(a=>a.place)).size>=2);assert.ok(options.every(a=>!a.remote||a.kind!=='move'));assert.equal(options.filter(a=>a.key==='rest').length,1);assert.equal(new Set(options.map(a=>a.id)).size,options.length);
+ for(const place of Object.keys(places)){const projected=structuredClone(s);projected.place=place;const expected=dayOptions(projected).filter(a=>place===s.place||a.kind!=='move'&&!(a.kind==='act'&&['rest','wait','waitMorning','eat','heal'].includes(a.key)));assert.equal(options.filter(a=>a.place===place).length,expected.length,place);}
+ s.skills.mining=30;assert.ok(countyDayOptions(s).some(a=>a.key==='fine_ore'));assert.deepEqual(restore(JSON.stringify(before)),before);
+});
+test('remote numbered work stops for travel, then explicitly walks only the next real road without doing work',()=>{
+ const s=fresh(),before=structuredClone(s),list=countyDayOptions(s),id='at:fields:act:vegetables';let saves=0;
+ const out=runDayPlan(s,list,numbers(list,id,'act:work'),()=>saves++);assert.deepEqual(s,before);assert.equal(out.reviewId,id);assert.match(out.stop,/需先按道路前往/);assert.equal(out.report.length,0);assert.equal(saves,0);
+ assert.ok(performDayOption(s,id));const manual=structuredClone(before);assert.ok(move(manual,'village'));assert.deepEqual(s,manual);assert.equal(s.skills.farming,0);assert.equal(s.place,'village');
+ assert.ok(performDayOption(s,id));assert.ok(move(manual,'fields'));assert.deepEqual(s,manual);assert.equal(s.skills.farming,0);assert.ok(!countyDayOptions(s).some(a=>a.id===id));
+ const local=countyDayOptions(s),done=runDayPlan(s,local,numbers(local,'act:vegetables'));assert.ok(act(manual,'vegetables'));assert.deepEqual(s,manual);assert.equal(done.report.length,1);
+});
+test('county plans recheck materials and movement locks and never reuse a local number in a different place',()=>{
+ const s=fresh();s.bag.pick=1;const list=countyDayOptions(s),id='at:mine:act:ore';assert.ok(list.some(a=>a.id===id));s.bag.pick=0;const before=structuredClone(s);assert.equal(runDayPlan(s,list,numbers(list,id)).reviewId,null);assert.equal(performDayOption(s,id),false);assert.deepEqual(s,before);
+ const local=list.find(a=>a.id==='act:work');s.place='dock';const moved=structuredClone(s);assert.match(runDayPlan(s,[local],[1]).stop,/不能办理/);assert.deepEqual(s,moved);
+ for(const change of [s=>s.pending={type:'bandit'},s=>s.combat={},s=>s.dead=true,s=>s.dungeon.status='active']){const blocked=fresh();change(blocked);assert.deepEqual(countyDayOptions(blocked),[]);assert.equal(performDayOption(blocked,'at:fields:act:vegetables'),false);}
 });
