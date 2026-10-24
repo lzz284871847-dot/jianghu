@@ -1,4 +1,4 @@
-import {resources,places,items,recipes} from './content.js?v=5.72.0';
+import {resources,places,items,recipes} from './content.js?v=5.73.0';
 // Derive prose from an action that has already settled. No random calls or state writes.
 const goods=(b,s,keys)=>keys.filter(k=>s.bag[k]>b.bag[k]).map(k=>items[k]+'×'+(s.bag[k]-b.bag[k])).join('、');
 export function actionNarrative(b,s,title){

@@ -1,15 +1,15 @@
-import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.72.0';
-import {places,people,resources,markets,items,recipes,skills} from './content.js?v=5.72.0';
-import {ARTISANS} from './professional-data.js?v=5.72.0';
-import {CRAFTS} from './crafts.js?v=5.72.0';
-import {jobBlocker,jobPreview} from './livelihood.js?v=5.72.0';
-import {npcPlace} from './world.js?v=5.72.0';
-import {activityGroups} from './activity-layout.js?v=5.72.0';
-import {activityKnown,resourceKnown} from './skill-guide.js?v=5.72.0';
-import {outingMovementBlocker} from './outings.js?v=5.72.0';
-import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.72.0';
-import {tradePrice} from './civic.js?v=5.72.0';
-import {districtStatus} from './society.js?v=5.72.0';
+import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.73.0';
+import {places,people,resources,markets,items,recipes,skills} from './content.js?v=5.73.0';
+import {ARTISANS} from './professional-data.js?v=5.73.0';
+import {CRAFTS} from './crafts.js?v=5.73.0';
+import {jobBlocker,jobPreview} from './livelihood.js?v=5.73.0';
+import {npcPlace} from './world.js?v=5.73.0';
+import {activityGroups} from './activity-layout.js?v=5.73.0';
+import {activityKnown,resourceKnown} from './skill-guide.js?v=5.73.0';
+import {outingMovementBlocker} from './outings.js?v=5.73.0';
+import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.73.0';
+import {tradePrice} from './civic.js?v=5.73.0';
+import {districtStatus} from './society.js?v=5.73.0';
 const auxiliary={social:'人物往来',affairs:'江湖事务',martial:'武学与身法',daily:'休整与出行'};
 // Classification only: no eligibility, journey, action, or save changes.
 export function dayOptionSkill(a){
@@ -50,17 +50,39 @@ export function dayOptions(s){
  if(!s.adventures.law.pursuit&&!outingMovementBlocker(s))for(const to of places[s.place].routes)add('move',to,'去'+places[to].name,'只走这一段路；到达后重新安排');
  return rows;
 }
+// Read-only county catalogue at the current time; arrival may change eligibility.
+export function dayRoute(from,to){
+ const queue=[[from]],seen=new Set([from]);
+ for(const path of queue){const last=path.at(-1);if(last===to)return path.slice(1);for(const next of places[last].routes)if(!seen.has(next)){seen.add(next);queue.push([...path,next]);}}
+ return [];
+}
+export function countyDayOptions(s){
+ const local=dayOptions(s);if(!local.length)return [];
+ const rows=local.map(a=>({...a,place:s.place,remote:false}));
+ if(outingMovementBlocker(s))return rows;
+ for(const place of Object.keys(places)){
+  if(place===s.place)continue;const route=dayRoute(s.place,place);if(!route.length)continue;
+  const projected=structuredClone(s);projected.place=place;
+  for(const a of dayOptions(projected)){
+   // Rest, food, waiting and exits belong to the player's actual location.
+   if(a.kind==='move'||a.kind==='act'&&['rest','wait','waitMorning','eat','heal'].includes(a.key))continue;
+   rows.push({...a,id:'at:'+place+':'+a.id,place,remote:true,route});
+  }
+ }
+ return rows;
+}
 export function parseDayNumbers(input,count){
  const raw=String(input).trim();if(!raw)throw Error('请先填写事项编号。');
  let parts;if(/^\d+$/.test(raw)&&!raw.includes('0'))parts=[...raw];else if(/^#\d+$/.test(raw))parts=[raw.slice(1)];else if(/^[#\d\s,，、]+$/.test(raw)&&/[\s,，、]/.test(raw))parts=raw.split(/[\s,，、]+/).filter(Boolean).map(p=>p.replace(/^#/,''));else throw Error('连写126代表1、2、6；两位数请用空格分隔，单项用#12。');
  if(parts.some(p=>!/^\d+$/.test(p)))throw Error('请填写有效编号。');const numbers=parts.map(Number);if(!numbers.length||numbers.some(n=>!Number.isSafeInteger(n)||n<1||n>count))throw Error('编号不在当前清单内，请核对后再执行。');if(new Set(numbers).size!==numbers.length)throw Error('同一事项请只选择一次。');return numbers;
 }
-export function performDayOption(s,id){const a=dayOptions(s).find(a=>a.id===id);if(!a)return false;return a.kind==='act'?act(s,a.key):a.kind==='talk'?talk(s,a.key):a.kind==='move'?move(s,a.key):['buy','sell'].includes(a.kind)?trade(s,a.kind,a.key):adventureAction(s,a.key);}
+export function performDayOption(s,id){if(id.startsWith('at:')){const destination=countyDayOptions(s).find(a=>a.id===id);return !!destination&&move(s,destination.route[0]);}const a=dayOptions(s).find(a=>a.id===id);if(!a)return false;return a.kind==='act'?act(s,a.key):a.kind==='talk'?talk(s,a.key):a.kind==='move'?move(s,a.key):['buy','sell'].includes(a.kind)?trade(s,a.kind,a.key):adventureAction(s,a.key);}
 export function runDayPlan(s,snapshot,numbers,onStep=()=>{}){
  const report=[],day=s.day,place=s.place;let stop='',reviewId=null;
  for(const number of numbers){
-  const frozen=snapshot[number-1],a=dayOptions(s).find(a=>a.id===frozen.id);
+  const frozen=snapshot[number-1],a=frozen?.remote?countyDayOptions(s).find(a=>a.id===frozen.id):(!frozen?.place||frozen.place===s.place)?dayOptions(s).find(a=>a.id===frozen?.id):null;
   if(!a){stop='第'+number+'项目前已不能办理，余下安排未执行。';break;}
+  if(a.remote){reviewId=a.id;stop='第'+number+'项「'+a.label+'」在'+places[a.place].name+'，需先按道路前往；尚未移动或办理，余下安排已停止。';break;}
   if(a.review){reviewId=a.id;stop='第'+number+'项「'+a.label+'」需要你单独决定，尚未执行；余下安排已停止。';break;}
   const ok=performDayOption(s,a.id);report.push({number,label:a.label,result:[...s.result],ok});onStep();
   if(!ok){stop='这项未办成，余下安排已停止。';break;}
