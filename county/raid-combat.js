@@ -1,8 +1,8 @@
-import {MARTIAL_ARTS,OPPONENTS,INJURIES} from './martial-data.js?v=5.71.0';
-import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.0';
-import {usableMoves} from './martial-moves.js?v=5.71.0';
-import {basicAttackReach,newCombat} from './combat-core.js?v=5.71.0';
-import {opponentBrief} from './trials.js?v=5.71.0';
+import {MARTIAL_ARTS,OPPONENTS,INJURIES} from './martial-data.js?v=5.71.1';
+import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.1';
+import {usableMoves} from './martial-moves.js?v=5.71.1';
+import {basicAttackReach,newCombat} from './combat-core.js?v=5.71.1';
+import {opponentBrief} from './trials.js?v=5.71.1';
 
 // A read-only snapshot of existing combat rules; no score, predicted win rate or new gate.
 export function raidCombatPreview(s,foe){
@@ -19,3 +19,4 @@ export function raidCombatPreview(s,foe){
  const details=range+' '+weapon.text+'；'+armor.text+'。'+(moves.length?'已解锁招式：'+moves.map(m=>m.name+'（距离'+m.reach+'，精力'+m.energy+'）').join('、')+'。':'尚无已解锁招式。')+'尚可交手'+Math.max(0,2-s.raid.battles)+'场（本副本最多两场）。交手会提高警戒到2，消耗实际气血、精力与耐久，可能永久死亡；同伴不代打。撤退可能失败，失败后对手仍可追击；距离、伤势和精力影响脱身。获胜不回血、不补精力、不追加掉落；换装换艺须先在寨外准备，入寨后不能临时更换；潜入与交涉仍按实际条件办理，撤回后副本不重开。';
  return {brief,details,artName:art.name,known,reach,maxReach,bonuses,weapon:weapon.text,armor:armor.text,notes};
 }
+

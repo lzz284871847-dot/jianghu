@@ -1,6 +1,6 @@
-import {assessmentModifiers} from './assessments.js?v=5.71.0';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.71.0';
-import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.0';
+import {assessmentModifiers} from './assessments.js?v=5.71.1';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.71.1';
+import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.1';
 export const TRIALS={advanced:{name:'进阶挑战',foe:'staffhand',attack:0,defense:0,advice:'棍手可在距离3出手；拳掌要逼近，长兵可在合适距离应战。建议熟练一阶武艺与完好护甲。'},expert:{name:'高手挑战',foe:'chief',attack:2,defense:1,advice:'头目擅长强攻，重击威力高；防守和护甲能减少损伤。建议二阶熟练武艺、适配兵器与护甲。'},peak:{name:'县境顶尖挑战',foe:'master',attack:4,defense:3,advice:'高手会虚招拆防、反击重击；别只反复防守或重击。建议三阶武艺、已解锁的实用招式与进阶兵甲。'}};
 export const makeTrials=()=>({active:null,records:Object.fromEntries(Object.keys(TRIALS).map(id=>[id,{attempts:0,wins:0,escapes:0,deaths:0}]))});
 export function trialsValid(s){const t=s.adventures.trials,obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=x=>Number.isSafeInteger(x)&&x>=0&&x<=100000;if(!obj(t)||Object.keys(t).length!==2||!obj(t.records)||Object.keys(t.records).length!==3)return false;for(const id of Object.keys(TRIALS)){const r=t.records[id];if(!obj(r)||Object.keys(r).length!==4||!Object.values(r).every(int)||r.deaths>1||r.deaths&&!s.dead||r.attempts!==r.wins+r.escapes+r.deaths+(t.active===id?1:0))return false;}return t.active===null||!!TRIALS[t.active]&&s.place==='school'&&s.combat?.opponent===TRIALS[t.active].foe&&!s.combat.practice;}
@@ -10,3 +10,4 @@ export function trialBlocker(s,id){const t=s.adventures?.trials;if(!TRIALS[id])r
 export function opponentBrief(id){const style=OPPONENTS[id]?.style;return ({rush:'近距离猛攻与重击',cautious:'谨慎防守，注意虚招拆架',reach:'长兵距离3有优势，贴身或长兵应战',tempo:'抢攻节奏快，注意防护与精力',pressure:'持续强攻，重击伤害较高',defend:'防守稳固，先拆架再进攻',counter:'守中反击，重击容易露破绽',kite:'贴近后会退开，注意距离变化',adapt:'会虚招拆防并反击重击，交替应对'})[style]||'注意距离、防守与撤离风险';}
 export function trialPreview(s,id){const d=TRIALS[id],b=equipmentBonuses(s),art=MARTIAL_ARTS[s.martial.equipped],weapon=EQUIPMENT[s.equipment.equipped.weapon];return d.name+' · '+OPPONENTS[d.foe].name+'；伤害额外+'+d.attack+'、护身减伤'+d.defense+'，只在本挑战生效。'+d.advice+' 当前气血'+s.hp+'、精力'+s.energy+'，兵器攻击加成'+b.attack+'、护甲减伤'+b.defense+'。'+(weapon&&weapon.kind!==art?.category?'兵器与当前武学不适配，攻击加成无效。':'')+(Object.keys(s.injuries).length?'仍有伤势，建议先治疗。':'')+'可能永久死亡，撤退可能失败；不自动恢复，不发钱物。';}
 export function trialSummary(s){return Object.entries(TRIALS).map(([id,d])=>{const r=s.adventures.trials.records[id];return d.name+'：'+(r.wins?'已完成':'尚未获胜')+' · 尝试'+r.attempts+' / 获胜'+r.wins+' / 撤离'+r.escapes+' / 死亡'+r.deaths+(s.adventures.trials.active===id?' · 正在交手':'');});}
+

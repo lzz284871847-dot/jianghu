@@ -1,6 +1,6 @@
-import {rememberExperience} from './county-life.js?v=5.71.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
-import {TRIALS} from './trials.js?v=5.71.0';
+import {rememberExperience} from './county-life.js?v=5.71.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.1';
+import {TRIALS} from './trials.js?v=5.71.1';
 export const MENTOR_TASKS={delivery:{name:'送木料到作坊',description:'3日内交自己木料2份给许铁匠，再回武馆结算8文；交付后材料用于作业，撤回不退。'},inquiry:{name:'查访竹林小径',description:'3日内查明竹林小径。可稳妥查访45分钟/精力8；冒险快查15分钟/精力8、60%查明、失败擦伤6气血；师徒信任4可在街市凭身份向掌柜查问30分钟/精力1。回馆结算6文。'},spar:{name:'实际切磋考察',description:'3日内在武馆付正常陪练费，至少实际交手3回合并收手，再向师傅交代；不足3回合记未完成。保留气血、精力与耐久耗费，可随时收手，无钱物奖励。'}};
 export const makePlayerMentor=()=>({member:false,joinedDay:0,trust:0,tasks:{delivery:'none',inquiry:'none',spar:'none'},active:null,dueDay:0,stage:0,sparring:false,lessonDay:0,lastDrill:null,parcelHint:false});
 const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=(x,max)=>Number.isSafeInteger(x)&&x>=0&&x<=max;
@@ -63,3 +63,4 @@ export function playerMentorOptions(s){const m=s.adventures.mentor,out=[],add=(k
  if(m.active)add('withdraw','撤回师门事务','不罚钱，信任-1；本项记失败，不重开，已交材料不退。');if(m.active==='delivery'&&!m.stage&&s.place==='workshop')add('step:deliver','交师门木料给作坊','自己木料2份；30分钟/精力4；材料实际消耗，回馆结算8文。');if(m.active==='inquiry'&&!m.stage){if(s.place==='bamboo'){add('step:careful','查访 · 稳妥察看','45分钟/精力8，查明小径，无擦伤或钱物奖励，回馆交代。');add('step:quick','查访 · 冒险快查','15分钟/精力8；60%查明，失败擦伤6气血、信任-1，无报酬。');}if(s.place==='market'&&m.trust>=4)add('step:identity','师门身份 · 向掌柜查问','30分钟/精力1；凭门人身份取得情况，回馆交代。');}if(s.place==='market'&&m.trust>=4&&!m.parcelHint&&s.adventures.quest?.id==='parcel'&&!s.adventures.quest.stage)add('hint:parcel','师门接洽 · 失物线索','30分钟/精力1；实际竹林搜寻70%提高到85%，仍有失败，无预付钱物。');return out;}
 export function playerMentorSummary(s){const m=s.adventures.mentor;return ['师门：'+(m.member?'周师傅门下':m.joinedDay?'已退出':'未拜师')+'；师徒信任'+m.trust+'/10；已完成'+Object.values(m.tasks).filter(x=>x==='done').length+'/3项。'+(m.active?'当前'+MENTOR_TASKS[m.active].name+(m.stage?'，步骤已完成，待回馆交代':'，截止第'+m.dueDay+'日，按地点完成步骤'):'没有未完师门事务。'),...Object.entries(m.tasks).filter(([,v])=>v==='done'||v==='failed').map(([id,v])=>MENTOR_TASKS[id].name+'：'+(v==='done'?'已完成':'未完成，不重开'))];}
 export function playerMentorDialogue(s,id){if(id!=='master'||!s.adventures.mentor.joinedDay)return null;const m=s.adventures.mentor;return !m.member?'师徒经历仍保留；退出后，原有付费求学渠道仍开放。':m.trust>=4?'周师傅认可你的实际履约或练习，愿意付费指点和帮你备战。':'周师傅仍愿授艺；先实际履约再谈专门指点，失约会影响师徒信任。';}
+

@@ -1,9 +1,9 @@
-import {wreckRecipeKnown} from './wreck.js?v=5.71.0';
-import {PRACTICE_XP,makingGrowth,growthPreview} from './practice-growth.js?v=5.71.0';
-import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.71.0';
-import {items} from './content.js?v=5.71.0';
-import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.71.0';
-import {gain} from './progression.js?v=5.71.0';
+import {wreckRecipeKnown} from './wreck.js?v=5.71.1';
+import {PRACTICE_XP,makingGrowth,growthPreview} from './practice-growth.js?v=5.71.1';
+import {craftGuidance,useCraftGuidance} from './professionals.js?v=5.71.1';
+import {items} from './content.js?v=5.71.1';
+import {EQUIPMENT,equipmentWorkCost,artisanRecipeKnown} from './equipment.js?v=5.71.1';
+import {gain} from './progression.js?v=5.71.1';
 export const CRAFT_SKILLS=['tailor','leatherwork','woodwork'];
 export const CRAFT_ITEMS=['cloth','hide','leather','fine_cloth','hardwood','cord','trap_probe'];
 const gear=(skill,required,input,fee,chance,extra={})=>({skill,required,input,fee,chance,gear:true,...extra});
@@ -65,3 +65,4 @@ export function craftAction(s,id,{settle,rng}){
  },{[d.skill]:repair?PRACTICE_XP.repair:success?makingGrowth(d).success:makingGrowth(d).failure});
 }
 export function craftOptions(s){if(s.place!=='workshop')return [];return Object.entries(CRAFTS).flatMap(([key,d])=>['make',...(d.gear&&Object.hasOwn(s.equipment.owned,key)?['repair']:[])].map(kind=>{const p=craftPlan(s,key,kind);return {id:'craft:'+kind+':'+key,label:(kind==='repair'?'自行修理 · ':'亲手制作 · ')+p.name,preview:(d.wreckRecipe?'废船独有配方'+(wreckRecipeKnown(s)?'已解锁':'未解锁')+'；粗布1制绳线3，较原制绳法多1份、更费工时；不保证成功。 ':'')+(d.recipeOrder?'独有配方'+(artisanRecipeKnown(s,key)?'已解锁':'未解锁')+'；'+EQUIPMENT[key].use+' ':'')+'需'+({tailor:'裁缝',leatherwork:'制革',woodwork:'木工'}[p.skill])+p.required+(p.extraSkill?' / '+({smelt:'冶炼',leatherwork:'制革'}[p.extraSkill])+p.extraRequired:'')+'；'+Object.entries(p.input).map(([k,n])=>items[k]+'×'+n).join('、')+'；台位费'+p.fee+'文，'+p.minutes+'分钟 / 精力'+p.energy+'；成功率'+Math.round(p.chance*100)+'%，制作失败损失全部投入。'+growthPreview(s,p.skill,p.energy,kind==='repair'?PRACTICE_XP.repair:makingGrowth(p).success,kind==='repair'?undefined:makingGrowth(p).failure),blocker:craftBlocker(s,key,kind)};}));}
+

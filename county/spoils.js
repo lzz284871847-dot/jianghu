@@ -1,8 +1,8 @@
-import {EQUIPMENT} from './equipment.js?v=5.71.0';
-import {items,people} from './content.js?v=5.71.0';
-import {marketPrice} from './commerce.js?v=5.71.0';
-import {travelBusy} from './npc-journeys.js?v=5.71.0';
-import {companionBusy} from './companions.js?v=5.71.0';
+import {EQUIPMENT} from './equipment.js?v=5.71.1';
+import {items,people} from './content.js?v=5.71.1';
+import {marketPrice} from './commerce.js?v=5.71.1';
+import {travelBusy} from './npc-journeys.js?v=5.71.1';
+import {companionBusy} from './companions.js?v=5.71.1';
 // These are saved physical reserves, not a reward table rolled on every victory.
 export const SPOILS={
  brawler:{name:'旧道莽汉的随身包',place:'oldroad',coins:4,goods:{food:1},gear:'farm_knife',durability:18,owner:'boatman',kind:'food',missing:1},
@@ -59,3 +59,4 @@ export function disposeEquipment(s,id,mode,{transact,advance}){const item=EQUIPM
  return transact(s,(mode==='sell'?'出售':'拆解')+item.name,mode==='sell'?15:30,mode==='sell'?1:6,()=>{const g={durability:e.owned[id],quality:e.quality[id]??1};delete e.owned[id];delete e.quality[id];if(mode==='sell'){p.coins-=price;s.coins+=price;s.adventures.spoils.sold[id]=[...stock,g];s.result.push('实际收款'+price+'文；原装备进入铁匠有限旧货库存，品质耐久原样保留。');}else{for(const [k,n] of Object.entries(out))s.bag[k]+=n;s.result.push('只回收常用材料：'+Object.entries(out).map(([k,n])=>items[k]+'×'+n).join('、')+'；不返还稀矿和工钱，原装备不再保留。');}},advance);}
 export function spoilOptions(s){const out=[];for(const [id,d] of Object.entries(SPOILS)){const r=s.adventures.spoils.records[id],add=(a,label,preview)=>out.push({id:'spoil:'+id+':'+a,label,preview});if(r.state==='sealed')continue;if(r.coins)add('coins','拾取铜钱 · '+d.name,'留存'+r.coins+'文，15分钟/精力1，只转移这份存货。');if(Object.values(r.goods).some(Boolean))add('goods','拾取物资 · '+d.name,Object.entries(r.goods).filter(([,n])=>n).map(([k,n])=>items[k]+'×'+n).join('、')+'；15分钟/精力1，库存不足保留。');if(r.gear)add('gear','拾取装备 · '+d.name,EQUIPMENT[r.gear.id].name+'，普通，耐久'+r.gear.durability+'/'+EQUIPMENT[r.gear.id].durability+'；同名装备已有时留存。');const m=r.stolen;if(m.status==='held'){if(!m.checked)add('identify','辨认失物 · '+d.name,'30分钟/精力2，70%辨明，熟悉原主95%；仅一次，未明可找原主核对。');if(s.place===people[d.owner]?.place){if(!m.identified)add('verify','请原主核对 · '+d.name,'15分钟；需原主在岗。');else add('return','归还原主 · '+d.name,'30分钟；返还实际失物，关系+2，无凭空谢礼。');}if(m.identified)add('keep','留下有主失物 · '+d.name,'钱物转入你手中，关系-3；以后补还需原物和2文转交费。');if(s.place==='county')add('office','县衙代还 · '+d.name,'30分钟，县衙代转实际原物，无奖励、不开新案件也不抹旧案。');}if(m.status==='kept'&&s.place==='county')add('repay','补还失物 · '+d.name,'自己的原数钱物和2文转交费；过往记录保留。');}return out;}
 export function spoilSummary(s){return Object.entries(SPOILS).filter(([id])=>s.adventures.spoils.records[id].state!=='sealed').map(([id,d])=>{const r=s.adventures.spoils.records[id];return d.name+'：'+(r.state==='empty'?'普通存货已取尽':'有留存钱物')+'；铜钱'+r.coins+'文，装备'+(r.gear?EQUIPMENT[r.gear.id].name:'已取')+'；失物'+({none:'无',held:r.stolen.identified?'已辨明待处置':'待辨认',kept:'已留下，可去县衙补还',returned:'已归还'})[r.stolen.status]+'。';});}
+

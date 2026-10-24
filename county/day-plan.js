@@ -1,13 +1,13 @@
-import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.71.0';
-import {places,people,resources,markets,items,recipes} from './content.js?v=5.71.0';
-import {jobBlocker,jobPreview} from './livelihood.js?v=5.71.0';
-import {npcPlace} from './world.js?v=5.71.0';
-import {activityGroups} from './activity-layout.js?v=5.71.0';
-import {activityKnown,resourceKnown} from './skill-guide.js?v=5.71.0';
-import {outingMovementBlocker} from './outings.js?v=5.71.0';
-import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.71.0';
-import {tradePrice} from './civic.js?v=5.71.0';
-import {districtStatus} from './society.js?v=5.71.0';
+import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.71.1';
+import {places,people,resources,markets,items,recipes} from './content.js?v=5.71.1';
+import {jobBlocker,jobPreview} from './livelihood.js?v=5.71.1';
+import {npcPlace} from './world.js?v=5.71.1';
+import {activityGroups} from './activity-layout.js?v=5.71.1';
+import {activityKnown,resourceKnown} from './skill-guide.js?v=5.71.1';
+import {outingMovementBlocker} from './outings.js?v=5.71.1';
+import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.71.1';
+import {tradePrice} from './civic.js?v=5.71.1';
+import {districtStatus} from './society.js?v=5.71.1';
 // Numbers describe one displayed snapshot. Execution always rechecks the live world.
 export function dayOptions(s){
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit||[s.fort,s.raid,s.dungeon,s.wreck].some(x=>x?.status==='active'))return [];
@@ -47,3 +47,4 @@ export function runDayPlan(s,snapshot,numbers,onStep=()=>{}){
  }
  return {report,stop,reviewId};
 }
+

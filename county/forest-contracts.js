@@ -1,9 +1,9 @@
-import {rememberExperience} from './county-life.js?v=5.71.0';
-import {growthPreview} from './practice-growth.js?v=5.71.0';
-import {places,people} from './content.js?v=5.71.0';
-import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.71.0';
-import {forestBonus,rainDelay,wornUtility,useUtility} from './equipment.js?v=5.71.0';
-import {addInjury} from './injury.js?v=5.71.0';
+import {rememberExperience} from './county-life.js?v=5.71.1';
+import {growthPreview} from './practice-growth.js?v=5.71.1';
+import {places,people} from './content.js?v=5.71.1';
+import {fieldChance,fieldRisk,useFieldClue} from './field-skills.js?v=5.71.1';
+import {forestBonus,rainDelay,wornUtility,useUtility} from './equipment.js?v=5.71.1';
+import {addInjury} from './injury.js?v=5.71.1';
 
 // Three finite jobs. Held medicine and game never enter saleable inventory twice.
 export const FOREST_CONTRACTS={
@@ -115,3 +115,4 @@ export function forestOptions(s,present){const out=[];for(const [id,d] of Object
  }}return out;}
 export const forestSummary=s=>Object.entries(FOREST_CONTRACTS).map(([id,d])=>{const r=s.forestContracts.records[id];return d.name+' · '+stateNames[r.status]+'；步骤'+r.step+'/'+d.maxStep+(r.route?'，'+labels[r.route]:'')+(r.extra?'；财物'+(r.extra==='found'?'找到':'未找到'):'')+(r.cargo?'；留存药材'+r.cargo+'份':'')+'。';});
 export function forestTasks(s){return Object.entries(FOREST_CONTRACTS).filter(([id])=>['active','claim'].includes(s.forestContracts.records[id].status)).map(([id,d])=>{const r=s.forestContracts.records[id],p=r.status==='claim'?d.home:forestPlan(s,id,actionsFor(id,r)[0]).place;return {title:d.name,place:p,next:r.status==='claim'?'找委托人实际付款，缺钱或无法接洽时整笔成果保留。':d.info,due:r.status==='claim'?0:Math.floor(r.due/1440)+1,goods:'截止时刻 '+Math.floor(r.due%1440/60)+':'+String(r.due%60).padStart(2,'0')+'；'+forestSummary(s).find(x=>x.startsWith(d.name)),group:'forest'};});}
+

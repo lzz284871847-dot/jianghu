@@ -1,6 +1,6 @@
-import {gain} from './progression.js?v=5.71.0';
-import {equipmentBonuses} from './equipment.js?v=5.71.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
+import {gain} from './progression.js?v=5.71.1';
+import {equipmentBonuses} from './equipment.js?v=5.71.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.1';
 // Finite, optional encounters. Compact results reuse the existing encounter map.
 export const VIGNETTES={inn:{name:'两张脚钱条',place:'inn'},road:{name:'官道上的断带',place:'road'},market:{name:'旧矿镐的刻痕',place:'market'},herb_dispute:{name:'竹林争药',place:'bamboo'}};
 export const VIGNETTE_STATES={herb_dispute:['heard','identified','settled','refused','fighting','won','taken','escaped','died','left'],inn:['heard','checked','hasty','calmed','done','left'],road:['heard','asked','helped','done','left'],market:['offer_good','offer_bad','known_good','known_bad','bought_good','bought_bad','closed_good','closed_bad','left']};
@@ -78,3 +78,4 @@ export const vignetteSummary=s=>Object.entries(VIGNETTES).filter(([key])=>record
 export function vignetteScene(s){const pair=Object.entries(VIGNETTES).find(([,d])=>d.place===s.place);if(!pair)return null;const [key,d]=pair;const st=record(s,key);return {title:d.name,text:st?labels[st]+'。'+(['heard','asked'].includes(st)?intros[key]:''):intros[key]};}
 
 export function settleVignetteCombat(s,c,log){const r=s.adventures?.exploration?.encounters;if(s.place!=='bamboo'||r?.herb_dispute!=='fighting'||c.opponent!=='brawler'||c.practice)return;r.herb_dispute=c.ended==='victory'?'won':c.ended==='death'?'died':'escaped';log.push(c.ended==='victory'?'挥棍者退开，采药客从自采药材中留下常见药材1份，可自主领取。双方的约定仍由他们自己处理。':c.ended==='death'?'竹林争药：介入后身亡。':'你脱身离开争执，未得到药材，不再重开；实际伤势和损耗保留。');}
+

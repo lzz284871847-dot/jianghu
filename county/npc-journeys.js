@@ -1,7 +1,7 @@
-import {alive} from './npc-mortality.js?v=5.71.0';
-import {namedResidents,saveResident} from './npc-residents.js?v=5.71.0';
-import {places} from './content.js?v=5.71.0';
-import {train} from './martial-progression.js?v=5.71.0';
+import {alive} from './npc-mortality.js?v=5.71.1';
+import {namedResidents,saveResident} from './npc-residents.js?v=5.71.1';
+import {places} from './content.js?v=5.71.1';
+import {train} from './martial-progression.js?v=5.71.1';
 export const makeJourneys=(day=1)=>({lastDay:day,records:{}});
 export const travelling=(s,id)=>{const v=s.npcWorld.journeys?.records[id];return !!v&&v.departedDay>v.returnedDay;};
 export const travelBusy=(s,id)=>travelling(s,id)||s.npcWorld.journeys?.records[id]?.returnedDay===s.day;
@@ -41,3 +41,4 @@ export function journeyDepartures(s,day){
  return notes;
 }
 export function journeySummary(s){const entries=Object.entries(s.npcWorld.journeys.records);return entries.length?entries.map(([id,v])=>{const p=namedResidents(s).find(p=>p.id===id);return p.name+' · '+(!alive(p)?'途中或归来后去世，游历记录保留':travelling(s,id)?'游历中：'+places[travelPlace(s,id)].name+'，第'+(v.departedDay+2)+'日预计归来':'第'+v.returnedDay+'日已归来')+' · 已完成'+v.completed+'次短途游历';}):['目前没有居民出发游历。'];}
+

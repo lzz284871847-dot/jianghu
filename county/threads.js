@@ -1,7 +1,7 @@
-import {rememberExperience} from './county-life.js?v=5.71.0';
-import {cooperationRefusal} from './npc-social.js?v=5.71.0';
-import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.71.0';
-import {gain} from './progression.js?v=5.71.0';
+import {rememberExperience} from './county-life.js?v=5.71.1';
+import {cooperationRefusal} from './npc-social.js?v=5.71.1';
+import {tradeRouteBlocked,EVENTS} from './world-feedback.js?v=5.71.1';
+import {gain} from './progression.js?v=5.71.1';
 // Finite follow-up opportunities; eligibility is earned from existing playable outcomes.
 export const GOALS={settle:{name:'谋生安顿',hint:'先做短工或一项委托，攒够12文可选择客栈短租；无需习武。'},artisan:{name:'手艺立足',hint:'通过采集、炼铁、种植或交易积累手艺，再选择一项经营；别把全部钱投入。'},martial:{name:'习武闯荡',hint:'武馆学一门入门武学，真实交手积累经验；陪练可收手，野外实战可能永久死亡。'},explore:{name:'县境游历',hint:'先准备口粮药材，搜寻两处旧址并处理一次县境冒险；可绕行或非战斗解决。'}};
 export const THREADS={
@@ -81,3 +81,4 @@ export function threadAction(s,id,{present,transact,advance,rng}){const onsite=(
 }
 export function goalProgress(s){const a=s.adventures,goal=a.threads.goal;if(goal==='none')return {name:'自由行动',hint:'近期目标可忽略，不限制接单、习武或出门。',checks:[]};const checks=goal==='settle'?[['完成一次委托或经营',a.done.length>0||Object.values(a.law.jobs).some(r=>r.status==='done')||Object.values(a.business.records).some(r=>r.status==='done')],['选择一次短租安顿',a.home.untilDay>0]]:goal==='artisan'?[['积累任一相关手艺6点',['farming','smelt','herb','trade'].some(k=>s.skills[k]>=6)],['实际结算一次经营',Object.values(a.business.records).some(r=>r.status==='done')]]:goal==='martial'?[['学会一门武学',Object.keys(s.martial.known).length>0],['通过实际出招积累经验',Object.values(s.martial.experience).some(n=>n>0)]]:[['实际搜寻两处旧址',Object.keys(a.sites).filter(k=>a.sites[k]!=='retreated').length>=2],['处理一次县境冒险',Object.values(a.outings.records).some(r=>r.outcome==='done')]];return {...GOALS[goal],checks};}
 export function threadOptions(s){const out=[];if(s.dead)return out;for(const [id,d] of Object.entries(THREADS)){const r=s.adventures.threads.records[id],add=(choice,label,preview=d.description)=>out.push({id:'thread:'+id+':'+choice,label,preview});if(r.status==='new'&&threadEligible(s,id)&&s.place===d.place){for(const choice of d.routes.filter(c=>!['safe','quick','check'].includes(c)))add(choice,({talk:'核账交涉',concede:'付2文了结',inspect:'检查接头',repair:'用铁料补牢',sort:'辨拣药材',supply:'交药复核',rebuild:'投入材料修整',tool:'用矿镐拆整',accept:'领取合作',tell:'陈述亲历'})[choice]+' · '+d.name);add('leave','不参与 · '+d.name,'无罚款，不改变原有玩法。');}if(r.status==='active'){add('leave','撤回 · '+d.name,'留存干粮归还，投入耗时不退。');if(id==='escort'&&r.step===0&&s.place==='ferry'){add('safe','供粮 · 稳妥步道','45分钟 / 精力8；保留原有道路路程，不瞬移。');add('quick','供粮 · 冒险近路','15分钟 / 精力12；30%擦伤8气血，可能永久死亡。');}if(id==='testimony'&&s.place==='road')add('check','核对道路见闻 · '+d.name,'45分钟 / 精力8，80%查明，失败结束无报酬。');}if((r.status==='claim'||id==='escort'&&r.status==='active'&&r.step===1)&&s.place===(id==='escort'?'liuxi':d.place))add('claim','交代 · '+d.name,'15分钟；实际支付'+d.reward+'文，付款人不足保留成果。');if(r.status==='failed'&&r.cargo)add('leave','领回留存干粮 · '+d.name,'背包需空位，无额外奖励。');}return out;}
+

@@ -1,5 +1,5 @@
-import {travelBusy} from './npc-journeys.js?v=5.71.0';
-import {alive} from './npc-mortality.js?v=5.71.0';
+import {travelBusy} from './npc-journeys.js?v=5.71.1';
+import {alive} from './npc-mortality.js?v=5.71.1';
 // Named, persistent relationships rather than globally uniform NPC reputation.
 export const BONDS=Object.freeze({
  'farmhand01:shopassistant':{a:'farmhand01',b:'shopassistant',kind:'friend'},
@@ -123,3 +123,4 @@ export function socialSummary(s){
 
 // Existing quarrel memory affects new voluntary cooperation, never an earned payment.
 export function cooperationRefusal(s,id){return s.socialActions?.[id]?.quarrel>=s.day-2?'仍记得近期争执，暂不愿与你新订合作；可以认真道歉，或过两日再来。':null;}
+

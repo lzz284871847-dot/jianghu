@@ -1,7 +1,7 @@
-import {tradeRouteBlocked} from './world-feedback.js?v=5.71.0';
-import {marketPrice} from './commerce.js?v=5.71.0';
-import {districtStatus} from './society.js?v=5.71.0';
-import {practiceAward,growthPreview} from './practice-growth.js?v=5.71.0';
+import {tradeRouteBlocked} from './world-feedback.js?v=5.71.1';
+import {marketPrice} from './commerce.js?v=5.71.1';
+import {districtStatus} from './society.js?v=5.71.1';
+import {practiceAward,growthPreview} from './practice-growth.js?v=5.71.1';
 // Three ways to perform the existing boatman's promise, with no new saved lifecycle.
 export const BOAT_METHODS={
  work:{name:'自备新木修货架',input:{wood:1},minutes:60,energy:10,chance:.7,xp:12},
@@ -28,3 +28,4 @@ export function boatWorkPlan(s,action='work'){
  return {...d,action,price,stock,chance,materialBlocker,brief:shortInput+'；'+d.minutes+'分钟/精力'+d.energy+'；成功率'+Math.round(chance*100)+'%。工钱5文另领，失败耗投入。',successXP:practiceAward(s,d.energy,d.xp),failureXP:practiceAward(s,d.energy,4),
   preview:context+input+'；'+d.minutes+'分钟/精力'+d.energy+'，船工精力8；当前成功率'+Math.round(chance*100)+'%。失败耗全部投入，信任及关系-1；成功后另领实际5文，材料成本另计。'+growthPreview(s,'woodwork',d.energy,d.xp,4)};
 }
+

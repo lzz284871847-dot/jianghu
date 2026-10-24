@@ -1,5 +1,5 @@
-import {items} from './content.js?v=5.71.0';
-import {addInjury} from './injury.js?v=5.71.0';
+import {items} from './content.js?v=5.71.1';
+import {addInjury} from './injury.js?v=5.71.1';
 // A single short expedition on the existing ferry map; its only recipe uses ordinary cord.
 export const makeWreck=()=>({status:'new',stage:0,route:null,branch:null,found:false});
 export const wreckRecipeKnown=s=>s.wreck?.status==='done'&&s.wreck.branch==='stern'&&s.wreck.found;
@@ -45,3 +45,4 @@ export function wreckValid(s){const r=s.wreck,e=makeWreck();if(!r||typeof r!=='o
  if(r.status==='new')return Object.entries(e).every(([k,v])=>r[k]===v);
  if(!r.stage||r.stage===1&&r.route!==null||r.stage>=2&&r.route===null||r.stage<3&&(r.branch!==null||r.found)||r.stage===3&&r.branch===null||r.branch==='stern'&&!r.found||r.status==='done'&&r.stage!==3||r.status==='died'&&!s.dead)return false;
  if(active(s)&&(s.place!=='ferry'||s.dead||s.pending||s.combat||[s.fort,s.raid,s.dungeon].some(x=>x.status==='active')||s.adventures.companions.active!==null||s.dungeon.guide==='joined'||s.raid.guide==='joined'))return false;return true;}
+

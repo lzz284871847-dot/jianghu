@@ -1,24 +1,24 @@
-import {sharedWork} from './county-life.js?v=5.71.0';
-import {ARTISANS} from './professional-data.js?v=5.71.0';
-import {BUSINESSES} from './business.js?v=5.71.0';
-import {CAREERS} from './adventure-data.js?v=5.71.0';
-import {ASSESSMENTS,assessmentArtValid} from './assessments.js?v=5.71.0';
-import {bodyStats} from './mobility.js?v=5.71.0';
-import {COOPERATIONS} from './companions.js?v=5.71.0';
-import {craftPlan} from './crafts.js?v=5.71.0';
-import {MEALS} from './kitchen.js?v=5.71.0';
-import {MEDICINES} from './medicine.js?v=5.71.0';
-import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.71.0';
-import {wreckRecipeKnown} from './wreck.js?v=5.71.0';
-import {ALL_ARTISAN_ORDERS} from './artisan-orders.js?v=5.71.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
-import {milestoneHint} from './skill-milestones.js?v=5.71.0';
-import {artisanSkillGoal} from './artisan-orders.js?v=5.71.0';
-import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.71.0';
-import {progress,MAX} from './progression.js?v=5.71.0';
-import {nextRoad} from './task-handbook.js?v=5.71.0';
-import {initialMarket,marketPrice} from './commerce.js?v=5.71.0';
-import {CRAFTS} from './crafts.js?v=5.71.0';
+import {sharedWork} from './county-life.js?v=5.71.1';
+import {ARTISANS} from './professional-data.js?v=5.71.1';
+import {BUSINESSES} from './business.js?v=5.71.1';
+import {CAREERS} from './adventure-data.js?v=5.71.1';
+import {ASSESSMENTS,assessmentArtValid} from './assessments.js?v=5.71.1';
+import {bodyStats} from './mobility.js?v=5.71.1';
+import {COOPERATIONS} from './companions.js?v=5.71.1';
+import {craftPlan} from './crafts.js?v=5.71.1';
+import {MEALS} from './kitchen.js?v=5.71.1';
+import {MEDICINES} from './medicine.js?v=5.71.1';
+import {EQUIPMENT,artisanRecipeKnown} from './equipment.js?v=5.71.1';
+import {wreckRecipeKnown} from './wreck.js?v=5.71.1';
+import {ALL_ARTISAN_ORDERS} from './artisan-orders.js?v=5.71.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.1';
+import {milestoneHint} from './skill-milestones.js?v=5.71.1';
+import {artisanSkillGoal} from './artisan-orders.js?v=5.71.1';
+import {skills,places,people,items,markets,resources,recipes} from './content.js?v=5.71.1';
+import {progress,MAX} from './progression.js?v=5.71.1';
+import {nextRoad} from './task-handbook.js?v=5.71.1';
+import {initialMarket,marketPrice} from './commerce.js?v=5.71.1';
+import {CRAFTS} from './crafts.js?v=5.71.1';
 export const SKILL_GROUPS=[
  {id:'living',name:'生活与采集',keys:['carry','forage','herb','fish','mining','hunt','farming','cook']},
  {id:'crafting',name:'手艺与生产',keys:['smelt','medicine','tailor','leatherwork','woodwork']},
@@ -101,3 +101,4 @@ export function activityKnown(s,id){const [kind,action,key]=id.split(':');
 }
 export function equipmentKnown(s,id){const d=EQUIPMENT[id];if(Object.hasOwn(s.equipment.owned,id))return true;if(!d||d.foundOnly||s.place!=='workshop')return false;if(d.recipeOrder)return artisanRecipeKnown(s,id);return d.tier<3||(s.relations.smith||0)>=(d.tier-2)*8;}
 export function martialKnown(s,id){const art=MARTIAL_ARTS[id];if(!art)return false;if(s.martial.known[id])return true;if(s.place!==(art.source==='village'?'village':'school'))return false;if(art.tier===1)return true;return (s.relations.master||0)>=(art.tier===2?5:12)&&Object.entries(s.martial.known).filter(([k,v])=>v&&MARTIAL_ARTS[k].tier===art.tier-1&&(s.martial.practice[k]||0)>=120).length>=2;}
+

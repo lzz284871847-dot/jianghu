@@ -1,7 +1,7 @@
-import {PRACTICE_XP,growthPreview} from './practice-growth.js?v=5.71.0';
-import {forestBonus,useUtility} from './equipment.js?v=5.71.0';
-import {skills} from './content.js?v=5.71.0';
-import {gain} from './progression.js?v=5.71.0';
+import {PRACTICE_XP,growthPreview} from './practice-growth.js?v=5.71.1';
+import {forestBonus,useUtility} from './equipment.js?v=5.71.1';
+import {skills} from './content.js?v=5.71.1';
+import {gain} from './progression.js?v=5.71.1';
 export const FIELD_SKILLS=['navigation','tracking','awareness'];
 export const FIELD_ACTIONS={
  navigation:{name:'辨认路势',minutes:20,energy:3,places:['foot','bamboo','hill','ferry','road','oldroad','mine'],use:'岔路抄近路、轻功通过或旧址搜寻'},
@@ -20,3 +20,4 @@ export function fieldCheckChance(s,key){const d=FIELD_ACTIONS[key];return Math.m
 export function fieldBlocker(s,key){const d=FIELD_ACTIONS[key];if(!d||!d.places.includes(s.place))return '这里没有这项野外判断行动。';if(s.dead||s.combat||s.pending||s.adventures.law.pursuit)return '先处理眼前选择或交手；死亡后不能行动。';if(s.fieldSkills[key][s.place]?.day===s.day)return '今日在这里已判断过，不重复尝试；既有记录保留。';if(s.minute<360||s.minute+d.minutes>1080)return '野外判断需在06:00–18:00内完成。';if(s.hp<25||s.energy<d.energy)return '需气血25、精力'+d.energy+'，先养伤或休息。';return null;}
 export function fieldAction(s,id,{settle,rng}){const parts=String(id).split(':');if(parts.length!==2){s.result=['没有这项野外判断行动。'];return false;}const key=parts[1],why=fieldBlocker(s,key);if(why){s.result=[why];return false;}const d=FIELD_ACTIONS[key],success=rng()<fieldCheckChance(s,key),day=s.day,place=s.place;return settle(s,d.name,d.minutes,d.energy,()=>{if(key==='navigation'&&forestBonus(s))useUtility(s,'forest_staff');s.fieldSkills[key][place]={day,success,used:false};s.result.push(success?'找到可参考的'+skills[key]+'线索；仅当天本地有效，可用于一次'+d.use+'。':'路势或痕迹不清，没取得有效线索；时间精力已付出，今日不能重掷。','经验只能提高判断与成功机会，不提供必胜、必得物资或免伤；雨天更难判断。');},{[key]:success?PRACTICE_XP.field:PRACTICE_XP.failure});}
 export function fieldOptions(s){return Object.entries(FIELD_ACTIONS).filter(([,d])=>d.places.includes(s.place)).map(([key,d])=>{const r=s.fieldSkills[key][s.place];return {id:'field:'+key,label:d.name,preview:d.minutes+'分钟 / 精力'+d.energy+'；当前判断成功率'+Math.round(fieldCheckChance(s,key)*100)+'%。'+d.use+'可受益；每地点每日一次，无钱物奖励。'+growthPreview(s,key,d.energy,PRACTICE_XP.field,PRACTICE_XP.failure)+(r?.day===s.day?(r.success?(r.used?'今天线索已用于行动。':'今天有一份未使用的线索。'):'今天判断未能取得线索。'):''),blocker:fieldBlocker(s,key)};});}
+
