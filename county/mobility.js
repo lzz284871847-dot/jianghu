@@ -1,7 +1,7 @@
-import {fieldBonus} from './field-skills.js?v=5.70.1';
-import {places} from './content.js?v=5.70.1';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.70.1';
-import {injuryEffects} from './injury.js?v=5.70.1';
+import {fieldBonus} from './field-skills.js?v=5.71.0';
+import {places} from './content.js?v=5.71.0';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.71.0';
+import {injuryEffects} from './injury.js?v=5.71.0';
 export const BODY_ARTS=['footwork','cloud_step'];
 export const makeMobility=()=>({art:null});
 export function mobilityValid(s){const m=s.mobility;return !!m&&typeof m==='object'&&!Array.isArray(m)&&Object.keys(m).length===1&&(m.art===null||BODY_ARTS.includes(m.art)&&s.martial?.known[m.art]===true);}

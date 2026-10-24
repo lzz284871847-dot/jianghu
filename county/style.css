@@ -36,3 +36,5 @@ input,select,textarea{font-size:16px}textarea{display:block;width:100%;min-width
 
 /* The action and its consequences lead; catalogues wait until deliberately opened. */
 .experience{padding:18px 0 22px;border-bottom:1px solid var(--line,#c9c4b7);margin-bottom:16px;scroll-margin-top:12px}.experience h3{font-size:1.2rem;margin:8px 0}.experience p{font-family:"Songti SC",serif;font-size:17px;line-height:1.95;overflow-wrap:anywhere}.experience details{margin-top:12px}.experience details p{font-family:inherit;font-size:14px;line-height:1.7}.experience summary,#surroundings>summary,#world-tools>summary,.bag-fold>summary{padding:12px 0;cursor:pointer}#world-tools{margin-top:14px}#surroundings:not([open]){margin-bottom:8px}.bag-fold{display:block}.bag-fold:not([open])>*:not(summary){display:none}
+
+#day-plan>summary{cursor:pointer}#day-plan-list{padding-left:25px}#day-plan-list li{margin:10px 0}#day-plan-list button{min-height:44px;text-align:left}#day-plan-list small{display:block;line-height:1.6}#day-plan-report article{border-top:1px solid #ccc7b8;padding-top:8px}#day-plan-input{font-size:16px}
