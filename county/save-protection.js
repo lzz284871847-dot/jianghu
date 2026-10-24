@@ -1,5 +1,5 @@
-import {KEY,restore} from './engine.js?v=5.71.1';
-import {save,load,exportSave} from './storage.js?v=5.71.1';
+import {KEY,restore} from './engine.js?v=5.72.0';
+import {save,load,exportSave} from './storage.js?v=5.72.0';
 
 // This database name, store and key deliberately do not depend on release versions.
 export function browserBackup(factory=globalThis.indexedDB){

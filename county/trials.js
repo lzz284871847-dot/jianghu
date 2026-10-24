@@ -1,6 +1,6 @@
-import {assessmentModifiers} from './assessments.js?v=5.71.1';
-import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.71.1';
-import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.71.1';
+import {assessmentModifiers} from './assessments.js?v=5.72.0';
+import {MARTIAL_ARTS,OPPONENTS} from './martial-data.js?v=5.72.0';
+import {EQUIPMENT,equipmentBonuses} from './equipment.js?v=5.72.0';
 export const TRIALS={advanced:{name:'进阶挑战',foe:'staffhand',attack:0,defense:0,advice:'棍手可在距离3出手；拳掌要逼近，长兵可在合适距离应战。建议熟练一阶武艺与完好护甲。'},expert:{name:'高手挑战',foe:'chief',attack:2,defense:1,advice:'头目擅长强攻，重击威力高；防守和护甲能减少损伤。建议二阶熟练武艺、适配兵器与护甲。'},peak:{name:'县境顶尖挑战',foe:'master',attack:4,defense:3,advice:'高手会虚招拆防、反击重击；别只反复防守或重击。建议三阶武艺、已解锁的实用招式与进阶兵甲。'}};
 export const makeTrials=()=>({active:null,records:Object.fromEntries(Object.keys(TRIALS).map(id=>[id,{attempts:0,wins:0,escapes:0,deaths:0}]))});
 export function trialsValid(s){const t=s.adventures.trials,obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x),int=x=>Number.isSafeInteger(x)&&x>=0&&x<=100000;if(!obj(t)||Object.keys(t).length!==2||!obj(t.records)||Object.keys(t.records).length!==3)return false;for(const id of Object.keys(TRIALS)){const r=t.records[id];if(!obj(r)||Object.keys(r).length!==4||!Object.values(r).every(int)||r.deaths>1||r.deaths&&!s.dead||r.attempts!==r.wins+r.escapes+r.deaths+(t.active===id?1:0))return false;}return t.active===null||!!TRIALS[t.active]&&s.place==='school'&&s.combat?.opponent===TRIALS[t.active].foe&&!s.combat.practice;}
