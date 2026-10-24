@@ -1,4 +1,4 @@
-import {KEY,restore} from './engine.js?v=5.70.0';
+import {KEY,restore} from './engine.js?v=5.70.1';
 export const SAVE_LIMIT=150000;
 export function exportSave(s){const raw=JSON.stringify(s);restore(raw);return raw;}
 export function save(s,storage=globalThis.localStorage){storage.setItem(KEY,exportSave(s));}

@@ -1,5 +1,5 @@
-import {items} from './content.js?v=5.70.0';
-import {addInjury} from './injury.js?v=5.70.0';
+import {items} from './content.js?v=5.70.1';
+import {addInjury} from './injury.js?v=5.70.1';
 // A single short expedition on the existing ferry map; its only recipe uses ordinary cord.
 export const makeWreck=()=>({status:'new',stage:0,route:null,branch:null,found:false});
 export const wreckRecipeKnown=s=>s.wreck?.status==='done'&&s.wreck.branch==='stern'&&s.wreck.found;

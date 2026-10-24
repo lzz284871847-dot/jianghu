@@ -1,4 +1,4 @@
-import {dungeonOptions,dungeonPlan} from './dungeon.js?v=5.70.0';
+import {dungeonOptions,dungeonPlan} from './dungeon.js?v=5.70.1';
 
 // Read-only presentation of the finite expedition. Actions and validation stay in dungeon.js.
 const names=['','入口岔路','有限矿堆','塌落支巷','返回洞口'];
