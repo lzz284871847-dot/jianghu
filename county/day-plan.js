@@ -1,15 +1,15 @@
-import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.73.0';
-import {places,people,resources,markets,items,recipes,skills} from './content.js?v=5.73.0';
-import {ARTISANS} from './professional-data.js?v=5.73.0';
-import {CRAFTS} from './crafts.js?v=5.73.0';
-import {jobBlocker,jobPreview} from './livelihood.js?v=5.73.0';
-import {npcPlace} from './world.js?v=5.73.0';
-import {activityGroups} from './activity-layout.js?v=5.73.0';
-import {activityKnown,resourceKnown} from './skill-guide.js?v=5.73.0';
-import {outingMovementBlocker} from './outings.js?v=5.73.0';
-import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.73.0';
-import {tradePrice} from './civic.js?v=5.73.0';
-import {districtStatus} from './society.js?v=5.73.0';
+import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.74.0';
+import {places,people,resources,markets,items,recipes,skills} from './content.js?v=5.74.0';
+import {ARTISANS} from './professional-data.js?v=5.74.0';
+import {CRAFTS} from './crafts.js?v=5.74.0';
+import {jobBlocker,jobPreview} from './livelihood.js?v=5.74.0';
+import {npcPlace} from './world.js?v=5.74.0';
+import {activityGroups} from './activity-layout.js?v=5.74.0';
+import {activityKnown,resourceKnown} from './skill-guide.js?v=5.74.0';
+import {outingMovementBlocker} from './outings.js?v=5.74.0';
+import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.74.0';
+import {tradePrice} from './civic.js?v=5.74.0';
+import {districtStatus} from './society.js?v=5.74.0';
 const auxiliary={social:'人物往来',affairs:'江湖事务',martial:'武学与身法',daily:'休整与出行'};
 // Classification only: no eligibility, journey, action, or save changes.
 export function dayOptionSkill(a){
