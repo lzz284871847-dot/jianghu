@@ -1,13 +1,36 @@
-import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.71.1';
-import {places,people,resources,markets,items,recipes} from './content.js?v=5.71.1';
-import {jobBlocker,jobPreview} from './livelihood.js?v=5.71.1';
-import {npcPlace} from './world.js?v=5.71.1';
-import {activityGroups} from './activity-layout.js?v=5.71.1';
-import {activityKnown,resourceKnown} from './skill-guide.js?v=5.71.1';
-import {outingMovementBlocker} from './outings.js?v=5.71.1';
-import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.71.1';
-import {tradePrice} from './civic.js?v=5.71.1';
-import {districtStatus} from './society.js?v=5.71.1';
+import {act,talk,move,adventureAction,trade,cost,resourceBlocker} from './engine.js?v=5.72.0';
+import {places,people,resources,markets,items,recipes,skills} from './content.js?v=5.72.0';
+import {ARTISANS} from './professional-data.js?v=5.72.0';
+import {CRAFTS} from './crafts.js?v=5.72.0';
+import {jobBlocker,jobPreview} from './livelihood.js?v=5.72.0';
+import {npcPlace} from './world.js?v=5.72.0';
+import {activityGroups} from './activity-layout.js?v=5.72.0';
+import {activityKnown,resourceKnown} from './skill-guide.js?v=5.72.0';
+import {outingMovementBlocker} from './outings.js?v=5.72.0';
+import {stockAt,budgetAt,MARKET_LIMIT} from './commerce.js?v=5.72.0';
+import {tradePrice} from './civic.js?v=5.72.0';
+import {districtStatus} from './society.js?v=5.72.0';
+const auxiliary={social:'人物往来',affairs:'江湖事务',martial:'武学与身法',daily:'休整与出行'};
+// Classification only: no eligibility, journey, action, or save changes.
+export function dayOptionSkill(a){
+ if(a.kind==='talk')return 'social';
+ if(['buy','sell'].includes(a.kind))return 'trade';
+ if(a.kind==='move')return 'daily';
+ if(a.kind==='act')return resources[a.key]?.skill??recipes[a.key]?.skill??({work:'carry',train:'fist',heal:'herb'}[a.key]||'daily');
+ const [kind,key,choice]=a.key.split(':');
+ if(kind==='professional'){const teacher=key.split('_')[0];return ARTISANS[teacher]?.skill??({scribe:'literacy',bookkeeper:'accounting',chessfriend:'chess',musician:'music'}[teacher]||'affairs');}
+ if(kind==='craft')return CRAFTS[choice]?.skill??'affairs';
+ if(kind==='culture')return Object.hasOwn(skills,key)?key:'affairs';
+ if(kind==='civic')return ({read:'literacy',literacy:'literacy',audit:'accounting',accounting:'accounting',bargain:'negotiation'}[key]||'negotiation');
+ if(kind==='bond')return choice==='meet'?'social':({boatman:'woodwork',smith:'smelt',doctor:'herb',merchant:'trade'}[key]||'affairs');
+ if(kind==='business')return key.startsWith('farm')?'farming':key.startsWith('smith')?'smelt':key.startsWith('clinic')?'herb':key.startsWith('merchant')?'trade':'affairs';
+ if(kind==='field')return Object.hasOwn(skills,key)?key:Object.hasOwn(skills,choice)?choice:'navigation';
+ return ({kitchen:'cook',medicine:'medicine',stall:'trade',mobility:'martial',mentor:'martial',sect:'martial',trial:'martial'}[kind]||'affairs');
+}
+export function daySkillGroups(options){
+ const buckets=new Map();for(const option of options){const key=dayOptionSkill(option);if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(option);}
+ return [...Object.keys(skills),...Object.keys(auxiliary)].filter(key=>buckets.has(key)).map(key=>({key,label:skills[key]??auxiliary[key],options:buckets.get(key)}));
+}
 // Numbers describe one displayed snapshot. Execution always rechecks the live world.
 export function dayOptions(s){
  if(s.dead||s.pending||s.combat||s.adventures.law.pursuit||[s.fort,s.raid,s.dungeon,s.wreck].some(x=>x?.status==='active'))return [];
