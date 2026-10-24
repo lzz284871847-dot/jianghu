@@ -1,6 +1,6 @@
-import {gain} from './progression.js?v=5.70.0';
-import {equipmentBonuses} from './equipment.js?v=5.70.0';
-import {MARTIAL_ARTS} from './martial-data.js?v=5.70.0';
+import {gain} from './progression.js?v=5.70.1';
+import {equipmentBonuses} from './equipment.js?v=5.70.1';
+import {MARTIAL_ARTS} from './martial-data.js?v=5.70.1';
 // Finite, optional encounters. Compact results reuse the existing encounter map.
 export const VIGNETTES={inn:{name:'两张脚钱条',place:'inn'},road:{name:'官道上的断带',place:'road'},market:{name:'旧矿镐的刻痕',place:'market'},herb_dispute:{name:'竹林争药',place:'bamboo'}};
 export const VIGNETTE_STATES={herb_dispute:['heard','identified','settled','refused','fighting','won','taken','escaped','died','left'],inn:['heard','checked','hasty','calmed','done','left'],road:['heard','asked','helped','done','left'],market:['offer_good','offer_bad','known_good','known_bad','bought_good','bought_bad','closed_good','closed_bad','left']};
