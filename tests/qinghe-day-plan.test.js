@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {fresh,act,move,restore} from '../county/engine.js';
+import {fresh,act,move,trade,restore} from '../county/engine.js';
 import {dayOptions,parseDayNumbers,runDayPlan} from '../county/day-plan.js';
 const numbers=(list,...ids)=>ids.map(id=>list.findIndex(a=>a.id===id)+1);
 test('number syntax is unambiguous, validated before action, and disallows duplicate work',()=>{
@@ -22,4 +22,9 @@ test('risky gathering opens the existing decision without consuming its cost or 
 });
 test('a separate decision is never silently performed, including later selections',()=>{
  const s=fresh(),list=dayOptions(s),choice=list.find(a=>a.review),b=structuredClone(s);assert.ok(choice);const out=runDayPlan(s,list,numbers(list,choice.id,'act:work'));assert.deepEqual(s,b);assert.equal(out.reviewId,choice.id);assert.equal(out.report.length,0);assert.match(out.stop,/尚未执行/);
+});
+
+test('current trade and training entries use real stock, money and skill actions',()=>{
+ const s=fresh();s.place='market';const m=structuredClone(s),list=dayOptions(s);assert.ok(list.some(a=>a.id==='buy:food'));const out=runDayPlan(s,list,numbers(list,'buy:food'));assert.equal(out.report.length,1);assert.ok(trade(m,'buy','food'));assert.deepEqual(s,m);s.coins=0;assert.ok(!dayOptions(s).some(a=>a.id==='buy:food'));
+ const student=fresh();student.place='school';const old=structuredClone(student),lessons=dayOptions(student);assert.ok(lessons.some(a=>a.id==='act:train'));runDayPlan(student,lessons,numbers(lessons,'act:train'));assert.ok(act(old,'train'));assert.deepEqual(student,old);
 });
