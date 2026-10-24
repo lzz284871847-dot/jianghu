@@ -1,5 +1,5 @@
-import {skills} from './content.js?v=5.69.0';
-import {MAX} from './progression.js?v=5.69.0';
+import {skills} from './content.js?v=5.70.0';
+import {MAX} from './progression.js?v=5.70.0';
 // Real work only. No global XP multiplier, trade bonus, or save migration grant.
 export const PRACTICE_XP={work:12,lesson:12,lessonFailure:4,civicLesson:8,practice:6,failure:2,field:6,repair:3,order:24,orderFailure:6};
 export function resourceGrowth(d){return {success:d.risk>=.3?12:d.minutes>=150?10:d.minutes>=120?8:6,failure:d.risk>=.3?4:2};}
